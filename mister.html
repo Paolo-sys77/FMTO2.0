@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMTO 2.0 — Mister</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── MISTER GRID ── */
+.mister-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem; }
+
+.mc {
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:1.1rem 1.2rem; display:flex; align-items:flex-start; gap:1rem;
+  transition:border-color .18s, transform .18s; cursor:default;
+  text-decoration:none; color:inherit;
+}
+.mc:hover { border-color:var(--v); transform:translateY(-2px); }
+
+.mc-avatar {
+  width:54px; height:54px; border-radius:50%; flex-shrink:0;
+  overflow:hidden; border:2px solid rgba(139,92,246,.25);
+}
+.mc-avatar img { width:100%; height:100%; object-fit:contain; }
+.mc-avatar-placeholder {
+  width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+  font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:.9rem; color:#fff; border-radius:50%;
+}
+
+.mc-body { flex:1; min-width:0; }
+.mc-name { font-size:.95rem; font-weight:700; color:#e8eaf0; line-height:1.2; }
+.mc-squad {
+  font-family:'Barlow Condensed',sans-serif; font-size:.72rem; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase; margin-top:.18rem; margin-bottom:.55rem;
+}
+
+.mc-rows { display:flex; flex-direction:column; gap:.28rem; }
+.mc-row { display:flex; align-items:center; gap:.5rem; font-size:.75rem; color:#9ca3af; }
+.mc-row svg { flex-shrink:0; opacity:.55; }
+.mc-row a { color:#c4b5fd; text-decoration:none; }
+.mc-row a:hover { color:#a78bfa; text-decoration:underline; }
+.mc-badge {
+  display:inline-flex; align-items:center; gap:.25rem;
+  padding:.1rem .45rem; border-radius:99px; font-size:.65rem; font-weight:700;
+  background:rgba(139,92,246,.1); border:1px solid rgba(139,92,246,.2); color:#c4b5fd;
+}
+.mc-badge.green { background:rgba(34,211,160,.08); border-color:rgba(34,211,160,.2); color:#22d3a0; }
+
+/* empty slot */
+.mc.empty { opacity:.35; pointer-events:none; }
+.mc.empty .mc-name { color:#4b5563; font-style:italic; }
+
+/* search + toggle */
+.view-toggle { display:flex; gap:.4rem; }
+.vt-btn {
+  background:var(--card); border:1px solid var(--border); color:var(--t2);
+  font-family:'Barlow Condensed',sans-serif; font-size:.72rem; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; padding:.35rem .8rem;
+  border-radius:6px; cursor:pointer; transition:all .14s;
+}
+.vt-btn:hover,.vt-btn.active { border-color:var(--v); color:var(--vb); background:rgba(139,92,246,.09); }
+
+/* table */
+.mister-tbl { width:100%; border-collapse:collapse; }
+.mister-tbl th {
+  font-family:'Barlow Condensed',sans-serif; font-size:.66rem; font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--t2); text-align:left;
+  padding:.58rem .95rem; border-bottom:1px solid var(--border); white-space:nowrap;
+}
+.mister-tbl td { padding:.62rem .95rem; font-size:.82rem; border-bottom:1px solid rgba(139,92,246,.05); vertical-align:middle; }
+.mister-tbl tr:hover td { background:rgba(139,92,246,.05); }
+.mister-tbl tr:last-child td { border-bottom:none; }
+.mister-tbl a { color:#c4b5fd; text-decoration:none; }
+.mister-tbl a:hover { text-decoration:underline; }
+
+@media(max-width:480px){ .mister-grid { grid-template-columns:1fr; } }
+</style>
+</head>
+<body class="gbg">
+
+<nav>
+  <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+  <ul class="nav-links">
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
+    <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+  </ul>
+</nav>
+
+<div class="ticker">
+  <div class="ticker-lbl">Live</div>
+  <div class="ticker-inner"><div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Top scorer: 14 gol in 8 partite</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori reali · FM26</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Top scorer: 14 gol in 8 partite</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori reali · FM26</span>
+  </div></div>
+</div>
+
+<div class="sec">
+  <div style="margin-bottom:1.8rem">
+    <div class="sec-tag">Torneo</div>
+    <h2 class="sec-title">I <span>Mister</span></h2>
+    <p style="margin-top:.35rem;font-size:.82rem;color:var(--t2)">Tutti gli allenatori del torneo FMTO 2.0 — stagione 2025/26</p>
+  </div>
+
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:1.4rem">
+    <div class="search-wrap" style="margin-bottom:0;flex:1;min-width:200px;max-width:380px">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" class="search-input" id="m-search" placeholder="Cerca mister o squadra..." oninput="filterMister()" autocomplete="off">
+    </div>
+    <div class="view-toggle">
+      <button class="vt-btn active" onclick="setView('cards',this)">⊞ Card</button>
+      <button class="vt-btn" onclick="setView('table',this)">☰ Tabella</button>
+    </div>
+  </div>
+
+  <div id="mister-cards" class="mister-grid"></div>
+  <div id="mister-table" style="display:none;overflow-x:auto">
+    <table class="mister-tbl">
+      <thead><tr>
+        <th>#</th><th>Squadra</th><th>Mister</th><th>Telegram</th>
+        <th>Forum</th><th>Nel torneo</th><th>Ultimo cambio</th>
+      </tr></thead>
+      <tbody id="mister-tbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="players.js"></script>
+<script src="shared.js"></script>
+<script>
+const MISTERS_DATA = {
+  "AJAX": {"nome": "Alessandro", "telegram": "alessandromicciullo", "forum": "ucavadd", "ingresso": "Jun 2020", "ultimo_cambio": ""},
+  "ANDERLECHT": {"nome": "Alfredo", "telegram": "Fred994", "forum": "Dieguito94", "ingresso": "May 2021", "ultimo_cambio": ""},
+  "ARSENAL": {"nome": "Alessandro", "telegram": "alca_91", "forum": "Alca91", "ingresso": "Sep 2024", "ultimo_cambio": ""},
+  "ASTANA": {"nome": "", "telegram": "", "forum": "", "ingresso": "", "ultimo_cambio": ""},
+  "ATALANTA": {"nome": "Alex Casinghino", "telegram": "MrAlexDea", "forum": "MrAlex", "ingresso": "Mar 2020", "ultimo_cambio": ""},
+  "ATHLETIC BILBAO": {"nome": "Gabriele Righini", "telegram": "Be Positive", "forum": "Be Positive", "ingresso": "Apr 2020", "ultimo_cambio": ""},
+  "ATLETICO MADRID": {"nome": "Stefano", "telegram": "SteYoshi", "forum": "SteYoshizu", "ingresso": "May 2025", "ultimo_cambio": ""},
+  "AZ ALKMAAR": {"nome": "Loris", "telegram": "cestoris", "forum": "cestoris", "ingresso": "Feb 2023", "ultimo_cambio": "Sep 2024"},
+  "BARCELONA": {"nome": "Alessandro", "telegram": "Alexbusa", "forum": "busakoss", "ingresso": "May 2025", "ultimo_cambio": "Dec 2025"},
+  "BASILEA": {"nome": "Alberto", "telegram": "SirDerfel", "forum": "SirDerfel", "ingresso": "Nov 2021", "ultimo_cambio": ""},
+  "BAYER LEVERKUSEN": {"nome": "", "telegram": "", "forum": "", "ingresso": "", "ultimo_cambio": ""},
+  "BAYERN MONACO": {"nome": "Ivan", "telegram": "ivan19928", "forum": "ivan16892", "ingresso": "Mar 2024", "ultimo_cambio": "Jul 2025"},
+  "BENFICA": {"nome": "Paolo", "telegram": "paolo", "forum": "Paolo_S77", "ingresso": "Nov 2020", "ultimo_cambio": ""},
+  "BODO/GLIMT": {"nome": "Giuseppe Defilippis", "telegram": "gdef12", "forum": "g.def12", "ingresso": "Jan 2026", "ultimo_cambio": ""},
+  "BODO-GLIMT": {"nome": "Giuseppe Defilippis", "telegram": "gdef12", "forum": "g.def12", "ingresso": "Jan 2026", "ultimo_cambio": ""},
+  "BOLOGNA": {"nome": "Diego", "telegram": "Thefirstlady2025", "forum": "Diemotions87", "ingresso": "Feb 2026", "ultimo_cambio": ""},
+  "BORUSSIA DORTMUND": {"nome": "alerosati", "telegram": "alerosati2000", "forum": "alerosati2000", "ingresso": "May 2020", "ultimo_cambio": "Oct 2024"},
+  "BORUSSIA MONCHENGLADBACH": {"nome": "Carmeloct46", "telegram": "Carmeloct46", "forum": "Carmeloct46", "ingresso": "Jun 2020", "ultimo_cambio": ""},
+  "CELTIC": {"nome": "Luca", "telegram": "ferro197475", "forum": "Ferro50", "ingresso": "Nov 2023", "ultimo_cambio": "Mar 2024"},
+  "CHELSEA": {"nome": "Fabrizio", "telegram": "Calonderiel", "forum": "Calonderiel", "ingresso": "Oct 2023", "ultimo_cambio": "Jan 2024"},
+  "CLUB BRUGGE": {"nome": "Roberto Sferruzzi", "telegram": "sfero75", "forum": "Sfero75", "ingresso": "Jun 2021", "ultimo_cambio": ""},
+  "COPENAGHEN": {"nome": "Giuliano", "telegram": "riccio76", "forum": "giugiu49", "ingresso": "Nov 2024", "ultimo_cambio": "May 2025"},
+  "CRYSTAL PALACE": {"nome": "Andrea", "telegram": "Andreav0105", "forum": "Andreav0105", "ingresso": "Nov 2024", "ultimo_cambio": ""},
+  "DINAMO KIEV": {"nome": "Luca", "telegram": "L_Lawliet91", "forum": "LucaLawliet", "ingresso": "Jun 2023", "ultimo_cambio": "May 2025"},
+  "DINAMO ZAGABRIA": {"nome": "Lorenzo Galluzzo", "telegram": "galluzzolorenzo", "forum": "Lorenzo Galluzzo", "ingresso": "Apr 2020", "ultimo_cambio": ""},
+  "EINTRACHT FRANCOFORTE": {"nome": "Federico Luigelli", "telegram": "Federico Luigelli", "forum": "Federico Luigelli", "ingresso": "Jan 2022", "ultimo_cambio": ""},
+  "EVERTON": {"nome": "", "telegram": "", "forum": "", "ingresso": "", "ultimo_cambio": ""},
+  "FEYENOORD": {"nome": "", "telegram": "", "forum": "", "ingresso": "", "ultimo_cambio": ""},
+  "FIORENTINA": {"nome": "Gabriele Cavallaro", "telegram": "gabrieltheyellow", "forum": "gabrieltheyellow", "ingresso": "Feb 2024", "ultimo_cambio": ""},
+  "GENT": {"nome": "Alberto Ariatti", "telegram": "albertoariatti", "forum": "Alberto Ariatti", "ingresso": "Dec 2022", "ultimo_cambio": ""},
+  "GLASGOW RANGERS": {"nome": "Eurodino", "telegram": "Eurodino", "forum": "Eurodino", "ingresso": "Apr 2021", "ultimo_cambio": ""},
+  "INTER": {"nome": "Luca Marcarini", "telegram": "M17GK", "forum": "Mec17", "ingresso": "Mar 2020", "ultimo_cambio": ""},
+  "JUVENTUS": {"nome": "Asik85", "telegram": "Parzival1985", "forum": "Asik85", "ingresso": "Mar 2020", "ultimo_cambio": ""},
+  "LAZIO": {"nome": "Tony My", "telegram": "tonetto87", "forum": "tonetto87", "ingresso": "Jun 2020", "ultimo_cambio": ""},
+  "LEEDS": {"nome": "Vin", "telegram": "vinci994", "forum": "vinci994", "ingresso": "Jan 2025", "ultimo_cambio": "Dec 2025"},
+  "LIONE": {"nome": "Alex", "telegram": "welshwizard07", "forum": "Welsh wizard", "ingresso": "Apr 2021", "ultimo_cambio": ""},
+  "LIPSIA": {"nome": "Simone", "telegram": "simo319797", "forum": "Simogiunto97", "ingresso": "Dec 2025", "ultimo_cambio": ""},
+  "LIVERPOOL": {"nome": "Alberto", "telegram": "whitewolf7432", "forum": "Whitewolf7432", "ingresso": "Sep 2020", "ultimo_cambio": ""},
+  "MANCHESTER CITY": {"nome": "Alessandro Frangiosa", "telegram": "lisandro", "forum": "Alefra88", "ingresso": "Mar 2020", "ultimo_cambio": ""},
+  "MANCHESTER UNITED": {"nome": "Michele Martinelli", "telegram": "Mikkael90", "forum": "mikkael90", "ingresso": "Feb 2026", "ultimo_cambio": ""},
+  "MILAN": {"nome": "Marco Jack Nanni", "telegram": "Marcojacknanni", "forum": "jackdicuori5", "ingresso": "Apr 2021", "ultimo_cambio": ""},
+  "MONACO": {"nome": "", "telegram": "", "forum": "", "ingresso": "", "ultimo_cambio": ""},
+  "NAPOLI": {"nome": "Vittorio Vaglia", "telegram": "Vjr75", "forum": "Vjr75", "ingresso": "Jun 2024", "ultimo_cambio": "Sep 2025"},
+  "NEWCASTLE": {"nome": "Antonio Senserini", "telegram": "Antonio Senserini", "forum": "Antonio Senserini", "ingresso": "Mar 2020", "ultimo_cambio": ""},
+  "NOTTINGHAM FOREST": {"nome": "", "telegram": "", "forum": "", "ingresso": "", "ultimo_cambio": ""},
+  "OLYMPIAKOS": {"nome": "piesal", "telegram": "piesal09", "forum": "Fabio Pierotti", "ingresso": "Dec 2025", "ultimo_cambio": ""},
+  "OLYMPIQUE MARSIGLIA": {"nome": "", "telegram": "", "forum": "", "ingresso": "", "ultimo_cambio": ""},
+  "PAOK SALONICCO": {"nome": "Michele Sivilli", "telegram": "Michelone74", "forum": "Michelone 74", "ingresso": "May 2020", "ultimo_cambio": ""},
+  "PSG": {"nome": "Tommaso Molin", "telegram": "tommy150788", "forum": "Tommy_8888", "ingresso": "Jun 2020", "ultimo_cambio": "Mar 2023"},
+  "PARIS SAINT GERMAIN": {"nome": "Tommaso Molin", "telegram": "tommy150788", "forum": "Tommy_8888", "ingresso": "Jun 2020", "ultimo_cambio": "Mar 2023"},
+  "PORTO": {"nome": "Giulio Mercurio", "telegram": "fufo8", "forum": "jmerk1702", "ingresso": "Sep 2025", "ultimo_cambio": ""},
+  "PSV": {"nome": "Francesco", "telegram": "AgasiZ", "forum": "Agasiz", "ingresso": "Feb 2026", "ultimo_cambio": ""},
+  "REAL BETIS": {"nome": "Luigi Formisano", "telegram": "folu92", "forum": "folu92", "ingresso": "Jul 2020", "ultimo_cambio": ""},
+  "BETIS": {"nome": "Luigi Formisano", "telegram": "folu92", "forum": "folu92", "ingresso": "Jul 2020", "ultimo_cambio": ""},
+  "REAL MADRID": {"nome": "marco barilla", "telegram": "mandraghe76", "forum": "mandraghe76", "ingresso": "Feb 2021", "ultimo_cambio": ""},
+  "REAL SOCIEDAD": {"nome": "Tocci Raffaele", "telegram": "ciaffa69", "forum": "prinz691", "ingresso": "Sep 2020", "ultimo_cambio": ""},
+  "ROMA": {"nome": "Manu Nyhr Gdr", "telegram": "NyhrGdr", "forum": "NyhrGaming", "ingresso": "Nov 2020", "ultimo_cambio": "Oct 2023"},
+  "SAINT ETIENNE": {"nome": "", "telegram": "", "forum": "", "ingresso": "", "ultimo_cambio": ""},
+  "SCHALKE 04": {"nome": "AXEL", "telegram": "RoyFox83", "forum": "AXEL", "ingresso": "Sep 2021", "ultimo_cambio": ""},
+  "SIVIGLIA": {"nome": "Lvcaalexis", "telegram": "lvcaalexis", "forum": "lvcaalexis", "ingresso": "Jan 2021", "ultimo_cambio": ""},
+  "SPORTING LISBONA": {"nome": "Nando", "telegram": "Hones80", "forum": "Hones80s", "ingresso": "Apr 2021", "ultimo_cambio": ""},
+  "STELLA ROSSA": {"nome": "Luigi valentino", "telegram": "Giggio", "forum": "giggio", "ingresso": "Nov 2020", "ultimo_cambio": ""},
+  "TOTTENHAM": {"nome": "Osvaldo", "telegram": "Osvaldo13", "forum": "osv98", "ingresso": "Apr 2021", "ultimo_cambio": ""},
+  "VALENCIA": {"nome": "Alberto Giglio", "telegram": "albertogiglio", "forum": "giglioa386", "ingresso": "May 2025", "ultimo_cambio": "Dec 2025"},
+  "VILLARREAL": {"nome": "Fabio Ceol", "telegram": "fabkey", "forum": "FCL", "ingresso": "Mar 2020", "ultimo_cambio": ""},
+  "ZENIT": {"nome": "Antonio Greggio", "telegram": "TonioTaras", "forum": "TonioTaras", "ingresso": "Mar 2023", "ultimo_cambio": "May 2025"},
+};
+
+let currentView = 'cards';
+
+function getMisterInfo(sqName) {
+  const key = sqName.toUpperCase();
+  return MISTERS_DATA[key] || { nome:'', telegram:'', forum:'', ingresso:'', ultimo_cambio:'' };
+}
+
+function tgLink(handle) {
+  if (!handle || handle.includes(' ')) return handle || '—';
+  const clean = handle.replace(/^@/, '');
+  return `<a href="https://t.me/${clean}" target="_blank" rel="noopener">@${clean}</a>`;
+}
+
+function buildMisterCards() {
+  const grid = document.getElementById('mister-cards');
+  grid.innerHTML = SQUADS.map(sq => {
+    const m = getMisterInfo(sq.name);
+    const hasInfo = !!m.nome;
+    const players = PLAYERS_BY_TEAM[sq.name] || [];
+    const avgCA = players.length ? Math.round(players.reduce((s,p) => s+p.ca, 0) / players.length) : 0;
+    const topCA = players.length ? Math.max(...players.map(p=>p.ca)) : 0;
+
+    const logoInner = sq.logo
+      ? `<img src="${sq.logo}" alt="${sq.name}" style="width:100%;height:100%;object-fit:contain;padding:3px${sq.name==='JUVENTUS'?';background:#111;border-radius:50%':''}">`
+      : `<div class="mc-avatar-placeholder" style="background:linear-gradient(135deg,${sq.color1},${sq.color2})">${sq.name.split(' ').map(w=>w[0]).join('').slice(0,3)}</div>`;
+
+    const tgLinkHtml = m.telegram && !m.telegram.includes(' ')
+      ? `<a href="https://t.me/${m.telegram.replace(/^@/,'')}" target="_blank" rel="noopener">@${m.telegram.replace(/^@/,'')}</a>`
+      : (m.telegram || '—');
+
+    return `<div class="mc${hasInfo?'':' empty'}" data-search="${(m.nome+' '+sq.name).toLowerCase()}">
+      <div class="mc-avatar">${logoInner}</div>
+      <div class="mc-body">
+        <div class="mc-name">${hasInfo ? m.nome : 'Nessun mister'}</div>
+        <div class="mc-squad" style="color:${sq.color1}">${sq.name}</div>
+        <div class="mc-rows">
+          ${m.telegram ? `<div class="mc-row">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            ${tgLinkHtml}
+          </div>` : ''}
+          ${m.forum ? `<div class="mc-row">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>${m.forum}</span>
+          </div>` : ''}
+          <div class="mc-row" style="margin-top:.3rem;gap:.35rem;flex-wrap:wrap">
+            ${avgCA ? `<span class="mc-badge">CA medio ${avgCA}</span>` : ''}
+            ${topCA ? `<span class="mc-badge">Top CA ${topCA}</span>` : ''}
+            ${m.ingresso ? `<span class="mc-badge green">Dal ${m.ingresso}</span>` : ''}
+            ${m.ultimo_cambio ? `<span class="mc-badge" style="background:rgba(251,191,36,.07);border-color:rgba(251,191,36,.2);color:#fbbf24">Cambio ${m.ultimo_cambio}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function buildMisterTable() {
+  const tbody = document.getElementById('mister-tbody');
+  tbody.innerHTML = SQUADS.map((sq, i) => {
+    const m = getMisterInfo(sq.name);
+    const logoEl = sq.logo
+      ? `<img src="${sq.logo}" alt="${sq.name}" style="width:24px;height:24px;object-fit:contain;vertical-align:middle;margin-right:.5rem${sq.name==='JUVENTUS'?';background:#111;border-radius:50%;padding:2px':''}">`
+      : '';
+    return `<tr>
+      <td style="color:var(--t4);font-size:.72rem">${i+1}</td>
+      <td>${logoEl}<span style="font-weight:600">${sq.name}</span></td>
+      <td style="font-weight:600;color:#e8eaf0">${m.nome || '<span style="color:#4b5563;font-style:italic">—</span>'}</td>
+      <td>${m.telegram && !m.telegram.includes(' ')
+        ? `<a href="https://t.me/${m.telegram.replace(/^@/,'')}" target="_blank">@${m.telegram.replace(/^@/,'')}</a>`
+        : (m.telegram||'—')}</td>
+      <td style="color:var(--t2)">${m.forum||'—'}</td>
+      <td><span class="mc-badge green" style="font-size:.62rem">${m.ingresso||'—'}</span></td>
+      <td style="color:var(--t2);font-size:.75rem">${m.ultimo_cambio||'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function filterMister() {
+  const q = document.getElementById('m-search').value.toLowerCase().trim();
+  if (currentView === 'cards') {
+    document.querySelectorAll('.mc').forEach(c =>
+      c.style.display = (!q || c.dataset.search.includes(q)) ? '' : 'none'
+    );
+  } else {
+    document.querySelectorAll('.mister-tbl tbody tr').forEach((tr, i) => {
+      const sq = SQUADS[i];
+      const m = getMisterInfo(sq.name);
+      const match = `${m.nome} ${sq.name}`.toLowerCase().includes(q);
+      tr.style.display = (!q || match) ? '' : 'none';
+    });
+  }
+}
+
+function setView(v, btn) {
+  currentView = v;
+  document.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mister-cards').style.display = v === 'cards' ? '' : 'none';
+  document.getElementById('mister-table').style.display  = v === 'table' ? '' : 'none';
+}
+
+buildMisterCards();
+buildMisterTable();
+</script>
+</body>
+</html>

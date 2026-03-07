@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMTO 2.0 Stagione 26_1 — Home</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── HERO ── */
+.hero {
+  min-height: calc(100vh - 91px);
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; padding: 3rem 1.5rem 2.5rem;
+  position: relative; overflow: hidden;
+}
+.orb {
+  position:absolute; border-radius:50%; filter:blur(115px); pointer-events:none;
+}
+.orb-1 {
+  width:560px; height:560px;
+  background:radial-gradient(circle, rgba(139,92,246,.2) 0%, transparent 70%);
+  top:-200px; left:-180px;
+  animation:orb 9s ease-in-out infinite;
+}
+.orb-2 {
+  width:360px; height:360px;
+  background:radial-gradient(circle, rgba(34,211,160,.14) 0%, transparent 70%);
+  bottom:-80px; right:-100px;
+  animation:orb 11s ease-in-out infinite reverse;
+}
+@keyframes orb { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(22px,-22px) scale(1.04)} }
+
+.eyebrow {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:.76rem; font-weight:600; letter-spacing:.28em; text-transform:uppercase;
+  color:var(--g); display:flex; align-items:center; gap:.55rem; justify-content:center;
+  margin-bottom:1.1rem;
+}
+.eyebrow::before, .eyebrow::after { content:''; width:26px; height:1px; background:var(--g); opacity:.55; }
+
+.hero-title {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:clamp(4.5rem,15vw,10.5rem); font-weight:800; line-height:.88;
+  background:linear-gradient(160deg,#fff 0%,var(--vb) 50%,var(--g) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  margin-bottom:.25em;
+}
+.hero-sub {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:clamp(1.1rem,3.2vw,1.75rem); font-weight:300; font-style:italic;
+  color:var(--t2); letter-spacing:.12em; margin-bottom:2.2rem;
+}
+
+/* SCROLL HINT */
+.scroll-hint {
+  position:absolute; bottom:1.6rem; left:50%; transform:translateX(-50%);
+  display:flex; flex-direction:column; align-items:center; gap:.35rem;
+  color:var(--t4); font-size:.6rem; letter-spacing:.18em; text-transform:uppercase;
+}
+.scroll-line { width:1px; height:34px; background:linear-gradient(to bottom,var(--v),transparent); animation:sp 2s ease-in-out infinite; }
+@keyframes sp { 0%,100%{opacity:.28} 50%{opacity:.85} }
+
+/* QUICK LINKS */
+.quick-links-wrap { max-width:1380px; margin:0 auto; padding:0 1.5rem 4rem; }
+.quick-links { display:grid; gap:1rem; }
+.quick-links-row-1 { grid-template-columns:repeat(2,minmax(220px,1fr)); margin-bottom:1rem; }
+.quick-links-row-2 { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+.ql-card {
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:1.5rem 1.4rem;
+  text-decoration:none; color:inherit;
+  transition:all .2s cubic-bezier(.34,1.56,.64,1);
+  position:relative; overflow:hidden;
+}
+.ql-card::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(139,92,246,.07),rgba(34,211,160,.03));
+  opacity:0; transition:opacity .18s;
+}
+.ql-card:hover { border-color:var(--v); transform:translateY(-3px); box-shadow:0 8px 24px rgba(139,92,246,.18); }
+.ql-card:hover::before { opacity:1; }
+.ql-icon { font-size:1.8rem; margin-bottom:.75rem; display:block; }
+.ql-title { font-family:'Barlow Condensed',sans-serif; font-size:1.3rem; font-weight:800; color:var(--t1); margin-bottom:.25rem; }
+.ql-desc { font-size:.78rem; color:var(--t2); line-height:1.5; }
+.ql-arrow { position:absolute; bottom:1.2rem; right:1.2rem; color:var(--v); font-size:.85rem; transition:transform .18s; }
+.ql-card:hover .ql-arrow { transform:translateX(3px); }
+</style>
+</head>
+<body class="gbg">
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+  <ul class="nav-links">
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
+    <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+  </ul>
+</nav>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-lbl">Live</div>
+  <div class="ticker-inner">
+    <div class="ticker-track">
+      <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>Top scorer: 14 gol in 8 partite</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>Record stagionale: 6-1 nel turno 7</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>Mercato invernale aperto dal 15 al 22 febbraio</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.400 giocatori · FM26</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>Top scorer: 14 gol in 8 partite</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>Record stagionale: 6-1 nel turno 7</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>Mercato invernale aperto dal 15 al 22 febbraio</span>
+      <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.400 giocatori · FM26</span>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero gbg">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <div class="eyebrow fade-in">Football Manager Tournament Online</div>
+
+  <h1 class="hero-title fade-in">
+    FMTO <span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">2.0</span><br>
+    <span style="font-style:italic;font-weight:300;font-size:.52em;background:none;-webkit-text-fill-color:var(--t2);letter-spacing:.14em">STAGIONE</span> 26_1
+  </h1>
+
+  <p class="hero-sub fade-in">56 club · 1.400 giocatori · Serie A · Serie B · Serie C</p>
+
+  <div class="scroll-hint"><span>Esplora</span><div class="scroll-line"></div></div>
+</section>
+
+<!-- QUICK LINKS -->
+<div class="quick-links-wrap">
+  <div class="quick-links quick-links-row-1">
+    <a class="ql-card" href="serie-a-girone-a.html">
+      <span class="ql-icon">🏆</span>
+      <div class="ql-title">Campionati</div>
+      <div class="ql-desc">Classifiche Serie A, B, C e link ai fogli Google del torneo.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+    <a class="ql-card" href="coppe.html">
+      <span class="ql-icon">🥇</span>
+      <div class="ql-title">Coppe</div>
+      <div class="ql-desc">Coppa FMTO, Champions League, Europa League e altre competizioni.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+  </div>
+  <div class="quick-links quick-links-row-2">
+    <a class="ql-card" href="squadre.html">
+      <span class="ql-icon">🏟️</span>
+      <div class="ql-title">Le 56 Squadre</div>
+      <div class="ql-desc">Sfoglia tutti i club del torneo, visualizza le rose complete e le schede giocatori.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+    <a class="ql-card" href="mister.html">
+      <span class="ql-icon">🧑‍💼</span>
+      <div class="ql-title">I Mister</div>
+      <div class="ql-desc">Tutti gli allenatori partecipanti al torneo FMTO 2.0 stagione 26_1.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+    <a class="ql-card" href="scouting.html">
+      <span class="ql-icon">🕵️</span>
+      <div class="ql-title">Scouting</div>
+      <div class="ql-desc">Ricerca giocatori con filtri anagrafici, ruolo e sezione avanzata con parametri tecnici e metriche di rendimento.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+    <a class="ql-card" href="area.html">
+      <span class="ql-icon">🔐</span>
+      <div class="ql-title">Area Riservata</div>
+      <div class="ql-desc">Accedi con il tuo PIN per gestire la watchlist e visualizzare la tua rosa.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+  </div>
+</div>
+<p id="autorefresh-msg" style="text-align:center;font-size:.75rem;color:var(--t3);margin-top:1.5rem;margin-bottom:2rem"></p>
+<script src="data.js"></script>
+<script src="shared.js"></script>
+<script>
+(function(){
+  var el=document.getElementById('autorefresh-msg');
+  if(localStorage.getItem('fmto_no_autorefresh')==='1')
+    el.innerHTML='Aggiornamento automatico disattivato. <a href="#" onclick="enableAutoRefresh();return false" style="color:var(--vb)">Riattiva</a>';
+  else
+    el.innerHTML='Il sito si aggiorna ogni 15 minuti. <a href="#" onclick="disableAutoRefresh();return false" style="color:var(--vb)">Disattiva</a>';
+})();
+</script>
+</body>
+</html>

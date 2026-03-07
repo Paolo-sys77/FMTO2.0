@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMTO 2.0 — Forum</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── FORUM ── */
+.forum-intro { font-size:.88rem; color:var(--t2); line-height:1.55; max-width:640px; margin-bottom:1.8rem; }
+.forum-categories { display:grid; gap:1rem; }
+.forum-cat {
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:1.2rem 1.4rem; display:flex; align-items:center; gap:1.2rem;
+  transition:border-color .18s, transform .18s; text-decoration:none; color:inherit;
+}
+.forum-cat:hover { border-color:var(--v); transform:translateY(-2px); box-shadow:0 8px 24px rgba(139,92,246,.12); }
+.forum-cat-icon {
+  width:48px; height:48px; border-radius:10px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:1.5rem;
+  background:linear-gradient(135deg,rgba(139,92,246,.15),rgba(34,211,160,.08)); border:1px solid var(--border);
+}
+.forum-cat-body { flex:1; min-width:0; }
+.forum-cat-title { font-family:'Barlow Condensed',sans-serif; font-size:1.15rem; font-weight:800; color:var(--t1); margin-bottom:.25rem; }
+.forum-cat-desc { font-size:.8rem; color:var(--t2); line-height:1.4; }
+.forum-cat-meta {
+  flex-shrink:0; text-align:right; font-size:.75rem; color:var(--t3);
+}
+.forum-cat-meta strong { color:var(--vb); font-weight:600; }
+.forum-cat-arrow { color:var(--v); font-size:.9rem; opacity:.8; }
+.forum-cat-subs { font-size:.72rem; color:var(--t3); margin-top:.35rem; }
+.forum-cta { margin-bottom:1.5rem; }
+.forum-cta a { display:inline-flex; align-items:center; gap:.5rem; font-weight:600; color:var(--vb); text-decoration:none; }
+.forum-cta a:hover { color:var(--g); text-decoration:underline; }
+@media(max-width:640px){ .forum-cat { flex-wrap:wrap; } .forum-cat-meta { width:100%; text-align:left; } }
+</style>
+</head>
+<body class="gbg">
+
+<nav>
+  <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+  <ul class="nav-links">
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
+    <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+  </ul>
+</nav>
+
+<div class="ticker">
+  <div class="ticker-lbl">Live</div>
+  <div class="ticker-inner"><div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori reali · FM26</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Top scorer: 14 gol in 8 partite</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori reali · FM26</span>
+  </div></div>
+</div>
+
+<div class="sec">
+  <div style="margin-bottom:1rem">
+    <div class="sec-tag">Community</div>
+    <h2 class="sec-title">Forum</h2>
+    <p class="forum-intro">Discussioni ufficiali FMTO su FMFusion: regolamento, campionati, coppe, calciomercato, selezioni e archivio. Clicca su una sezione per aprire il forum.</p>
+  </div>
+
+  <div class="forum-cta">
+    <a href="https://www.fmfusion.it/Forum-FMTO-Football-Manager-Tournament-Online" target="_blank" rel="noopener">Apri il forum completo su FMFusion →</a>
+  </div>
+
+  <div class="forum-categories">
+    <a href="https://www.fmfusion.it/Forum-SEZIONE-GENERALE" target="_blank" rel="noopener" class="forum-cat">
+      <div class="forum-cat-icon">📋</div>
+      <div class="forum-cat-body">
+        <div class="forum-cat-title">Sezione generale</div>
+        <div class="forum-cat-desc">Regolamento del Torneo, Comunicazioni Ufficiali e tante altre info di carattere generale!</div>
+        <div class="forum-cat-subs">Sottoforum: Strumenti di gioco, Comunicazioni dello Staff, Comunicazioni degli utenti</div>
+      </div>
+      <span class="forum-cat-arrow">→</span>
+    </a>
+    <a href="https://www.fmfusion.it/Forum-CAMPIONATI" target="_blank" rel="noopener" class="forum-cat">
+      <div class="forum-cat-icon">⚽</div>
+      <div class="forum-cat-body">
+        <div class="forum-cat-title">Campionati</div>
+        <div class="forum-cat-desc">Stagione 2026_1 — discussioni sui campionati di lega.</div>
+        <div class="forum-cat-subs">Sottoforum: Serie A, Serie B, Serie C</div>
+      </div>
+      <span class="forum-cat-arrow">→</span>
+    </a>
+    <a href="https://www.fmfusion.it/Forum-COPPE" target="_blank" rel="noopener" class="forum-cat">
+      <div class="forum-cat-icon">🏆</div>
+      <div class="forum-cat-body">
+        <div class="forum-cat-title">Coppe</div>
+        <div class="forum-cat-desc">Stagione 2026_1 — Supercoppe, Mondiale per Club, Coppa FMTO, Champions League, Europa League e altre coppe.</div>
+      </div>
+      <span class="forum-cat-arrow">→</span>
+    </a>
+    <a href="https://www.fmfusion.it/Forum-SALA-STAMPA" target="_blank" rel="noopener" class="forum-cat">
+      <div class="forum-cat-icon">📰</div>
+      <div class="forum-cat-body">
+        <div class="forum-cat-title">Sala stampa</div>
+        <div class="forum-cat-desc">Le Redazioni de "Il Cazzettino" e dei tanti Team sono qui al lavoro per rendere più vivo FMTO!</div>
+      </div>
+      <span class="forum-cat-arrow">→</span>
+    </a>
+    <a href="https://www.fmfusion.it/Forum-CALCIOMERCATO" target="_blank" rel="noopener" class="forum-cat">
+      <div class="forum-cat-icon">📝</div>
+      <div class="forum-cat-body">
+        <div class="forum-cat-title">Calciomercato</div>
+        <div class="forum-cat-desc">Qui, dove aspiranti DS crescono, trovate tutte le operazioni fatte nella stagione in corso!</div>
+      </div>
+      <span class="forum-cat-arrow">→</span>
+    </a>
+    <a href="https://www.fmfusion.it/Forum-SELEZIONI" target="_blank" rel="noopener" class="forum-cat">
+      <div class="forum-cat-icon">🎯</div>
+      <div class="forum-cat-body">
+        <div class="forum-cat-title">Selezioni</div>
+        <div class="forum-cat-desc">Questo è il posto giusto per cogliere l'opportunità ed entrare a far parte del Torneo.. CARPE DIEM!</div>
+      </div>
+      <span class="forum-cat-arrow">→</span>
+    </a>
+    <a href="https://www.fmfusion.it/Forum-ALBO-D-ORO" target="_blank" rel="noopener" class="forum-cat">
+      <div class="forum-cat-icon">🥇</div>
+      <div class="forum-cat-body">
+        <div class="forum-cat-title">Albo d'oro</div>
+        <div class="forum-cat-desc">Rassegna dei vincitori di ogni competizione ufficiale giocata sin dalla nascita di FMTO!</div>
+        <div class="forum-cat-subs">Sottoforum: Albo d'oro Campionati, Albo d'oro Coppe, Ranking Club</div>
+      </div>
+      <span class="forum-cat-arrow">→</span>
+    </a>
+    <a href="https://www.fmfusion.it/Forum-ARCHIVIO-STAGIONI-PRECEDENTI" target="_blank" rel="noopener" class="forum-cat">
+      <div class="forum-cat-icon">📁</div>
+      <div class="forum-cat-body">
+        <div class="forum-cat-title">Archivio stagioni precedenti</div>
+        <div class="forum-cat-desc">Un tuffo nel passato dove potrete rivedere i risultati delle stagioni già giocate e concluse!</div>
+      </div>
+      <span class="forum-cat-arrow">→</span>
+    </a>
+  </div>
+
+  <p style="margin-top:1.8rem;font-size:.8rem;color:var(--t3)">Forum ufficiale su <a href="https://www.fmfusion.it/Forum-FMTO-Football-Manager-Tournament-Online" target="_blank" rel="noopener" style="color:var(--vb)">FMFusion</a>. I link aprono il sito in una nuova scheda.</p>
+</div>
+
+</body>
+</html>

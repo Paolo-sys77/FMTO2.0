@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FMTO 2.0 — Serie A Girone A</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .serie-a-hero {
+      text-align: center;
+      padding: 2.5rem 1.5rem 2rem;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+    .serie-a-icon {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 1.25rem;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(139,92,246,.2), rgba(34,211,160,.12));
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    .serie-a-hero p {
+      font-size: .9rem;
+      color: var(--t2);
+      line-height: 1.6;
+      margin-top: .75rem;
+    }
+    .serie-a-card {
+      display: block;
+      max-width: 420px;
+      margin: 2rem auto 0;
+      padding: 1.75rem 1.8rem;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      text-decoration: none;
+      color: inherit;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .serie-a-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(139,92,246,.06), rgba(34,211,160,.04));
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    .serie-a-card:hover {
+      border-color: var(--v);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(139,92,246,.18);
+    }
+    .serie-a-card:hover::before { opacity: 1; }
+    .serie-a-card-inner { position: relative; z-index: 1; }
+    .serie-a-card-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      color: var(--t1);
+      margin-bottom: .35rem;
+      display: flex;
+      align-items: center;
+      gap: .6rem;
+    }
+    .serie-a-card-title span.external {
+      font-size: .85rem;
+      color: var(--t3);
+      font-weight: 500;
+    }
+    .serie-a-card-desc {
+      font-size: .8rem;
+      color: var(--t2);
+      line-height: 1.5;
+    }
+    .serie-a-card-cta {
+      margin-top: 1.1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: .9rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--vb);
+      transition: color .2s, gap .2s;
+    }
+    .serie-a-card:hover .serie-a-card-cta { color: var(--g); gap: .65rem; }
+    .serie-a-card-cta::after { content: '→'; }
+  </style>
+</head>
+<body class="gbg">
+
+  <nav>
+    <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+    <ul class="nav-links">
+      <li><a href="home.html" id="nav-home">Home</a></li>
+      <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+      <li><a href="mister.html" id="nav-mister">Mister</a></li>
+      <li><a href="forum.html" id="nav-forum">Forum</a></li>
+      <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+    </ul>
+  </nav>
+
+  <div class="ticker">
+    <div class="ticker-lbl">Live</div>
+    <div class="ticker-inner">
+      <div class="ticker-track">
+        <span class="ticker-item"><span class="ticker-dot"></span>Serie A Girone A — Classifica su Google Fogli</span>
+        <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori · FM26</span>
+      </div>
+    </div>
+  </div>
+
+  <section class="sec">
+    <div class="sec-tag">Campionati</div>
+    <h1 class="sec-title">Serie A <span>Girone A</span></h1>
+
+    <div class="serie-a-hero">
+      <div class="serie-a-icon">📊</div>
+      <p>La classifica del Girone A è disponibile sul foglio Google. Apri il link qui sotto per visualizzare punteggi, risultati e posizioni in tempo reale.</p>
+    </div>
+
+    <a href="https://docs.google.com/spreadsheets/d/1tiAFvW5dPM2QLxVyuljSmR3JJPH-4JBpqkwgkK6JA2U/edit?gid=157972558#gid=157972558" target="_blank" rel="noopener" class="serie-a-card">
+      <div class="serie-a-card-inner">
+        <div class="serie-a-card-title">Apri classifica su Google Fogli <span class="external">(si apre in nuova scheda)</span></div>
+        <p class="serie-a-card-desc">Visualizza e aggiorna la classifica direttamente nel foglio condiviso.</p>
+        <span class="serie-a-card-cta">Apri foglio</span>
+      </div>
+    </a>
+  </section>
+
+</body>
+</html>

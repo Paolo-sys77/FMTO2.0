@@ -827,7 +827,7 @@ body.scout-page-fm26 .scout-panel-adv .scout-adv-title:first-child { margin-top:
 
 /* ── MOBILE MENU (tutte le pagine): pulsante in alto a destra ── */
 .home-menu-btn {
-  display: flex;
+  display: none;
   position: fixed;
   top: 1rem;
   right: 1rem;
@@ -898,7 +898,9 @@ body.scout-page-fm26 .scout-panel-adv .scout-adv-title:first-child { margin-top:
   transition: background .15s;
 }
 .home-menu-panel a:hover { background: rgba(139,92,246,.1); }
+@media (max-width: 768px) {
+  .home-menu-btn { display: flex; }
+}
 @media (min-width: 769px) {
-  .home-menu-btn { display: none !important; }
   .home-menu-overlay, .home-menu-panel { display: none !important; }
 }

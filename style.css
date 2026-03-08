@@ -805,6 +805,9 @@ body.scout-page-fm26 .scout-panel-adv .scout-adv-title:first-child { margin-top:
 @media(max-width:640px) {
   .nav-links { display:none; }
   .squads-grid { grid-template-columns:repeat(auto-fill,minmax(88px,1fr)); }
+  /* Scouting risultati mobile: solo Giocatore, Squadra, Ruolo, CA */
+  .scout-results-shell .player-tbl th:nth-child(n+5),
+  .scout-results-shell .player-tbl td:nth-child(n+5) { display:none; }
   .player-tbl th:nth-child(n+7), .player-tbl td:nth-child(n+7) { display:none; }
   .stat-grid { grid-template-columns:1fr 1fr; }
   .mister-grid { grid-template-columns:1fr 1fr; }

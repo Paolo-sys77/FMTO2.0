@@ -225,7 +225,14 @@
   .club-block{align-items:flex-start;}
 }
 @media(max-width:480px){
-  .value-strip{flex-direction:column;align-items:flex-start;}
+  .value-strip{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px 16px;
+    align-items:start;
+  }
+  .value-strip .divider-v{display:none;}
+  .value-strip .vitem{min-width:0;}
   .card-footer{flex-direction:column;align-items:flex-start;}
   .vs-row{grid-template-columns:1fr 52px 50px 52px 1fr}
 }

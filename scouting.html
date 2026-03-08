@@ -424,11 +424,11 @@
                 <th>Giocatore</th>
                 <th>Squadra</th>
                 <th>Ruolo</th>
+                <th>CA</th>
                 <th>Età</th>
                 <th>Naz.</th>
                 <th>TEC</th>
                 <th>REN</th>
-                <th>CA</th>
                 <th>CP</th>
                 <th>Stipendio</th>
                 <th style="text-align:right">WL</th>
@@ -684,11 +684,11 @@
           nameCell +
           '<td>' + squad + '</td>' +
           '<td><span class="rb ' + roleClass + '">' + role + '</span></td>' +
+          '<td><span class="ov ' + ovrClass + '">' + p.ca + '</span></td>' +
           '<td style="color:var(--t2)">' + (p.eta || '—') + '</td>' +
           '<td title="' + (p.naz || '—') + '">' + flag + '</td>' +
           '<td>' + (p.tecn != null ? ('<span class="ov ' + getOvrClass(p.tecn * 8 || 0) + '">' + p.tecn + '</span>') : '—') + '</td>' +
           '<td style="color:var(--t2)">' + '—' + '</td>' +
-          '<td><span class="ov ' + ovrClass + '">' + p.ca + '</span></td>' +
           '<td style="color:var(--t2)">' + (p.pa != null ? p.pa : '—') + '</td>' +
           '<td class="val-tag">' + stipDisplay + '</td>' +
           '<td style="text-align:right"><button class="wl-btn ' + (inList ? 'inw' : '') + '" data-pid="' + p.id +

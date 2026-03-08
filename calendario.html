@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FMTO 2.0 — Calendario</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .cal-intro { font-size:.9rem; color:var(--t2); line-height:1.55; margin-bottom:1.5rem; max-width:640px; }
+    .cal-table-wrap { overflow:auto; border:1px solid var(--border); border-radius:10px; background:var(--card); max-height:70vh; }
+    .cal-table { width:100%; border-collapse:collapse; font-size:.85rem; min-width:520px; }
+    .cal-table th { position:sticky; top:0; z-index:2; text-align:left; padding:.5rem .65rem; color:var(--t3); font-weight:600; text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border); background:var(--card); white-space:nowrap; box-shadow:0 2px 0 0 var(--border); }
+    .cal-table td { padding:.5rem .65rem; border-bottom:1px solid rgba(139,92,246,.06); }
+    .cal-table tbody tr:hover td { background:rgba(139,92,246,.04); }
+    .cal-table .col-data { white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--t1); }
+    .cal-table .col-giorno { color:var(--t2); font-size:.82rem; }
+    .cal-table .col-griglia { color:var(--t1); max-width:140px; }
+    .cal-table .col-mercato { color:var(--g); font-size:.82rem; }
+    .cal-table tr.cal-oggi td { background:rgba(34,211,160,.12); border-left:3px solid var(--g); font-weight:500; }
+    .cal-table tr.cal-oggi:hover td { background:rgba(34,211,160,.18); }
+    .cal-btn-oggi {
+      font-family:'Barlow Condensed',sans-serif; font-size:.9rem; font-weight:700; letter-spacing:.06em;
+      color:#000; background:linear-gradient(135deg,var(--g),#1aa87a); border:none; padding:.45rem 1rem;
+      border-radius:8px; cursor:pointer; margin-bottom:1rem; transition:opacity .2s, transform .15s;
+    }
+    .cal-btn-oggi:hover { opacity:.9; transform:translateY(-1px); }
+    .cal-empty { color:var(--t3); font-size:.9rem; padding:1.5rem; text-align:center; }
+    @media (max-width:640px) {
+      .cal-table { font-size:.8rem; }
+      .cal-table th, .cal-table td { padding:.4rem .5rem; }
+      .cal-table .col-griglia { max-width:90px; overflow:hidden; text-overflow:ellipsis; }
+    }
+  </style>
+</head>
+<body class="gbg">
+
+<nav>
+  <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+  <ul class="nav-links">
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
+    <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
+    <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
+    <li><a href="calendario.html" id="nav-calendario">Calendario</a></li>
+    <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+  </ul>
+</nav>
+
+<div class="ticker">
+  <div class="ticker-lbl">Live</div>
+  <div class="ticker-inner"><div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Calendario attività Stagione 26_1</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori · FM26</span>
+  </div></div>
+</div>
+
+<section class="sec">
+  <div style="margin-bottom:1rem">
+    <div class="sec-tag">Stagione 26_1</div>
+    <h2 class="sec-title">Calendario attività</h2>
+    <p class="cal-intro">Calendario giornaliero: date, giorno della settimana, griglia delle giornate di campionato e coppe, date del mercato.</p>
+    <button type="button" class="cal-btn-oggi" id="cal-vai-oggi" style="display:none">Vai a oggi</button>
+  </div>
+
+  <div class="cal-table-wrap">
+    <table class="cal-table" id="calendario-table">
+      <thead>
+        <tr id="cal-thead">
+          <th>Data</th>
+          <th>Giorno</th>
+          <th class="col-griglia">Col. C</th>
+          <th class="col-griglia">Col. D</th>
+          <th class="col-griglia">Col. E</th>
+          <th>Mercato</th>
+        </tr>
+      </thead>
+      <tbody id="cal-tbody">
+        <!-- Popolato da script -->
+      </tbody>
+    </table>
+  </div>
+  <p id="cal-empty-msg" class="cal-empty" style="display:none">Nessun dato. Inserisci il file <strong>calendario 26_1.xlsx</strong> nella cartella del sito e lancia <code>node build-calendario.js</code> per generare i dati.</p>
+</section>
+
+<script src="shared.js"></script>
+<script src="calendario-26_1.js"></script>
+<script>
+(function(){
+  var thead = document.getElementById('cal-thead');
+  var tbody = document.getElementById('cal-tbody');
+  var emptyMsg = document.getElementById('cal-empty-msg');
+
+  if (typeof CALENDARIO_26_1 === 'undefined' || !CALENDARIO_26_1.rows || !CALENDARIO_26_1.rows.length) {
+    document.querySelector('.cal-table-wrap').style.display = 'none';
+    emptyMsg.style.display = 'block';
+    return;
+  }
+
+  var h = CALENDARIO_26_1.headerGriglia;
+  if (h && h.length >= 3) {
+    var ths = thead.querySelectorAll('.col-griglia');
+    if (ths.length >= 3) {
+      ths[0].textContent = h[0];
+      ths[1].textContent = h[1];
+      ths[2].textContent = h[2];
+    }
+  }
+
+  var oggi = (function(){
+    var d = new Date();
+    var g = d.getDate(), m = d.getMonth() + 1, y = d.getFullYear();
+    return (g < 10 ? '0' : '') + g + '/' + (m < 10 ? '0' : '') + m + '/' + y;
+  })();
+  var html = '';
+  CALENDARIO_26_1.rows.forEach(function(r) {
+    var griglia = r.griglia || ['', '', ''];
+    var isOggi = (r.data || '') === oggi;
+    html += '<tr' + (isOggi ? ' id="cal-row-oggi" class="cal-oggi"' : '') + '>';
+    html += '<td class="col-data">' + (r.data || '—') + '</td>';
+    html += '<td class="col-giorno">' + (r.giorno || '—') + '</td>';
+    html += '<td class="col-griglia">' + (griglia[0] || '—') + '</td>';
+    html += '<td class="col-griglia">' + (griglia[1] || '—') + '</td>';
+    html += '<td class="col-griglia">' + (griglia[2] || '—') + '</td>';
+    html += '<td class="col-mercato">' + (r.mercato || '—') + '</td>';
+    html += '</tr>';
+  });
+  tbody.innerHTML = html;
+
+  var btnOggi = document.getElementById('cal-vai-oggi');
+  var rowOggi = document.getElementById('cal-row-oggi');
+  if (btnOggi && rowOggi) {
+    btnOggi.style.display = 'inline-block';
+    btnOggi.onclick = function() {
+      rowOggi.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+  }
+})();
+</script>
+</body>
+</html>

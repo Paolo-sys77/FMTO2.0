@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════
 
 // ── NAV ACTIVE LINK
-const PAGE_MAP = {'index.html':'nav-home','home.html':'nav-home','ranking.html':'nav-ranking','squadre.html':'nav-sq','mister.html':'nav-mister','forum.html':'nav-forum','palmares.html':'nav-palmares','area.html':'nav-area'};
+const PAGE_MAP = {'index.html':'nav-home','home.html':'nav-home','ranking.html':'nav-ranking','squadre.html':'nav-sq','mister.html':'nav-mister','forum.html':'nav-forum','palmares.html':'nav-palmares','calendario.html':'nav-calendario','area.html':'nav-area'};
 function initNav(){const f=location.pathname.split('/').pop()||'index.html';const id=PAGE_MAP[f];if(id)document.getElementById(id)?.classList.add('active');}
 document.addEventListener('DOMContentLoaded',initNav);
 

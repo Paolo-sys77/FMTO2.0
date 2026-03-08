@@ -64,8 +64,8 @@
 /* QUICK LINKS */
 .quick-links-wrap { max-width:1380px; margin:0 auto; padding:0 1.5rem 4rem; }
 .quick-links { display:grid; gap:1rem; }
-.quick-links-row-1 { grid-template-columns:repeat(2,minmax(220px,1fr)); margin-bottom:1rem; }
-.quick-links-row-2 { grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+.quick-links-row-1,
+.quick-links-row-2 { grid-template-columns:repeat(4,minmax(200px,1fr)); margin-bottom:1rem; }
 .ql-card {
   background:var(--card); border:1px solid var(--border); border-radius:12px;
   padding:1.5rem 1.4rem;
@@ -188,42 +188,16 @@
 <!-- QUICK LINKS -->
 <div class="quick-links-wrap">
   <div class="quick-links quick-links-row-1">
-    <a class="ql-card" href="ranking.html">
-      <span class="ql-icon">📊</span>
-      <div class="ql-title">Ranking</div>
-      <div class="ql-desc">Classifica delle 56 squadre del torneo per punteggio. Logo e posizione in tempo reale.</div>
-      <span class="ql-arrow">→</span>
-    </a>
-    <a class="ql-card" href="serie-a-girone-a.html">
-      <span class="ql-icon">🏆</span>
-      <div class="ql-title">Campionati</div>
-      <div class="ql-desc">Classifiche Serie A, B, C e link ai fogli Google del torneo.</div>
-      <span class="ql-arrow">→</span>
-    </a>
-    <a class="ql-card" href="coppe.html">
-      <span class="ql-icon">🥇</span>
-      <div class="ql-title">Coppe</div>
-      <div class="ql-desc">Coppa FMTO, Champions League, Europa League e altre competizioni.</div>
-      <span class="ql-arrow">→</span>
-    </a>
-    <a class="ql-card" href="palmares.html">
-      <span class="ql-icon">🏆</span>
-      <div class="ql-title">Palmares</div>
-      <div class="ql-desc">Trofei e titoli del torneo FMTO, stagione per stagione.</div>
-      <span class="ql-arrow">→</span>
-    </a>
-  </div>
-  <div class="quick-links quick-links-row-2">
-    <a class="ql-card" href="squadre.html">
-      <span class="ql-icon">🏟️</span>
-      <div class="ql-title">Le 56 Squadre</div>
-      <div class="ql-desc">Sfoglia tutti i club del torneo, visualizza le rose complete e le schede giocatori.</div>
-      <span class="ql-arrow">→</span>
-    </a>
     <a class="ql-card" href="mister.html">
       <span class="ql-icon">🧑‍💼</span>
       <div class="ql-title">I Mister</div>
       <div class="ql-desc">Tutti gli allenatori partecipanti al torneo FMTO 2.0 stagione 26_1.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+    <a class="ql-card" href="squadre.html">
+      <span class="ql-icon">🏟️</span>
+      <div class="ql-title">Le 56 Squadre</div>
+      <div class="ql-desc">Sfoglia tutti i club del torneo, visualizza le rose complete e le schede giocatori.</div>
       <span class="ql-arrow">→</span>
     </a>
     <a class="ql-card" href="scouting.html">
@@ -236,6 +210,32 @@
       <span class="ql-icon">🔐</span>
       <div class="ql-title">Area Riservata</div>
       <div class="ql-desc">Accedi con il tuo PIN per gestire la watchlist e visualizzare la tua rosa.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+  </div>
+  <div class="quick-links quick-links-row-2">
+    <a class="ql-card" href="ranking.html">
+      <span class="ql-icon">📊</span>
+      <div class="ql-title">Ranking</div>
+      <div class="ql-desc">Classifica delle 56 squadre del torneo per punteggio. Logo e posizione in tempo reale.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+    <a class="ql-card" href="palmares.html">
+      <span class="ql-icon">🏆</span>
+      <div class="ql-title">Palmares</div>
+      <div class="ql-desc">Trofei e titoli del torneo FMTO, stagione per stagione.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+    <a class="ql-card" href="serie-a-girone-a.html">
+      <span class="ql-icon">🏆</span>
+      <div class="ql-title">Campionati</div>
+      <div class="ql-desc">Classifiche Serie A, B, C e link ai fogli Google del torneo.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+    <a class="ql-card" href="coppe.html">
+      <span class="ql-icon">🥇</span>
+      <div class="ql-title">Coppe</div>
+      <div class="ql-desc">Coppa FMTO, Champions League, Europa League e altre competizioni.</div>
       <span class="ql-arrow">→</span>
     </a>
   </div>

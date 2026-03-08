@@ -86,13 +86,18 @@
 .ql-arrow { position:absolute; bottom:1.2rem; right:1.2rem; color:var(--v); font-size:.85rem; transition:transform .18s; }
 .ql-card:hover .ql-arrow { transform:translateX(3px); }
 
-/* Logo FMTO (come in index) */
+/* Logo FMTO (come in index): immagine + background fallback per mobile */
 .hero-logo {
   width: 140px; height: 140px; margin-bottom: 1.5rem; position: relative; z-index: 1;
   border-radius: 50%; overflow: hidden; clip-path: circle(50%);
   box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  background: var(--sf) url("assets/logo-fmto.png") center/cover no-repeat;
 }
-.hero-logo img { width: 100%; height: 100%; object-fit: cover; animation: hero-logo-spin 12s linear infinite; }
+.hero-logo img {
+  display: block; width: 100%; height: 100%; object-fit: cover;
+  animation: hero-logo-spin 12s linear infinite;
+  font-size: 0; color: transparent;
+}
 @keyframes hero-logo-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 </head>
@@ -137,7 +142,7 @@
   <div class="orb orb-2"></div>
 
   <div class="hero-logo fade-in">
-    <img src="assets/logo-fmto.png" alt="FMTO 2.0">
+    <img src="assets/logo-fmto.png" alt="FMTO 2.0" width="140" height="140">
   </div>
   <div class="eyebrow fade-in">Football Manager Tournament Online</div>
 

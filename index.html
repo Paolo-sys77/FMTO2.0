@@ -140,7 +140,7 @@ body.welcome-page { padding: 0; min-height: 100vh; display: flex; flex-direction
 .welcome-disclaimer p { margin-bottom: .65rem; }
 .welcome-disclaimer p:last-child { margin-bottom: 0; }
 
-/* Logo FMTO: ritaglio circolare (senza sfondo) e rotazione */
+/* Logo FMTO: ritaglio circolare + background fallback per mobile */
 .welcome-logo {
   width: 140px;
   height: 140px;
@@ -151,12 +151,16 @@ body.welcome-page { padding: 0; min-height: 100vh; display: flex; flex-direction
   overflow: hidden;
   clip-path: circle(50%);
   box-shadow: 0 8px 32px rgba(0,0,0,.35);
+  background: #11131a url("assets/logo-fmto.png") center/cover no-repeat;
 }
 .welcome-logo img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   animation: welcome-logo-spin 12s linear infinite;
+  font-size: 0;
+  color: transparent;
 }
 @keyframes welcome-logo-spin {
   from { transform: rotate(0deg); }
@@ -171,7 +175,7 @@ body.welcome-page { padding: 0; min-height: 100vh; display: flex; flex-direction
   <div class="welcome-orb welcome-orb-2"></div>
 
   <div class="welcome-logo">
-    <img src="assets/logo-fmto.png" alt="FMTO 2.0">
+    <img src="assets/logo-fmto.png" alt="FMTO 2.0" width="140" height="140">
   </div>
   <h1 class="welcome-title">Football Manager<br><span>Tournament Online</span></h1>
   <p class="welcome-sub">La lega più avvincente · Stagione 26_1</p>

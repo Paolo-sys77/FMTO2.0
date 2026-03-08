@@ -7,6 +7,26 @@ const PAGE_MAP = {'index.html':'nav-home','home.html':'nav-home','ranking.html':
 function initNav(){const f=location.pathname.split('/').pop()||'index.html';const id=PAGE_MAP[f];if(id)document.getElementById(id)?.classList.add('active');}
 document.addEventListener('DOMContentLoaded',initNav);
 
+// ── MOBILE MENU (tutte le pagine): pulsante hamburger in alto a destra
+function initMobileMenu(){
+  if(document.getElementById('home-menu-btn'))return;
+  var html='<button type="button" class="home-menu-btn" id="home-menu-btn" aria-label="Menu"><span></span><span></span><span></span></button>'+
+    '<div class="home-menu-overlay" id="home-menu-overlay"></div>'+
+    '<div id="home-menu-panel" class="home-menu-panel"><h3>Menu</h3>'+
+    '<a href="home.html">Home</a><a href="mister.html">I Mister</a><a href="squadre.html">Le 56 Squadre</a><a href="scouting.html">Scouting</a>'+
+    '<a href="calendario.html">Calendario</a><a href="ranking.html">Ranking</a><a href="palmares.html">Palmares</a>'+
+    '<a href="serie-a-girone-a.html">Campionati</a><a href="coppe.html">Coppe</a><a href="area.html">Area Riservata</a></div>';
+  document.body.insertAdjacentHTML('afterbegin',html);
+  var btn=document.getElementById('home-menu-btn');
+  var overlay=document.getElementById('home-menu-overlay');
+  var panel=document.getElementById('home-menu-panel');
+  function closeMenu(){overlay.classList.remove('open');panel.classList.remove('open');}
+  btn.addEventListener('click',function(){overlay.classList.contains('open')?closeMenu():(overlay.classList.add('open'),panel.classList.add('open'));});
+  overlay.addEventListener('click',closeMenu);
+  panel.querySelectorAll('a').forEach(function(a){a.addEventListener('click',closeMenu);});
+}
+document.addEventListener('DOMContentLoaded',initMobileMenu);
+
 // ── FLAGS
 const FLAG={'Afghanistan':'🇦🇫','Albania':'🇦🇱','Algeria':'🇩🇿','Angola':'🇦🇴','Antigua e Barbuda':'🇦🇬','Argentina':'🇦🇷','Armenia':'🇦🇲','Aruba':'🇦🇼','Australia':'🇦🇺','Austria':'🇦🇹','Barbados':'🇧🇧','Belgio':'🇧🇪','Benin':'🇧🇯','Bosnia-Erzegovina':'🇧🇦','Brasile':'🇧🇷','Burkina Faso':'🇧🇫','Burundi':'🇧🇮','Camerun':'🇨🇲','Canada':'🇨🇦','Capo Verde':'🇨🇻','Cechia':'🇨🇿','Cile':'🇨🇱','Cipro':'🇨🇾','Colombia':'🇨🇴','Congo':'🇨🇬','Corea del Sud':'🇰🇷','Costa Rica':'🇨🇷',"Costa d'Avorio":'🇨🇮','Croazia':'🇭🇷','Cuba':'🇨🇺','Curaçao':'🇨🇼','Danimarca':'🇩🇰','Dominica':'🇩🇲','Ecuador':'🇪🇨','Egitto':'🇪🇬','Emirati Arabi Uniti':'🇦🇪','Eritrea':'🇪🇷','Filippine':'🇵🇭','Finlandia':'🇫🇮','Francia':'🇫🇷','Galles':'🏴󠁧󠁢󠁷󠁬󠁳󠁿','Gambia':'🇬🇲','Georgia':'🇬🇪','Germania':'🇩🇪','Ghana':'🇬🇭','Giamaica':'🇯🇲','Giappone':'🇯🇵','Grecia':'🇬🇷','Guadalupa':'🇬🇵','Guinea':'🇬🇳','Guinea Equatoriale':'🇬🇶','Guinea-Bissau':'🇬🇼','Guyana':'🇬🇾','Guyana Francese':'🇬🇫','Haiti':'🇭🇹','Indonesia':'🇮🇩','Inghilterra':'🏴󠁧󠁢󠁥󠁮󠁧󠁿','Irlanda del Nord':'🇬🇧','Islanda':'🇮🇸','Israele':'🇮🇱','Italia':'🇮🇹','Kenya':'🇰🇪','Kosovo':'🇽🇰','Libano':'🇱🇧','Liberia':'🇱🇷','Libia':'🇱🇾','Lussemburgo':'🇱🇺','Macedonia del Nord':'🇲🇰','Mali':'🇲🇱','Marocco':'🇲🇦','Martinica':'🇲🇶','Mauritania':'🇲🇷','Messico':'🇲🇽','Monaco':'🇲🇨','Montenegro':'🇲🇪','Montserrat':'🇲🇸','Mozambico':'🇲🇿','Nigeria':'🇳🇬','Norvegia':'🇳🇴','Nuova Zelanda':'🇳🇿','Paesi Baschi':'🏳️','Paesi Bassi':'🇳🇱','Paraguay':'🇵🇾','Polonia':'🇵🇱','Portogallo':'🇵🇹','Repubblica Centrafricana':'🇨🇫','Repubblica Democratica del Congo':'🇨🇩','Repubblica Dominicana':'🇩🇴',"Repubblica d'Irlanda":'🇮🇪','Romania':'🇷🇴','Russia':'🇷🇺','Saint Kitts e Nevis':'🇰🇳','Scozia':'🏴󠁧󠁢󠁳󠁣󠁴󠁿','Senegal':'🇸🇳','Serbia':'🇷🇸','Sierra Leone':'🇸🇱','Siria':'🇸🇾','Slovacchia':'🇸🇰','Slovenia':'🇸🇮','Spagna':'🇪🇸','Stati Uniti':'🇺🇸','Sudan del Sud':'🇸🇸','Suriname':'🇸🇷','Svezia':'🇸🇪','Svizzera':'🇨🇭','São Tomé e Príncipe':'🇸🇹','Togo':'🇹🇬','Tunisia':'🇹🇳','Turchia':'🇹🇷','Ucraina':'🇺🇦','Ungheria':'🇭🇺','Uruguay':'🇺🇾','Uzbekistan':'🇺🇿','Venezuela':'🇻🇪','Vietnam':'🇻🇳'};
 function getFlag(naz){if(!naz)return'🌍';return FLAG[naz.split(',')[0].trim()]||'🌍';}

@@ -43,19 +43,22 @@
   border-bottom:2px solid var(--card-accent,#c0392b);
   border-right:4px solid var(--card-accent,#c0392b);
   padding:10px 14px 10px 12px;
-  display:grid;grid-template-columns:52px 1fr auto;
-  gap:12px;align-items:center;position:relative;overflow:hidden;
+  display:grid;grid-template-columns:1fr auto auto;
+  gap:14px;align-items:center;position:relative;overflow:hidden;
 }
 .card-header::before{
   content:'';position:absolute;top:0;right:0;
   width:180px;height:100%;background:linear-gradient(90deg,transparent,rgba(192,57,43,.06));
   pointer-events:none;
 }
-.avatar{
-  width:52px;height:52px;border-radius:3px;
-  background:linear-gradient(135deg,#2a3245,#1a2035);border:1px solid var(--card-border,#2a3245);
-  display:flex;align-items:center;justify-content:center;font-size:22px;color:#8892a4;flex-shrink:0;
+.fm-pitch{
+  width:140px;height:88px;flex-shrink:0;
+  border-radius:6px;overflow:hidden;
+  border:1px solid var(--card-border,#2a3245);
+  background:#1a2e1a;
 }
+.fm-pitch svg{width:100%;height:100%;display:block;}
+.fm-pitch-dot{fill:#3adb76;stroke:#0d1117;stroke-width:2;}
 .player-info{min-width:0;}
 .player-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:.4px;line-height:1.05;color:#fff;}
 .player-meta{display:flex;gap:8px;margin-top:4px;align-items:center;flex-wrap:wrap;}
@@ -234,9 +237,11 @@
   <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
   <ul class="nav-links">
     <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
     <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
     <li><a href="mister.html" id="nav-mister">Mister</a></li>
     <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
     <li><a href="area.html" id="nav-area">Area Riservata</a></li>
   </ul>
 </nav>
@@ -270,7 +275,8 @@
         <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" class="search-input" id="grid-player-search" placeholder="Cerca giocatore..." oninput="filterSquads();updateGridPlayerResults();" autocomplete="off">
       </div>
-      <a class="nav-cta" href="scouting.html" style="padding:.5rem 1.05rem">Scouting →</a>
+      <button type="button" class="nav-cta" id="btn-svincolati" style="padding:.5rem 1.05rem;cursor:pointer;border:none;text-decoration:none">Svincolati</button>
+      <a class="nav-cta" href="scouting.html" style="padding:.5rem 1.05rem">Scouting</a>
     </div>
     <div id="grid-player-results" class="grid-player-results" style="display:none;margin-bottom:1.25rem">
       <div class="grid-player-results-title" id="grid-player-results-title"></div>
@@ -308,7 +314,7 @@
           <th class="sortable" onclick="sortTable('ca')">CA</th>
           <th class="sortable" onclick="sortTable('pa')">PA</th>
           <th class="sortable" onclick="sortTable('vel')">Vel.</th>
-          <th class="sortable" onclick="sortTable('prezzo')">Valore</th>
+          <th class="sortable" onclick="sortTable('stipendio')">Stipendio</th>
           <th>Pos. FM</th>
           <th>WL</th>
         </tr></thead>
@@ -325,7 +331,6 @@
 
   <!-- HEADER (stile template) -->
   <div class="card-header">
-    <div class="avatar" id="fm-avatar">⬡</div>
     <div class="player-info">
       <div class="player-name" id="fm-hdr-name">—</div>
       <div class="player-meta">
@@ -334,6 +339,25 @@
         <span class="meta-tag" id="fm-meta-age">—</span>
         <span class="meta-tag" id="fm-meta-height">—</span>
       </div>
+    </div>
+    <div class="fm-pitch" id="fm-pitch">
+      <svg viewBox="0 0 160 116" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <rect width="160" height="116" fill="#1e3d1e"/>
+        <!-- Righe di gioco -->
+        <g stroke="rgba(255,255,255,.3)" stroke-width="1.2" fill="none">
+          <line x1="80" y1="0" x2="80" y2="116"/>
+          <circle cx="80" cy="58" r="18"/>
+          <!-- Area di rigore sinistra -->
+          <rect x="0" y="14" width="26" height="88"/>
+          <!-- Area di porta sinistra -->
+          <rect x="0" y="34" width="10" height="48"/>
+          <!-- Area di rigore destra -->
+          <rect x="134" y="14" width="26" height="88"/>
+          <!-- Area di porta destra -->
+          <rect x="150" y="34" width="10" height="48"/>
+        </g>
+        <g id="fm-pitch-dots"></g>
+      </svg>
     </div>
     <div class="club-block">
       <div class="club-name" id="fm-hdr-cname">—</div>
@@ -357,9 +381,7 @@
 
   <!-- VALUE STRIP -->
   <div class="value-strip">
-    <div class="vitem"><div class="vlabel">Valore</div><div class="vvalue green" id="fm-val-val">—</div></div>
-    <div class="divider-v"></div>
-    <div class="vitem"><div class="vlabel">Stipendio</div><div class="vvalue" id="fm-stipendio">—</div></div>
+    <div class="vitem"><div class="vlabel">Stipendio</div><div class="vvalue green" id="fm-stipendio">—</div></div>
     <div class="divider-v"></div>
     <div class="vitem"><div class="vlabel">Contratto</div><div class="vvalue" id="fm-contratto">—</div></div>
     <div class="divider-v"></div>
@@ -447,8 +469,18 @@
 
 <script src="data.js"></script>
 <script src="players.js"></script>
+<script src="stipendi.js"></script>
+<script src="svincolati-csv.js"></script>
 <script src="shared.js"></script>
 <script>
+/* ═══ SVINCOLATI — giocatori da ALL_PLAYERS senza squadra FMTO ═══ */
+var SVINCOLATI_SQUAD = { id:'svincolati', name:'SVINCOLATI', color1:'#6b7280', color2:'#374151', logo:null, manager:'—' };
+(function(){
+  if(typeof SQUADS==='undefined'||typeof PLAYERS_BY_TEAM==='undefined'||typeof ALL_PLAYERS==='undefined')return;
+  var squadNames=new Set(SQUADS.map(function(s){return s.name;}));
+  PLAYERS_BY_TEAM['SVINCOLATI']=(ALL_PLAYERS||[]).filter(function(p){return !squadNames.has((p.squadra||'').trim().toUpperCase());});
+})();
+
 /* ═══ STATE ═══ */
 let curSqName = null, sortCol = 'role', sortDir = 1;
 let curPlayerData = null;
@@ -474,6 +506,8 @@ function buildSquadGrid() {
     card.addEventListener('click',()=>openSquad(sq.name));
     grid.appendChild(card);
   });
+  var btn = document.getElementById('btn-svincolati');
+  if (btn) btn.onclick = function(){ openSquad('SVINCOLATI'); };
 }
 function filterSquads(){
   const q=document.getElementById('sq-search').value.toLowerCase().trim();
@@ -496,13 +530,16 @@ function updateGridPlayerResults(){
       if((p.nome||'').toLowerCase().includes(pq)) matches.push({ p:p, teamName:sq.name });
     });
   });
+  (PLAYERS_BY_TEAM['SVINCOLATI']||[]).forEach(function(p){
+    if((p.nome||'').toLowerCase().includes(pq)) matches.push({ p:p, teamName:'SVINCOLATI' });
+  });
   box.style.display='block';
   if(matches.length===0){ titleEl.textContent='Nessun giocatore trovato per "'+pq+'"'; listEl.innerHTML=''; return; }
   titleEl.textContent=matches.length===1 ? '1 giocatore trovato' : matches.length+' giocatori trovati';
   listEl.innerHTML=matches.slice(0,50).map(function(m){
-    var p=m.p, tn=m.teamName;
+    var p=m.p, tn=m.teamName, tnDisplay=tn==='SVINCOLATI'?'Svincolati':tn;
     return '<a href="#" class="grid-player-hit" onclick="openPlayerFromGrid(\''+p.id+'\',\''+tn.replace(/'/g,"\\'")+'\');return false">'+
-      '<span class="gph-name">'+p.nome+'</span> <span class="gph-meta">'+tn+' · CA '+p.ca+'</span></a>';
+      '<span class="gph-name">'+p.nome+'</span> <span class="gph-meta">'+tnDisplay+' · CA '+p.ca+'</span></a>';
   }).join('');
   if(matches.length>50) listEl.innerHTML+='<p style="font-size:.8rem;color:var(--t3);margin-top:.5rem">Mostrati i primi 50. Affina la ricerca per nome.</p>';
 }
@@ -515,7 +552,7 @@ function openPlayerFromGrid(pid, teamName){
 
 /* ═══ SQUAD DETAIL ═══ */
 function openSquad(sqName){
-  const sq=SQUADS.find(s=>s.name===sqName); if(!sq) return;
+  const sq=SQUADS.find(s=>s.name===sqName)||(sqName==='SVINCOLATI'?SVINCOLATI_SQUAD:null); if(!sq) return;
   curSqName=sqName; sortCol='role'; sortDir=1;
   const players=PLAYERS_BY_TEAM[sqName]||[];
   const bl=document.getElementById('squad-big-logo');
@@ -523,23 +560,27 @@ function openSquad(sqName){
   if(sq.logo){
     bl.innerHTML=`<img src="${sq.logo}" alt="${sq.name}" style="width:100%;height:100%;object-fit:contain;padding:7px">`;
   } else {
-    const abbr=sq.name.split(' ').map(w=>w[0]).join('').slice(0,3);
+    const abbr=sq.name==='SVINCOLATI'?'SVC':sq.name.split(' ').map(w=>w[0]).join('').slice(0,3);
     bl.innerHTML=`<span style="font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1.1rem;color:#fff">${abbr}</span>`;
     bl.style.background=`linear-gradient(135deg,${sq.color1},${sq.color2})`;
   }
   document.getElementById('squad-hero-bg').style.backgroundImage=sq.logo?`url(${sq.logo})`:'';
-  document.getElementById('squad-name').textContent=sq.name;
-  document.getElementById('squad-meta').textContent=`Mister: ${sq.manager} · ${players.length} giocatori`;
+  document.getElementById('squad-name').textContent=sq.name==='SVINCOLATI'?'Svincolati':sq.name;
+  document.getElementById('squad-meta').textContent=sq.name==='SVINCOLATI'?players.length+' giocatori senza squadra':`Mister: ${sq.manager} · ${players.length} giocatori`;
   if(players.length){
     const avgCA=Math.round(players.reduce((s,p)=>s+p.ca,0)/players.length);
     const avgPA=Math.round(players.reduce((s,p)=>s+p.pa,0)/players.length);
     const topCA=Math.max(...players.map(p=>p.ca));
-    const totVal=players.reduce((s,p)=>s+(p.prezzo||0),0);
-    document.getElementById('squad-summary').innerHTML=`
+    const totStip=players.reduce((s,p)=>s+((typeof getStipendio==='function'?getStipendio(p):null)||p.prezzo||0),0);
+    document.getElementById('squad-summary').innerHTML=sq.name==='SVINCOLATI'?`
+      <div class="ss-item"><div class="ss-val">${players.length}</div><div class="ss-lbl">Giocatori</div></div>
+      <div class="ss-item"><div class="ss-val">${avgCA}</div><div class="ss-lbl">CA medio</div></div>
+      <div class="ss-item"><div class="ss-val">${avgPA}</div><div class="ss-lbl">PA medio</div></div>
+      <div class="ss-item"><div class="ss-val">${topCA}</div><div class="ss-lbl">CA top</div></div>`:`
       <div class="ss-item"><div class="ss-val">${avgCA}</div><div class="ss-lbl">CA medio</div></div>
       <div class="ss-item"><div class="ss-val">${avgPA}</div><div class="ss-lbl">PA medio</div></div>
       <div class="ss-item"><div class="ss-val">${topCA}</div><div class="ss-lbl">CA top</div></div>
-      <div class="ss-item"><div class="ss-val">${fmtPrice(totVal)}</div><div class="ss-lbl">Valore rosa</div></div>`;
+      <div class="ss-item"><div class="ss-val">${typeof fmtStipendio==='function'?fmtStipendio(totStip):'—'}</div><div class="ss-lbl">Stipendio rosa</div></div>`;
   }
   var searchEl = document.getElementById('squad-player-search');
   if (searchEl) searchEl.value = '';
@@ -551,7 +592,8 @@ function applySquadSearch(){
 function renderSquadTable(players){
   var q = (document.getElementById('squad-player-search')&&document.getElementById('squad-player-search').value||'').trim().toLowerCase();
   if (q) players = players.filter(function(p){ return (p.nome||'').toLowerCase().includes(q) || (p.naz||'').toLowerCase().includes(q) || (p.posizione||'').toLowerCase().includes(q); });
-  let sorted = sortCol==='role' ? sortByRole(players) :
+  let sorted = sortCol==='role' ? sortByRole(players) : sortCol==='stipendio' ?
+    [...players].sort((a,b)=>{const va=getStipendio(a)||0,vb=getStipendio(b)||0;return sortDir*(vb-va);}) :
     [...players].sort((a,b)=>{const va=a[sortCol]??0,vb=b[sortCol]??0;return typeof va==='string'?sortDir*va.localeCompare(vb):sortDir*(vb-va);});
   document.getElementById('squad-tbody').innerHTML=sorted.map(p=>`
     <tr onclick="openFMCard('${p.id}','${curSqName.replace(/'/g,"\\'")}')">
@@ -562,7 +604,7 @@ function renderSquadTable(players){
       <td><span class="ov ${getOvrClass(p.ca)}">${p.ca}</span></td>
       <td style="color:var(--t2)">${p.pa}</td>
       <td style="color:var(--t2)">${p.vel}</td>
-      <td class="val-tag">${fmtPrice(p.prezzo)}</td>
+      <td class="val-tag">${typeof fmtStipendio==='function'?fmtStipendio((typeof getStipendio==='function'?getStipendio(p):null)||p.prezzo):'—'}</td>
       <td style="color:var(--t3);font-size:.74rem;white-space:nowrap">${p.posizione||'—'}</td>
       <td><button class="wl-btn ${inWL(p.id)?'inw':''}" data-pid="${p.id}"
         onclick="toggleWLPlayer('${p.id}','${curSqName.replace(/'/g,"\\'")}');event.stopPropagation()">${inWL(p.id)?'★':'☆'}</button></td>
@@ -627,23 +669,77 @@ function pitchPos(pos){
   return{cx:58,cy:80};
 }
 
+/** Normalizza una sigla posizione (es. DC → D C) per pitchPos. */
+function normalizePosToken(t){
+  var s=(t||'').trim().toUpperCase();
+  if(!s)return '';
+  if(s==='DC'||s==='D C')return 'D C';
+  if(s==='DDC'||s==='D DC')return 'D DC';
+  if(s==='DSC'||s==='D SC')return 'D SC';
+  if(s==='DDSC'||s==='D DSC')return 'D DSC';
+  if(s==='DS'||s==='D S')return 'D S';
+  if(s==='DD'||s==='D D')return 'D D';
+  if(s==='TFS'||s==='TF S')return 'TF S';
+  if(s==='TFD'||s==='TF D')return 'TF D';
+  if(s==='M C'||s==='MC')return 'M/C C';
+  if(s==='C T'||s==='CT')return 'C/T C';
+  if(s==='T S'||s==='TS')return 'T/S';
+  return t.trim();
+}
+
+/** Restituisce l'array di posizioni che il giocatore può coprire. Ruolo fuori parentesi, posizionamenti dentro separati da spazio (es. "DC (D DC)" → ["D", "DC"]). */
+function getPlayerPositions(p){
+  if(!p)return [];
+  if(Array.isArray(p.ruoli)&&p.ruoli.length)return p.ruoli.map(function(s){return normalizePosToken(s);}).filter(Boolean);
+  if(Array.isArray(p.posizioni)&&p.posizioni.length)return p.posizioni.map(function(s){return normalizePosToken(s);}).filter(Boolean);
+  var pos=(p.posizione||'').trim();
+  if(!pos)return [];
+  var m=pos.match(/\s*\(([^)]*)\)\s*$/);
+  if(m){
+    var inside=(m[1]||'').trim();
+    if(inside){
+      var tokens=inside.split(/\s+/).map(function(s){return normalizePosToken(s);}).filter(Boolean);
+      if(tokens.length)return tokens;
+    }
+  }
+  var parts=pos.replace(/\s*\([^)]*\)\s*$/,'').split(/[,/]/).map(function(s){return s.trim();}).filter(Boolean);
+  return parts.length?parts.map(normalizePosToken).filter(Boolean):[normalizePosToken(pos.replace(/\s*\([^)]*\)\s*$/,'').trim())].filter(Boolean);
+}
+
 /* ═══ OPEN FM CARD ═══ */
 function openFMCard(pid, sqName){
-  const sq=SQUADS.find(s=>s.name===sqName);
+  const sq=SQUADS.find(s=>s.name===sqName)||(sqName==='SVINCOLATI'?SVINCOLATI_SQUAD:null);
   const players=PLAYERS_BY_TEAM[sqName]||[];
   const p=players.find(pl=>String(pl.id)===String(pid));
   if(!p||!sq)return;
   curPlayerData={p,sq}; curSqName=sqName;
   const isGK=p.posizione?.toUpperCase().startsWith('P');
 
-  // HEADER (template: avatar, player-info, club-block)
-  document.getElementById('fm-avatar').textContent=(p.nome&&p.nome[0])?p.nome[0].toUpperCase():'⬡';
+  // HEADER (mini campo: un puntino per ogni ruolo che il giocatore può coprire)
+  var dotsGroup=document.getElementById('fm-pitch-dots');
+  if(dotsGroup){
+    dotsGroup.innerHTML='';
+    var positions=getPlayerPositions(p);
+    var r=positions.length>1?5:7;
+    positions.forEach(function(roleStr){
+      var pos=pitchPos(roleStr);
+      var cx=160-pos.cy, cy=pos.cx;
+      var role=(roleStr||'').toUpperCase();
+      if(role.startsWith('D')||role.includes('TF')) cx=30;
+      var c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      c.setAttribute('class','fm-pitch-dot');
+      c.setAttribute('r',r);
+      c.setAttribute('cx',cx);
+      c.setAttribute('cy',cy);
+      dotsGroup.appendChild(c);
+    });
+  }
   document.getElementById('fm-hdr-name').textContent=p.nome;
   document.getElementById('fm-hdr-role').textContent=isGK?'Portiere':`${displayRole(p.posizione)} (${p.posizione||''})`;
   document.getElementById('fm-hdr-nat').innerHTML=`<span class="flag">${getFlag(p.naz)}</span> ${(p.naz||'').split(',')[0].trim()||'—'}`;
   document.getElementById('fm-meta-age').textContent=`${p.eta} anni${p.dob?' · '+p.dob:''}`;
   document.getElementById('fm-meta-height').textContent=p.altezza?p.altezza+' cm':'—';
-  document.getElementById('fm-hdr-cname').textContent=sq.name;
+  document.getElementById('fm-hdr-cname').textContent=sqName==='SVINCOLATI'?'Svincolato':sq.name;
   const caEl=document.getElementById('fm-ca-val'), paEl=document.getElementById('fm-pa-val');
   caEl.textContent=p.ca; caEl.className='capa-val ca';
   paEl.textContent=p.pa; paEl.className='capa-val pa';
@@ -661,9 +757,8 @@ function openFMCard(pid, sqName){
     starBtn.classList.toggle('active',inWL(p.id));
   }
 
-  // VALUE STRIP
-  document.getElementById('fm-val-val').textContent=fmtPrice(p.prezzo)||'—';
-  document.getElementById('fm-stipendio').textContent='—';
+  // VALUE STRIP (stipendio da CSV)
+  document.getElementById('fm-stipendio').textContent=typeof fmtStipendio==='function'?(fmtStipendio((typeof getStipendio==='function'?getStipendio(p):null)||p.prezzo)||'—'):'—';
   document.getElementById('fm-contratto').textContent='—';
   document.getElementById('fm-presenze').textContent='0';
   document.getElementById('fm-personalita').textContent='—';
@@ -927,7 +1022,24 @@ function buildComparison(p1,p2){
   const compEl=document.getElementById('vs-comparison');
   compEl.style.display='block';
 
-  const GROUPS=[
+  const isGK1=(p1.posizione||'').toUpperCase().startsWith('P');
+  const isGK2=(p2.posizione||'').toUpperCase().startsWith('P');
+  const bothGK=isGK1&&isGK2;
+
+  const GROUPS=bothGK ? [
+    {title:'Portiere',attrs:[
+      ['Riflessi','rifl'],['Uno contro uno','uno_v_uno'],['Uscite','usc'],['Presa','bloc_tir'],
+      ['Rinvii','rinv'],['Respinte di pugno','risp_pug'],['Rilanci','ril'],['Palle alte','pal_alt'],
+      ['Comunicazione','comm'],
+    ]},
+    {title:'Psicologia',attrs:[
+      ['Coraggio','cor'],['Decisioni','dec'],['Determinazione','det'],
+      ['Freddezza','fred'],['Concentrazione','conc'],['Intuito','int_ment'],
+    ]},
+    {title:'Fisico',attrs:[
+      ['Accelerazione','acc'],['Agilità','agi'],['Forza','forza'],['Resistenza','res'],['Velocità','vel'],
+    ]},
+  ] : [
     {title:'Tecnica',attrs:[
       ['Colpi di testa','testa'],['Contrasti','cont'],['Controllo di palla','gioc_prima'],
       ['Cross','cross'],['Dribbling','drib'],['Finalizzazione','final'],

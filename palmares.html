@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FMTO 2.0 — Palmares</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+  .palmares-intro { font-size:.9rem; color:var(--t2); line-height:1.55; margin-bottom:1.8rem; max-width:640px; }
+  .palmares-grid { display:grid; gap:1rem; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); }
+  .palmares-card {
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    padding:1.25rem 1.2rem; transition:border-color .2s, box-shadow .2s;
+  }
+  .palmares-card:hover { border-color:var(--v); box-shadow:0 6px 20px rgba(139,92,246,.12); }
+  .palmares-card h3 { font-family:'Barlow Condensed',sans-serif; font-size:1.15rem; font-weight:700; color:var(--t1); margin:0 0 .5rem; }
+  .palmares-card .meta { font-size:.78rem; color:var(--t3); margin-bottom:.6rem; }
+  .palmares-card .winner { font-weight:600; color:var(--vb); font-size:.9rem; }
+  .palmares-card .detail { font-size:.8rem; color:var(--t2); margin-top:.35rem; }
+  </style>
+</head>
+<body class="gbg">
+
+<nav>
+  <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+  <ul class="nav-links">
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
+    <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
+    <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
+    <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+  </ul>
+</nav>
+
+<div class="ticker">
+  <div class="ticker-lbl">Live</div>
+  <div class="ticker-inner"><div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Palmares FMTO — Trofei e stagioni</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.400 giocatori · FM26</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Palmares FMTO — Trofei e stagioni</span>
+  </div></div>
+</div>
+
+<section class="sec">
+  <div style="margin-bottom:1rem">
+    <div class="sec-tag">Albo d'oro</div>
+    <h2 class="sec-title">Palmares</h2>
+    <p class="palmares-intro">I trofei e i titoli del torneo FMTO. Campionato, coppe e riconoscimenti stagione per stagione.</p>
+  </div>
+
+  <div class="palmares-grid" id="palmares-grid">
+    <!-- Esempio: sostituire con dati reali o da script -->
+    <div class="palmares-card">
+      <h3>Serie A FMTO</h3>
+      <div class="meta">Stagione 26_1</div>
+      <div class="winner">—</div>
+      <div class="detail">Vincitore campionato</div>
+    </div>
+    <div class="palmares-card">
+      <h3>Coppa FMTO</h3>
+      <div class="meta">Stagione 26_1</div>
+      <div class="winner">—</div>
+      <div class="detail">Vincitore coppa</div>
+    </div>
+    <div class="palmares-card">
+      <h3>Champions League FMTO</h3>
+      <div class="meta">Stagione 26_1</div>
+      <div class="winner">—</div>
+      <div class="detail">Vincitore competizione europea</div>
+    </div>
+  </div>
+</section>
+
+<script src="shared.js"></script>
+</body>
+</html>

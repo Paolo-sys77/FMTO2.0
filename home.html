@@ -41,7 +41,7 @@
 
 .hero-title {
   font-family:'Barlow Condensed',sans-serif;
-  font-size:clamp(4.5rem,15vw,10.5rem); font-weight:800; line-height:.88;
+  font-size:clamp(3.2rem,11vw,7.5rem); font-weight:800; line-height:.88;
   background:linear-gradient(160deg,#fff 0%,var(--vb) 50%,var(--g) 100%);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
   margin-bottom:.25em;
@@ -85,6 +85,15 @@
 .ql-desc { font-size:.78rem; color:var(--t2); line-height:1.5; }
 .ql-arrow { position:absolute; bottom:1.2rem; right:1.2rem; color:var(--v); font-size:.85rem; transition:transform .18s; }
 .ql-card:hover .ql-arrow { transform:translateX(3px); }
+
+/* Logo FMTO (come in index) */
+.hero-logo {
+  width: 140px; height: 140px; margin-bottom: 1.5rem; position: relative; z-index: 1;
+  border-radius: 50%; overflow: hidden; clip-path: circle(50%);
+  box-shadow: 0 8px 32px rgba(0,0,0,.35);
+}
+.hero-logo img { width: 100%; height: 100%; object-fit: cover; animation: hero-logo-spin 12s linear infinite; }
+@keyframes hero-logo-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 </head>
 <body class="gbg">
@@ -94,9 +103,11 @@
   <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
   <ul class="nav-links">
     <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
     <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
     <li><a href="mister.html" id="nav-mister">Mister</a></li>
     <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
     <li><a href="area.html" id="nav-area">Area Riservata</a></li>
   </ul>
 </nav>
@@ -125,6 +136,9 @@
   <div class="orb orb-1"></div>
   <div class="orb orb-2"></div>
 
+  <div class="hero-logo fade-in">
+    <img src="assets/logo-fmto.png" alt="FMTO 2.0">
+  </div>
   <div class="eyebrow fade-in">Football Manager Tournament Online</div>
 
   <h1 class="hero-title fade-in">
@@ -140,6 +154,12 @@
 <!-- QUICK LINKS -->
 <div class="quick-links-wrap">
   <div class="quick-links quick-links-row-1">
+    <a class="ql-card" href="ranking.html">
+      <span class="ql-icon">📊</span>
+      <div class="ql-title">Ranking</div>
+      <div class="ql-desc">Classifica delle 56 squadre del torneo per punteggio. Logo e posizione in tempo reale.</div>
+      <span class="ql-arrow">→</span>
+    </a>
     <a class="ql-card" href="serie-a-girone-a.html">
       <span class="ql-icon">🏆</span>
       <div class="ql-title">Campionati</div>
@@ -150,6 +170,12 @@
       <span class="ql-icon">🥇</span>
       <div class="ql-title">Coppe</div>
       <div class="ql-desc">Coppa FMTO, Champions League, Europa League e altre competizioni.</div>
+      <span class="ql-arrow">→</span>
+    </a>
+    <a class="ql-card" href="palmares.html">
+      <span class="ql-icon">🏆</span>
+      <div class="ql-title">Palmares</div>
+      <div class="ql-desc">Trofei e titoli del torneo FMTO, stagione per stagione.</div>
       <span class="ql-arrow">→</span>
     </a>
   </div>

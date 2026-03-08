@@ -12,10 +12,12 @@
   <nav>
     <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
     <ul class="nav-links">
-      <li><a href="home.html" id="nav-home">Home</a></li>
-      <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
-      <li><a href="mister.html" id="nav-mister">Mister</a></li>
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
+<li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
       <li><a href="forum.html" id="nav-forum">Forum</a></li>
+      <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
       <li><a href="area.html" id="nav-area">Area Riservata</a></li>
     </ul>
 </nav>
@@ -87,7 +89,7 @@
               <label class="scout-label" for="f-club">Club
                 <small>Squadra di appartenenza</small>
               </label>
-              <input id="f-club" class="scout-input" type="text" placeholder="Es. &quot;Milan&quot;, &quot;Real Madrid&quot;…">
+              <input id="f-club" class="scout-input" type="text" placeholder="Es. &quot;Milan&quot;, &quot;Real Madrid&quot;, &quot;Svincolati&quot;…">
             </div>
 
             <div class="scout-field">
@@ -428,7 +430,7 @@
                 <th>REN</th>
                 <th>CA</th>
                 <th>CP</th>
-                <th>Valore</th>
+                <th>Stipendio</th>
                 <th style="text-align:right">WL</th>
               </tr>
             </thead>
@@ -451,6 +453,7 @@
 
   <script src="data.js"></script>
   <script src="players.js"></script>
+  <script src="stipendi.js"></script>
   <script src="shared.js"></script>
   <script>
     // ── SCOUTING LOGIC ──
@@ -587,7 +590,14 @@
     function _matchPlayer(p, f) {
       if (f.name && !p.nome.toLowerCase().includes(f.name)) return false;
       if (f.naz && !(p.naz || '').includes(f.naz)) return false;
-      if (f.club && !(p.squadra || '').toLowerCase().includes(f.club)) return false;
+      if (f.club) {
+        var c = (f.club || '').toLowerCase().trim();
+        var wantSvincolati = c === 'svincolato' || c === 'svincolati' || c.indexOf('svincolat') !== -1;
+        if (wantSvincolati) {
+          var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
+          if (squadNamesSet.has((p.squadra || '').trim().toUpperCase())) return false;
+        } else if (!(p.squadra || '').toLowerCase().includes(f.club)) return false;
+      }
 
       if (f.ageMin != null && p.eta < f.ageMin) return false;
       if (f.ageMax != null && p.eta > f.ageMax) return false;
@@ -651,21 +661,27 @@
         return;
       }
 
+      var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
       var rows = list.map(function (p) {
-        var squad = p.squadra || '—';
+        var isSvincolato = !squadNamesSet.has((p.squadra || '').trim().toUpperCase());
+        var squad = isSvincolato ? '—' : (p.squadra || '—');
         var role = displayRole(p.posizione);
         var roleClass = getRoleClassFromPos(p.posizione);
         var flag = getFlag(p.naz);
         var ovrClass = getOvrClass(p.ca);
-        var price = fmtPrice(p.prezzo);
+        var stipDisplay = (typeof getStipendio === 'function' && typeof fmtStipendio === 'function') ? fmtStipendio(getStipendio(p)) : '—';
         var inList = typeof inWL === 'function' && inWL(p.id);
 
-        var squadEnc = encodeURIComponent(p.squadra || '');
+        var squadParam = isSvincolato ? 'SVINCOLATI' : (p.squadra || '');
+        var squadEnc = encodeURIComponent(squadParam);
         var pidEnc = encodeURIComponent(String(p.id));
         var href = 'squadre.html?sq=' + squadEnc + '&pid=' + pidEnc + '&from=scouting';
 
+        var nameCell = '<td style="font-weight:500">' + p.nome +
+          (isSvincolato ? ' <span style="font-size:.7rem;background:linear-gradient(135deg,#6b7280,#374151);color:#fff;padding:.15rem .4rem;border-radius:4px;margin-left:.35rem;font-weight:600">Svincolato</span>' : '') + '</td>';
+
         return '<tr style="cursor:pointer" onclick="location.href=\'' + href.replace(/'/g, '\\\'') + '\'">' +
-          '<td style="font-weight:500">' + p.nome + '</td>' +
+          nameCell +
           '<td>' + squad + '</td>' +
           '<td><span class="rb ' + roleClass + '">' + role + '</span></td>' +
           '<td style="color:var(--t2)">' + (p.eta || '—') + '</td>' +
@@ -674,9 +690,9 @@
           '<td style="color:var(--t2)">' + '—' + '</td>' +
           '<td><span class="ov ' + ovrClass + '">' + p.ca + '</span></td>' +
           '<td style="color:var(--t2)">' + (p.pa != null ? p.pa : '—') + '</td>' +
-          '<td class="val-tag">' + price + '</td>' +
+          '<td class="val-tag">' + stipDisplay + '</td>' +
           '<td style="text-align:right"><button class="wl-btn ' + (inList ? 'inw' : '') + '" data-pid="' + p.id +
-          '" onclick="toggleWLPlayer && toggleWLPlayer(\'' + String(p.id) + '\', \'' + String(p.squadra || '').replace(/'/g, '\\\'') + '\');event.stopPropagation()">' +
+          '" onclick="toggleWLPlayer && toggleWLPlayer(\'' + String(p.id) + '\', \'' + String(isSvincolato ? 'SVINCOLATI' : (p.squadra || '')).replace(/'/g, '\\\'') + '\');event.stopPropagation()">' +
           (inList ? '★' : '☆') + '</button></td>' +
           '</tr>';
       });

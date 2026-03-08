@@ -140,49 +140,23 @@ body.welcome-page { padding: 0; min-height: 100vh; display: flex; flex-direction
 .welcome-disclaimer p { margin-bottom: .65rem; }
 .welcome-disclaimer p:last-child { margin-bottom: 0; }
 
-/* Logo rotante: il cerchio ruota, il testo resta dritto */
+/* Logo FMTO: ritaglio circolare (senza sfondo) e rotazione */
 .welcome-logo {
-  width: 90px;
-  height: 90px;
+  width: 140px;
+  height: 140px;
   margin-bottom: 1.5rem;
   position: relative;
   z-index: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.welcome-logo-ring {
-  position: absolute;
-  inset: 0;
   border-radius: 50%;
-  border: 3px solid transparent;
-  border-top-color: var(--v);
-  border-right-color: var(--g);
-  border-bottom-color: var(--v);
-  border-left-color: var(--g);
-  animation: welcome-logo-spin 6s linear infinite;
+  overflow: hidden;
+  clip-path: circle(50%);
+  box-shadow: 0 8px 32px rgba(0,0,0,.35);
 }
-.welcome-logo-inner {
-  width: 72px;
-  height: 72px;
-  border-radius: 50%;
-  background: var(--card);
-  border: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  z-index: 1;
-}
-.welcome-logo-text {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 1rem;
-  font-weight: 800;
-  letter-spacing: .1em;
-  background: linear-gradient(135deg, var(--vb), var(--g));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.welcome-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  animation: welcome-logo-spin 12s linear infinite;
 }
 @keyframes welcome-logo-spin {
   from { transform: rotate(0deg); }
@@ -197,10 +171,7 @@ body.welcome-page { padding: 0; min-height: 100vh; display: flex; flex-direction
   <div class="welcome-orb welcome-orb-2"></div>
 
   <div class="welcome-logo">
-    <div class="welcome-logo-ring"></div>
-    <div class="welcome-logo-inner">
-      <span class="welcome-logo-text">FMTO</span>
-    </div>
+    <img src="assets/logo-fmto.png" alt="FMTO 2.0">
   </div>
   <h1 class="welcome-title">Football Manager<br><span>Tournament Online</span></h1>
   <p class="welcome-sub">La lega più avvincente · Stagione 26_1</p>

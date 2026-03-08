@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════════════
 
 // ── NAV ACTIVE LINK
-const PAGE_MAP = {'index.html':'nav-home','squadre.html':'nav-sq','mister.html':'nav-mister','area.html':'nav-area'};
+const PAGE_MAP = {'index.html':'nav-home','home.html':'nav-home','ranking.html':'nav-ranking','squadre.html':'nav-sq','mister.html':'nav-mister','forum.html':'nav-forum','palmares.html':'nav-palmares','area.html':'nav-area'};
 function initNav(){const f=location.pathname.split('/').pop()||'index.html';const id=PAGE_MAP[f];if(id)document.getElementById(id)?.classList.add('active');}
 document.addEventListener('DOMContentLoaded',initNav);
 
@@ -37,13 +37,15 @@ function getOvrClass(ca){
   return'ov-w';
 }
 
-// ── PRICE FORMAT
+// ── PRICE / STIPENDIO FORMAT
 function fmtPrice(v){
   if(!v||v<=0)return'—';
   if(v>=1000000)return'€'+(v/1000000).toFixed(1)+'M';
   if(v>=1000)return'€'+(v/1000).toFixed(0)+'K';
   return'€'+v;
 }
+function fmtStipendio(v){ return fmtPrice(v); }
+function getStipendio(p){ return (typeof STIPENDI_BY_ID!=='undefined'&&STIPENDI_BY_ID[p.id])?STIPENDI_BY_ID[p.id]:null; }
 
 // ── WATCHLIST — per-squad, richiede autenticazione
 // La sessione attiva viene salvata in sessionStorage (dura finché la scheda è aperta)

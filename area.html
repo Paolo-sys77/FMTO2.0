@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMTO 2.0 — Area Riservata</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── LOCK ── */
+.lock-screen{min-height:calc(100vh - 91px);display:flex;align-items:center;justify-content:center;padding:2rem}
+.lock-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:2.5rem;width:min(400px,100%);text-align:center}
+.lock-icon{font-size:2.8rem;margin-bottom:1rem;display:block}
+.lock-title{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;margin-bottom:.3rem}
+.lock-sub{font-size:.82rem;color:var(--t2);margin-bottom:1.6rem;line-height:1.5}
+.pin-select{width:100%;background:var(--sf);border:1px solid var(--border);color:var(--t1);font-family:'Outfit',sans-serif;font-size:.85rem;padding:.6rem .9rem;border-radius:8px;outline:none;margin-bottom:1rem;cursor:pointer}
+.pin-select option{background:var(--card)}
+.pin-dots{display:flex;gap:.6rem;justify-content:center;margin-bottom:1.1rem}
+.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:all .18s}
+.pin-dot.filled{background:var(--v);border-color:var(--v);box-shadow:0 0 8px var(--vg)}
+.pin-numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.75rem}
+.pin-key{background:var(--sf);border:1px solid var(--border);color:var(--t1);font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:700;padding:.7rem;border-radius:8px;cursor:pointer;transition:all .14s;user-select:none}
+.pin-key:hover{border-color:var(--v);background:rgba(139,92,246,.1);color:var(--vb)}
+.pin-key:active{transform:scale(.91)}
+.pin-error{color:#f87171;font-size:.78rem;min-height:1.2em;margin-top:.3rem}
+
+/* ── DASHBOARD ── */
+.dashboard{display:none}
+.dashboard.active{display:block}
+.dash-header{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)}
+.dash-squad-logo{width:56px;height:56px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--sf)}
+.dash-squad-logo img{width:100%;height:100%;object-fit:contain;padding:4px}
+.dash-squad-name{font-family:'Barlow Condensed',sans-serif;font-size:1.8rem;font-weight:800;line-height:1}
+.dash-squad-manager{font-size:.8rem;color:var(--t2);margin-top:.2rem}
+
+/* ── WATCHLIST ── */
+.wl-stats{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1.5rem}
+.wl-stat{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.7rem 1rem;flex:1;min-width:100px;text-align:center}
+.wl-stat-num{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:800;color:var(--vb)}
+.wl-stat-lbl{font-size:.62rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-top:.1rem}
+.wl-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.9rem 1.1rem;display:flex;align-items:center;gap:.9rem;margin-bottom:.55rem;transition:all .18s;cursor:pointer}
+.wl-card:hover{border-color:var(--v)}
+.wl-remove{margin-left:auto;background:none;border:1px solid rgba(239,68,68,.18);color:#f87171;padding:.22rem .55rem;border-radius:5px;cursor:pointer;font-size:.7rem;transition:all .14s;flex-shrink:0}
+.wl-remove:hover{background:rgba(239,68,68,.1);border-color:#f87171}
+.wl-empty{text-align:center;padding:2.5rem 1rem;color:var(--t2)}
+.role-group-title{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--t3);margin-bottom:.6rem;display:flex;align-items:center;gap:.5rem}
+.role-group-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── TATTICHE (identico a squadre.html) ── */
+.tact-wrap{display:flex;gap:1.5rem;padding:1.4rem 0 2rem;align-items:flex-start;flex-wrap:wrap}
+.tact-phase-bar{display:flex;gap:.4rem;margin-bottom:.9rem;flex-wrap:wrap;align-items:center}
+.tact-phase-btn{background:#1c1e2a;border:1px solid rgba(255,255,255,.1);color:#9ca3af;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.4rem 1rem;border-radius:5px;cursor:pointer;transition:all .15s}
+.tact-phase-btn:hover{border-color:#c4b5fd;color:#c4b5fd}
+.tact-phase-btn.active{background:rgba(34,211,160,.12);border-color:#22d3a0;color:#22d3a0}
+.tact-left{flex-shrink:0;width:340px}
+.tact-pitch-outer{position:relative;width:100%}
+.tact-pitch-svg{width:100%;display:block;border-radius:6px;border:1px solid rgba(46,107,46,.4)}
+.tact-slots-layer{position:absolute;inset:0;pointer-events:none}
+.tact-slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:all;cursor:default;z-index:2}
+.tact-shirt{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:800;border:2px solid rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.04em;box-shadow:0 2px 8px rgba(0,0,0,.5);line-height:1.1;text-align:center;padding:0 2px}
+.tact-shirt.empty{background:rgba(255,255,255,.07);color:rgba(255,255,255,.2);border-style:dashed;border-color:rgba(255,255,255,.15)}
+.tact-shirt.filled{color:#fff}
+.tact-slot-pos{font-size:.55rem;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.65);border-radius:3px;padding:1px 4px;white-space:nowrap}
+.tact-slot-name{font-size:.58rem;color:#e8eaf0;background:rgba(0,0,0,.7);border-radius:3px;padding:1px 5px;white-space:nowrap;max-width:72px;overflow:hidden;text-overflow:ellipsis}
+.tact-bench{margin-top:.9rem;background:#161824;border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:.65rem .8rem}
+.tact-bench-title{font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#4b5563;margin-bottom:.5rem;display:flex;justify-content:space-between}
+.tact-bench-list{display:flex;flex-wrap:wrap;gap:.3rem}
+.tact-bench-item{font-size:.68rem;color:#9ca3af;background:#1c1e2a;border:1px solid rgba(255,255,255,.06);border-radius:4px;padding:.2rem .5rem}
+.tact-bench-item.empty{color:#374151;border-style:dashed;font-style:italic}
+.tact-right{flex:1;min-width:300px}
+.tact-right-header{display:grid;grid-template-columns:32px 80px 100px 1fr;gap:.4rem;padding:.4rem .6rem;background:#13151f;border:1px solid rgba(255,255,255,.06);border-radius:6px 6px 0 0;font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#4b5563}
+.tact-rows{border:1px solid rgba(255,255,255,.06);border-top:none;border-radius:0 0 6px 6px;overflow:hidden}
+.tact-row{display:grid;grid-template-columns:32px 80px 100px 1fr;gap:.4rem;align-items:center;padding:.38rem .6rem;border-bottom:1px solid rgba(255,255,255,.04)}
+.tact-row:last-child{border-bottom:none}
+.tact-row:nth-child(odd){background:#161824}
+.tact-row:nth-child(even){background:#13151f}
+.tact-row-num{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;color:#374151;text-align:center}
+.tact-row-pos{font-size:.72rem;color:#9ca3af;font-weight:600}
+.tact-role-badge{display:inline-flex;align-items:center;justify-content:center;padding:.15rem .4rem;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:800;letter-spacing:.05em;min-width:30px}
+.tact-select{background:#1c1e2a;border:1px solid rgba(255,255,255,.08);color:#e8eaf0;font-family:'Outfit',sans-serif;font-size:.72rem;padding:.28rem .4rem;border-radius:4px;width:100%;outline:none;cursor:pointer}
+.tact-select:focus{border-color:#c4b5fd}
+.tact-select option{background:#1c1e2a}
+.tact-s-row{display:grid;grid-template-columns:28px 1fr;gap:.4rem;align-items:center;padding:.32rem .6rem;border-bottom:1px solid rgba(255,255,255,.04)}
+.tact-s-row:last-child{border-bottom:none}
+.tact-s-row:nth-child(odd){background:#161824}
+.tact-s-row:nth-child(even){background:#13151f}
+.tact-s-num{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;color:#374151}
+@media(max-width:720px){.tact-left{width:100%}.tact-right{min-width:100%}}
+</style>
+</head>
+<body class="gbg">
+<nav>
+  <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+  <ul class="nav-links">
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
+    <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
+    <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
+    <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+  </ul>
+</nav>
+<div class="ticker">
+  <div class="ticker-lbl">Live</div>
+  <div class="ticker-inner"><div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Top scorer: 14 gol in 8 partite</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori · FM26</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Top scorer: 14 gol in 8 partite</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori · FM26</span>
+  </div></div>
+</div>
+
+<!-- LOCK SCREEN -->
+<div id="lock-screen" class="lock-screen">
+  <div class="lock-card glass fade-in">
+    <span class="lock-icon">🔐</span>
+    <div class="lock-title">Area Riservata</div>
+    <p class="lock-sub">Seleziona la tua squadra e inserisci il PIN a 4 cifre per accedere alla dashboard personale.</p>
+    <select class="pin-select" id="pin-squad-select" onchange="resetPin()">
+      <option value="">— Scegli la tua squadra —</option>
+    </select>
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+    <div class="pin-numpad">
+      <button class="pin-key" onclick="pk('1')">1</button>
+      <button class="pin-key" onclick="pk('2')">2</button>
+      <button class="pin-key" onclick="pk('3')">3</button>
+      <button class="pin-key" onclick="pk('4')">4</button>
+      <button class="pin-key" onclick="pk('5')">5</button>
+      <button class="pin-key" onclick="pk('6')">6</button>
+      <button class="pin-key" onclick="pk('7')">7</button>
+      <button class="pin-key" onclick="pk('8')">8</button>
+      <button class="pin-key" onclick="pk('9')">9</button>
+      <button class="pin-key" onclick="pk('del')" style="font-size:.88rem;color:var(--t2)">⌫</button>
+      <button class="pin-key" onclick="pk('0')">0</button>
+      <button class="pin-key" style="visibility:hidden"></button>
+    </div>
+    <div class="pin-error" id="pin-error"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="dashboard sec">
+  <div class="dash-header">
+    <div class="dash-squad-logo" id="dash-logo"></div>
+    <div>
+      <div class="dash-squad-name" id="dash-name">—</div>
+      <div class="dash-squad-manager" id="dash-manager">—</div>
+    </div>
+    <button class="btn-back" style="margin-left:auto" onclick="logout()">⎋ Disconnetti</button>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('wl',this)">★ Watchlist</div>
+    <div class="tab" onclick="switchTab('squad',this)">📋 Mia Squadra</div>
+    <div class="tab" onclick="switchTab('tattica',this)">⚽ Tattiche</div>
+  </div>
+
+  <!-- WATCHLIST -->
+  <div id="tab-wl">
+    <div class="wl-stats" id="wl-stats"></div>
+    <div id="wl-content"></div>
+  </div>
+
+  <!-- MIA SQUADRA -->
+  <div id="tab-squad" style="display:none">
+    <div style="overflow-x:auto;margin-top:1rem">
+      <table class="player-tbl">
+        <thead><tr>
+          <th>Giocatore</th><th>Ruolo</th><th>Età</th><th>Naz.</th>
+          <th>CA</th><th>PA</th><th>Posizione FM</th><th>Stipendio</th>
+        </tr></thead>
+        <tbody id="squad-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- TATTICHE -->
+  <div id="tab-tattica" style="display:none">
+    <div class="tact-wrap">
+      <div class="tact-left">
+        <div class="tact-phase-bar">
+          <button class="tact-phase-btn active" onclick="setTactPhase('poss',this)">In possesso</button>
+          <button class="tact-phase-btn" onclick="setTactPhase('noposs',this)">Non in possesso</button>
+          <div id="tact-formation-bar" style="display:flex;align-items:center;gap:.5rem;margin-left:auto"></div>
+        </div>
+        <div class="tact-pitch-outer">
+          <svg viewBox="0 0 340 500" class="tact-pitch-svg">
+            <rect width="340" height="500" fill="#1a3a1a"/>
+            <rect x="0" y="0"   width="340" height="50"  fill="#1c3d1c" opacity=".7"/>
+            <rect x="0" y="100" width="340" height="50"  fill="#1c3d1c" opacity=".7"/>
+            <rect x="0" y="200" width="340" height="50"  fill="#1c3d1c" opacity=".7"/>
+            <rect x="0" y="300" width="340" height="50"  fill="#1c3d1c" opacity=".7"/>
+            <rect x="0" y="400" width="340" height="50"  fill="#1c3d1c" opacity=".7"/>
+            <rect x="10" y="10" width="320" height="480" stroke="#2e6b2e" stroke-width="1.5" fill="none"/>
+            <line x1="10" y1="250" x2="330" y2="250" stroke="#2e6b2e" stroke-width="1.2"/>
+            <circle cx="170" cy="250" r="50" stroke="#2e6b2e" stroke-width="1.2" fill="none"/>
+            <circle cx="170" cy="250" r="3" fill="#2e6b2e"/>
+            <rect x="75" y="10"  width="190" height="80" stroke="#2e6b2e" stroke-width="1.2" fill="none"/>
+            <rect x="75" y="410" width="190" height="80" stroke="#2e6b2e" stroke-width="1.2" fill="none"/>
+            <rect x="130" y="5"  width="80"  height="10" stroke="#2e6b2e" stroke-width="1" fill="rgba(46,107,46,.4)"/>
+            <rect x="130" y="485" width="80" height="10" stroke="#2e6b2e" stroke-width="1" fill="rgba(46,107,46,.4)"/>
+            <rect x="110" y="10"  width="120" height="35" stroke="#2e6b2e" stroke-width="1" fill="none"/>
+            <rect x="110" y="455" width="120" height="35" stroke="#2e6b2e" stroke-width="1" fill="none"/>
+          </svg>
+          <div id="tact-slots" class="tact-slots-layer"></div>
+        </div>
+        <div class="tact-bench">
+          <div class="tact-bench-title">A disposizione <span id="tact-bench-count">0 di 15</span></div>
+          <div id="tact-bench-list" class="tact-bench-list"></div>
+        </div>
+      </div>
+      <div class="tact-right">
+        <div class="tact-right-header">
+          <span>#</span><span>Posizione</span><span>Ruolo</span><span>Giocatore</span>
+        </div>
+        <div id="tact-rows" class="tact-rows"></div>
+      </div>
+    </div>
+  </div>
+</div><!-- /dashboard -->
+
+<script src="data.js"></script>
+<script src="players.js"></script>
+<script src="stipendi.js"></script>
+<script src="shared.js"></script>
+<script>
+/* ═══ PIN / AUTH ═══ */
+let pinEntry = '', loggedSq = null;
+
+function populateSelect() {
+  const sel = document.getElementById('pin-squad-select');
+  sel.innerHTML = '<option value="">— Scegli la tua squadra —</option>' +
+    SQUADS.map(sq => `<option value="${sq.id}">${sq.name}</option>`).join('');
+}
+function resetPin() { pinEntry=''; updateDots(); document.getElementById('pin-error').textContent=''; }
+function updateDots() { for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('filled', i<pinEntry.length); }
+function pk(k) {
+  if (!document.getElementById('pin-squad-select').value && k!=='del') {
+    document.getElementById('pin-error').textContent='Seleziona prima la tua squadra'; return;
+  }
+  if (k==='del') pinEntry=pinEntry.slice(0,-1);
+  else if (pinEntry.length<4) pinEntry+=k;
+  updateDots();
+  document.getElementById('pin-error').textContent='';
+  if (pinEntry.length===4) checkPin();
+}
+function checkPin() {
+  const sq = SQUADS.find(s => s.id===document.getElementById('pin-squad-select').value);
+  if (!sq) return;
+  if (pinEntry===sq.pin) { loggedSq=sq; showDashboard(sq); }
+  else {
+    document.getElementById('pin-error').textContent='❌ PIN errato. Riprova.';
+    setTimeout(()=>{ pinEntry=''; updateDots(); }, 600);
+  }
+}
+function showDashboard(sq) {
+  startSession(sq.id, sq.name);   // ← avvia sessione autenticata
+  document.getElementById('lock-screen').style.display='none';
+  document.getElementById('dashboard').classList.add('active');
+  const dl = document.getElementById('dash-logo');
+  if (sq.logo) {
+    dl.innerHTML=`<img src="${sq.logo}" alt="${sq.name}" style="width:100%;height:100%;object-fit:contain;padding:4px${sq.name==='JUVENTUS'?';background:#111':''}">`;
+  } else {
+    const abbr=sq.name.split(' ').map(w=>w[0]).join('').slice(0,3);
+    dl.innerHTML=`<div style="width:100%;height:100%;background:linear-gradient(135deg,${sq.color1},${sq.color2});display:flex;align-items:center;justify-content:center;border-radius:50%;font-family:'Barlow Condensed',sans-serif;font-weight:800;color:#fff">${abbr}</div>`;
+  }
+  document.getElementById('dash-name').textContent=sq.name;
+  document.getElementById('dash-manager').textContent=`Mister: ${sq.manager} · 🔒 Sessione attiva — watchlist privata`;
+  tactSqName = sq.name;
+  renderWatchlist(); renderMySquad(sq);
+}
+function logout() {
+  endSession();                    // ← termina sessione
+  loggedSq=null; pinEntry=''; updateDots();
+  document.getElementById('pin-squad-select').value='';
+  document.getElementById('pin-error').textContent='';
+  document.getElementById('dashboard').classList.remove('active');
+  document.getElementById('lock-screen').style.display='';
+  // reset tabs
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelector('.tabs .tab').classList.add('active');
+  document.getElementById('tab-wl').style.display='';
+  document.getElementById('tab-squad').style.display='none';
+  document.getElementById('tab-tattica').style.display='none';
+}
+function switchTab(tab, el) {
+  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-wl').style.display      = tab==='wl'      ? '' : 'none';
+  document.getElementById('tab-squad').style.display   = tab==='squad'   ? '' : 'none';
+  document.getElementById('tab-tattica').style.display = tab==='tattica' ? '' : 'none';
+  if (tab==='tattica') initTactics();
+}
+
+/* ═══ WATCHLIST ═══ */
+function renderWatchlist() {
+  const wl=getWL(), statsEl=document.getElementById('wl-stats'), contentEl=document.getElementById('wl-content');
+  const avgCA=wl.length?Math.round(wl.reduce((s,p)=>s+p.ca,0)/wl.length):0;
+  const totStip=wl.reduce((s,p)=>s+(typeof getStipendio==='function'?getStipendio(p)||0:0),0);
+  statsEl.innerHTML=`
+    <div class="wl-stat"><div class="wl-stat-num">${wl.length}</div><div class="wl-stat-lbl">Giocatori</div></div>
+    <div class="wl-stat"><div class="wl-stat-num">${avgCA||'—'}</div><div class="wl-stat-lbl">CA Medio</div></div>
+    <div class="wl-stat"><div class="wl-stat-num">${typeof fmtStipendio==='function'?fmtStipendio(totStip):'—'}</div><div class="wl-stat-lbl">Stipendio tot.</div></div>`;
+  if (!wl.length) { contentEl.innerHTML=`<div class="wl-empty"><div style="font-size:2rem;margin-bottom:.5rem">⭐</div><p>Nessun giocatore in watchlist.</p><p style="font-size:.76rem;margin-top:.3rem;color:var(--t3)">Sfoglia le <a href="squadre.html" style="color:var(--vb)">Squadre</a> e aggiungi giocatori con ☆</p></div>`; return; }
+  const ROLE_ORDER=['POR','DIF','D/TF','CEN','TRE','ATT'];
+  const ROLE_LABELS={POR:'Portieri',DIF:'Difensori','D/TF':'Terzini / Esterni',CEN:'Centrocampisti',TRE:'Trequartisti / Mezzali',ATT:'Attaccanti'};
+  const groups={POR:[],DIF:[],'D/TF':[],CEN:[],TRE:[],ATT:[]};
+  wl.forEach(p => { const r=displayRole(p.posizione||''); if(groups[r]!==undefined) groups[r].push(p); else groups['CEN'].push(p); });
+  Object.values(groups).forEach(arr=>arr.sort((a,b)=>b.ca-a.ca));
+  contentEl.innerHTML=ROLE_ORDER.filter(k=>groups[k].length>0).map(k=>`
+    <div style="margin-bottom:1.5rem">
+      <div class="role-group-title">${ROLE_LABELS[k]} (${groups[k].length})</div>
+      ${groups[k].map(p=>`<div class="wl-card" onclick="location.href='squadre.html?sq=${encodeURIComponent(p.squadName)}&pid=${p.id}'">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:.9rem">${p.nome}</div>
+          <div style="font-size:.73rem;color:var(--t2);margin-top:.12rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+            <span>${getFlag(p.naz)} ${p.naz.split(',')[0]}</span>
+            <span style="color:var(--t4)">·</span><span>${p.squadName}</span>
+            <span style="color:var(--t4)">·</span><span>${p.eta} anni</span>
+            <span style="color:var(--t4)">·</span>
+            <span class="rb r-white" style="font-size:.58rem">${displayRole(p.posizione)}</span>
+            <span style="color:var(--t4)">·</span><span class="val-tag">${typeof fmtStipendio==='function'?fmtStipendio(getStipendio(p)):'—'}</span>
+          </div>
+        </div>
+        <span class="ov ${getOvrClass(p.ca)}" style="font-size:1.4rem;margin-right:.6rem">${p.ca}</span>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:.85rem;color:var(--t2);margin-right:.6rem">→${p.pa}</span>
+        <button class="wl-remove" onclick="removeFromWL('${p.id}',event)">✕</button>
+      </div>`).join('')}
+    </div>`).join('');
+}
+function removeFromWL(pid,e){if(e)e.stopPropagation();saveWL(getWL().filter(p=>String(p.id)!==String(pid)));renderWatchlist();}
+
+/* ═══ MIA SQUADRA ═══ */
+function renderMySquad(sq) {
+  const players=PLAYERS_BY_TEAM[sq.name]||[];
+  document.getElementById('squad-tbody').innerHTML=sortByRole(players).map(p=>`
+    <tr onclick="location.href='squadre.html?sq=${encodeURIComponent(sq.name)}&pid=${p.id}'" style="cursor:pointer">
+      <td style="font-weight:500">${p.nome}</td>
+      <td><span class="rb r-white">${displayRole(p.posizione)}</span></td>
+      <td style="color:var(--t2)">${p.eta}</td>
+      <td title="${p.naz}">${getFlag(p.naz)}</td>
+      <td><span class="ov ${getOvrClass(p.ca)}">${p.ca}</span></td>
+      <td style="color:var(--t2)">${p.pa}</td>
+      <td style="color:var(--t3);font-size:.74rem">${p.posizione}</td>
+      <td class="val-tag">${typeof fmtStipendio==='function'?fmtStipendio(getStipendio(p)):'—'}</td>
+    </tr>`).join('');
+}
+
+/* ═══ TATTICHE ═══ */
+const TC={gk:'#f59e0b',def:'#3b82f6',mid:'#8b5cf6',att:'#22d3a0',wide:'#06b6d4'};
+const FORMATIONS={
+  '4-4-2':{label:'4-4-2',slots:[{id:'por',label:'P (C)',x:50,y:90,c:TC.gk},{id:'dd',label:'D (D)',x:82,y:75,c:TC.def},{id:'dc1',label:'D (C)',x:62,y:77,c:TC.def},{id:'dc2',label:'D (C)',x:38,y:77,c:TC.def},{id:'ds',label:'D (S)',x:18,y:75,c:TC.def},{id:'ed',label:'C (D)',x:80,y:55,c:TC.wide},{id:'cc1',label:'C (C)',x:60,y:57,c:TC.mid},{id:'cc2',label:'C (C)',x:40,y:57,c:TC.mid},{id:'es',label:'C (S)',x:20,y:55,c:TC.wide},{id:'at1',label:'A (D)',x:62,y:22,c:TC.att},{id:'at2',label:'A (S)',x:38,y:22,c:TC.att}]},
+  '4-3-3':{label:'4-3-3',slots:[{id:'por',label:'P (C)',x:50,y:90,c:TC.gk},{id:'dd',label:'D (D)',x:82,y:75,c:TC.def},{id:'dc1',label:'D (C)',x:62,y:77,c:TC.def},{id:'dc2',label:'D (C)',x:38,y:77,c:TC.def},{id:'ds',label:'D (S)',x:18,y:75,c:TC.def},{id:'cc1',label:'C (C)',x:62,y:52,c:TC.mid},{id:'cc2',label:'C (C)',x:38,y:52,c:TC.mid},{id:'cc3',label:'C (C)',x:50,y:58,c:TC.mid},{id:'ad',label:'A (D)',x:80,y:20,c:TC.att},{id:'ac',label:'A (C)',x:50,y:16,c:TC.att},{id:'as_',label:'A (S)',x:20,y:20,c:TC.att}]},
+  '4-2-3-1':{label:'4-2-3-1',slots:[{id:'por',label:'P (C)',x:50,y:90,c:TC.gk},{id:'dd',label:'D (D)',x:82,y:75,c:TC.def},{id:'dc1',label:'D (C)',x:62,y:77,c:TC.def},{id:'dc2',label:'D (C)',x:38,y:77,c:TC.def},{id:'ds',label:'D (S)',x:18,y:75,c:TC.def},{id:'mc1',label:'M (C)',x:62,y:60,c:TC.mid},{id:'mc2',label:'M (C)',x:38,y:60,c:TC.mid},{id:'td',label:'T (D)',x:75,y:40,c:TC.wide},{id:'tc',label:'T (C)',x:50,y:37,c:TC.wide},{id:'ts',label:'T (S)',x:25,y:40,c:TC.wide},{id:'at1',label:'A (C)',x:50,y:18,c:TC.att}]},
+  '3-5-2':{label:'3-5-2',slots:[{id:'por',label:'P (C)',x:50,y:90,c:TC.gk},{id:'dc1',label:'D (D)',x:72,y:76,c:TC.def},{id:'dc2',label:'D (C)',x:50,y:78,c:TC.def},{id:'dc3',label:'D (S)',x:28,y:76,c:TC.def},{id:'ed',label:'E (D)',x:86,y:55,c:TC.wide},{id:'cc1',label:'C (D)',x:66,y:55,c:TC.mid},{id:'cc2',label:'C (C)',x:50,y:52,c:TC.mid},{id:'cc3',label:'C (S)',x:34,y:55,c:TC.mid},{id:'es',label:'E (S)',x:14,y:55,c:TC.wide},{id:'at1',label:'A (D)',x:62,y:22,c:TC.att},{id:'at2',label:'A (S)',x:38,y:22,c:TC.att}]},
+  '3-4-3':{label:'3-4-3',slots:[{id:'por',label:'P (C)',x:50,y:90,c:TC.gk},{id:'dc1',label:'D (D)',x:72,y:76,c:TC.def},{id:'dc2',label:'D (C)',x:50,y:78,c:TC.def},{id:'dc3',label:'D (S)',x:28,y:76,c:TC.def},{id:'ed',label:'C (D)',x:74,y:56,c:TC.wide},{id:'cc1',label:'C (C)',x:59,y:58,c:TC.mid},{id:'cc2',label:'C (C)',x:41,y:58,c:TC.mid},{id:'es',label:'C (S)',x:26,y:56,c:TC.wide},{id:'ad',label:'A (D)',x:74,y:20,c:TC.att},{id:'ac',label:'A (C)',x:50,y:16,c:TC.att},{id:'as_',label:'A (S)',x:26,y:20,c:TC.att}]},
+  '4-1-4-1':{label:'4-1-4-1',slots:[{id:'por',label:'P (C)',x:50,y:90,c:TC.gk},{id:'dd',label:'D (D)',x:82,y:75,c:TC.def},{id:'dc1',label:'D (C)',x:62,y:77,c:TC.def},{id:'dc2',label:'D (C)',x:38,y:77,c:TC.def},{id:'ds',label:'D (S)',x:18,y:75,c:TC.def},{id:'mc',label:'M (C)',x:50,y:63,c:TC.mid},{id:'ed',label:'C (D)',x:78,y:50,c:TC.wide},{id:'cc1',label:'C (C)',x:61,y:50,c:TC.mid},{id:'cc2',label:'C (C)',x:39,y:50,c:TC.mid},{id:'es',label:'C (S)',x:22,y:50,c:TC.wide},{id:'at1',label:'A (C)',x:50,y:18,c:TC.att}]},
+  '4-3-1-2':{label:'4-3-1-2',slots:[{id:'por',label:'P (C)',x:50,y:90,c:TC.gk},{id:'dd',label:'D (D)',x:82,y:75,c:TC.def},{id:'dc1',label:'D (C)',x:62,y:77,c:TC.def},{id:'dc2',label:'D (C)',x:38,y:77,c:TC.def},{id:'ds',label:'D (S)',x:18,y:75,c:TC.def},{id:'cc1',label:'C (D)',x:70,y:57,c:TC.mid},{id:'cc2',label:'C (C)',x:50,y:60,c:TC.mid},{id:'cc3',label:'C (S)',x:30,y:57,c:TC.mid},{id:'tc',label:'T (C)',x:50,y:40,c:TC.wide},{id:'at1',label:'A (D)',x:63,y:20,c:TC.att},{id:'at2',label:'A (S)',x:37,y:20,c:TC.att}]},
+  '5-3-2':{label:'5-3-2',slots:[{id:'por',label:'P (C)',x:50,y:90,c:TC.gk},{id:'ed',label:'E (D)',x:88,y:72,c:TC.def},{id:'dc1',label:'D (D)',x:70,y:76,c:TC.def},{id:'dc2',label:'D (C)',x:50,y:78,c:TC.def},{id:'dc3',label:'D (S)',x:30,y:76,c:TC.def},{id:'es',label:'E (S)',x:12,y:72,c:TC.def},{id:'cc1',label:'C (D)',x:67,y:52,c:TC.mid},{id:'cc2',label:'C (C)',x:50,y:50,c:TC.mid},{id:'cc3',label:'C (S)',x:33,y:52,c:TC.mid},{id:'at1',label:'A (D)',x:62,y:22,c:TC.att},{id:'at2',label:'A (S)',x:38,y:22,c:TC.att}]},
+  '4-4-1-1':{label:'4-4-1-1',slots:[{id:'por',label:'P (C)',x:50,y:90,c:TC.gk},{id:'dd',label:'D (D)',x:82,y:75,c:TC.def},{id:'dc1',label:'D (C)',x:62,y:77,c:TC.def},{id:'dc2',label:'D (C)',x:38,y:77,c:TC.def},{id:'ds',label:'D (S)',x:18,y:75,c:TC.def},{id:'ed',label:'C (D)',x:80,y:56,c:TC.wide},{id:'cc1',label:'C (C)',x:60,y:58,c:TC.mid},{id:'cc2',label:'C (C)',x:40,y:58,c:TC.mid},{id:'es',label:'C (S)',x:20,y:56,c:TC.wide},{id:'ss',label:'T (C)',x:50,y:38,c:TC.wide},{id:'at1',label:'A (C)',x:50,y:18,c:TC.att}]},
+  '3-6-1':{label:'3-6-1',slots:[{id:'por',label:'P (C)',x:50,y:90,c:TC.gk},{id:'dc1',label:'D (D)',x:72,y:76,c:TC.def},{id:'dc2',label:'D (C)',x:50,y:78,c:TC.def},{id:'dc3',label:'D (S)',x:28,y:76,c:TC.def},{id:'ed',label:'C (D)',x:84,y:55,c:TC.wide},{id:'cc1',label:'C (D)',x:67,y:54,c:TC.mid},{id:'cc2',label:'C (DC)',x:56,y:51,c:TC.mid},{id:'cc3',label:'C (SC)',x:44,y:51,c:TC.mid},{id:'cc4',label:'C (S)',x:33,y:54,c:TC.mid},{id:'es',label:'C (S)',x:16,y:55,c:TC.wide},{id:'at1',label:'A (C)',x:50,y:18,c:TC.att}]},
+};
+const BENCH_COUNT=15, TACT_KEY='fmto_tact_';
+let tactState={poss:{},noposs:{},poss_formation:'4-2-3-1',noposs_formation:'4-2-3-1'};
+let curTactPhase='poss', curFormation='4-2-3-1', tactSqName=null, tactInited=false;
+
+function saveTactState(){try{localStorage.setItem(TACT_KEY+tactSqName,JSON.stringify(tactState));}catch(e){}}
+function loadTactState(){
+  try{
+    const raw=localStorage.getItem(TACT_KEY+tactSqName);
+    if(raw){const d=JSON.parse(raw);tactState=Object.assign({poss:{},noposs:{},poss_formation:'4-2-3-1',noposs_formation:'4-2-3-1'},d);}
+    else tactState={poss:{},noposs:{},poss_formation:'4-2-3-1',noposs_formation:'4-2-3-1'};
+    curFormation=tactState[curTactPhase+'_formation']||'4-2-3-1';
+  }catch(e){tactState={poss:{},noposs:{},poss_formation:'4-2-3-1',noposs_formation:'4-2-3-1'};}
+}
+function curPhaseState(){return tactState[curTactPhase];}
+function curSlots(){return FORMATIONS[curFormation]?.slots||FORMATIONS['4-2-3-1'].slots;}
+
+function initTactics(){
+  if(!tactInited){
+    // build formation selector once
+    const bar=document.getElementById('tact-formation-bar');
+    bar.innerHTML=`<label style="font-size:.68rem;color:#6b7280;font-weight:600;letter-spacing:.1em;text-transform:uppercase">Schema</label>
+      <select id="tact-formation-sel" class="tact-select" style="max-width:120px;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:800" onchange="setFormation(this.value)">
+        ${Object.keys(FORMATIONS).map(k=>`<option value="${k}">${FORMATIONS[k].label}</option>`).join('')}
+      </select>`;
+    tactInited=true;
+  }
+  loadTactState();
+  document.getElementById('tact-formation-sel').value=curFormation;
+  renderTactics();
+}
+
+function setTactPhase(phase,btn){
+  curTactPhase=phase;
+  document.querySelectorAll('.tact-phase-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  curFormation=tactState[curTactPhase+'_formation']||'4-2-3-1';
+  const sel=document.getElementById('tact-formation-sel');
+  if(sel)sel.value=curFormation;
+  renderTactics();
+}
+
+function setFormation(val){
+  curFormation=val;
+  tactState[curTactPhase+'_formation']=val;
+  tactState[curTactPhase]={};
+  saveTactState(); renderTactics();
+}
+
+function renderTactics(){
+  const players=PLAYERS_BY_TEAM[tactSqName]||[];
+  const sq=SQUADS.find(s=>s.name===tactSqName);
+  const state=curPhaseState(), color1=sq?sq.color1:'#8b5cf6', slots=curSlots();
+  if(document.getElementById('tact-formation-sel'))document.getElementById('tact-formation-sel').value=curFormation;
+
+  // Pitch
+  document.getElementById('tact-slots').innerHTML=slots.map(pos=>{
+    const pid=state[pos.id]||null;
+    const player=pid?players.find(p=>String(p.id)===String(pid)):null;
+    const initials=player?player.nome.split(' ').map(w=>w[0]).join('').slice(0,3):'+';
+    return `<div class="tact-slot" style="left:${pos.x}%;top:${pos.y}%">
+      <div class="tact-slot-pos" style="color:${pos.c}">${pos.label}</div>
+      <div class="tact-shirt ${player?'filled':'empty'}" style="${player?`background:${color1};box-shadow:0 0 10px ${color1}55`:''}">${initials}</div>
+      ${player?`<div class="tact-slot-name">${player.nome.split(' ').slice(-1)[0]}</div>`:''}
+    </div>`;
+  }).join('');
+
+  // Bench
+  let bc=0; for(let i=1;i<=BENCH_COUNT;i++) if(state['s'+i])bc++;
+  document.getElementById('tact-bench-count').textContent=`${bc} di ${BENCH_COUNT}`;
+  document.getElementById('tact-bench-list').innerHTML=Array.from({length:BENCH_COUNT},(_,i)=>{
+    const pid=state['s'+(i+1)]||null;
+    const player=pid?players.find(p=>String(p.id)===String(pid)):null;
+    return player
+      ?`<div class="tact-bench-item">${getFlag(player.naz)} ${player.nome} <span style="color:#6b7280;font-size:.6rem">${displayRole(player.posizione)}</span></div>`
+      :`<div class="tact-bench-item empty">S${i+1}</div>`;
+  }).join('');
+
+  // Rows
+  function pOpts(currentPid){
+    return`<option value="">— Nessuno —</option>`+
+      sortByRole(players).map(p=>{
+        const used=Object.values(state).some(v=>v&&String(v)===String(p.id)&&String(p.id)!==String(currentPid));
+        return`<option value="${p.id}" ${String(p.id)===String(currentPid)?'selected':''} ${used?'disabled':''}>${p.nome} (${displayRole(p.posizione)} · CA ${p.ca})</option>`;
+      }).join('');
+  }
+  const posRows=slots.map((pos,idx)=>{
+    const pid=state[pos.id]||'';
+    return`<div class="tact-row">
+      <div class="tact-row-num">${idx+1}</div>
+      <div class="tact-row-pos">${pos.label}</div>
+      <div><span class="tact-role-badge" style="background:${pos.c}22;border:1px solid ${pos.c}55;color:${pos.c}">${pos.label}</span></div>
+      <select class="tact-select" data-slot="${pos.id}" onchange="onTactSelect(this)">${pOpts(pid)}</select>
+    </div>`;
+  }).join('');
+  const benchRows=Array.from({length:BENCH_COUNT},(_,i)=>{
+    const key='s'+(i+1), pid=state[key]||'';
+    return`<div class="tact-s-row"><div class="tact-s-num">S${i+1}</div>
+      <select class="tact-select" data-slot="${key}" onchange="onTactSelect(this)">${pOpts(pid)}</select>
+    </div>`;
+  }).join('');
+  document.getElementById('tact-rows').innerHTML=posRows+
+    `<div style="background:#111318;padding:.4rem .6rem;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#4b5563;border-bottom:1px solid rgba(255,255,255,.04)">A disposizione</div>`+
+    benchRows;
+}
+
+function onTactSelect(sel){
+  curPhaseState()[sel.dataset.slot]=sel.value||null;
+  saveTactState(); renderTactics();
+}
+
+populateSelect();
+</script>
+</body>
+</html>

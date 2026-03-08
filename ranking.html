@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMTO 2.0 — Ranking</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── RANKING ── */
+.ranking-wrap { max-width:720px; margin:0 auto; }
+.ranking-intro { font-size:.9rem; color:var(--t2); line-height:1.55; margin-bottom:1.5rem; }
+.ranking-table-wrap {
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  overflow:hidden;
+}
+.ranking-table {
+  width:100%; border-collapse:collapse; font-size:.88rem;
+}
+.ranking-table th {
+  text-align:left; padding:.75rem 1rem; background:rgba(139,92,246,.08);
+  font-family:'Barlow Condensed',sans-serif; font-weight:700; color:var(--t1);
+  border-bottom:1px solid var(--border);
+}
+.ranking-table th:nth-child(1){ width:4rem; text-align:center; }
+.ranking-table th:nth-child(2){ padding-left:1rem; }
+.ranking-table th:nth-child(3){ width:7rem; text-align:right; }
+.ranking-table td {
+  padding:.6rem 1rem; border-bottom:1px solid rgba(139,92,246,.08);
+  color:var(--t2); vertical-align:middle;
+}
+.ranking-table tr:last-child td { border-bottom:none; }
+.ranking-table tr:hover td { background:rgba(255,255,255,.02); }
+.ranking-table td:nth-child(1){ text-align:center; font-weight:700; color:var(--t3); font-size:.8rem; }
+.ranking-table td:nth-child(3){ text-align:right; font-weight:600; color:var(--t1); }
+.ranking-table .rank-logo {
+  width:28px; height:28px; border-radius:50%; overflow:hidden; display:inline-flex; align-items:center; justify-content:center;
+  margin-right:.6rem; vertical-align:middle; flex-shrink:0; background:var(--sf);
+}
+.ranking-table .rank-logo img { width:100%; height:100%; object-fit:contain; padding:2px; }
+.ranking-table .rank-logo span { font-size:.65rem; font-weight:700; color:var(--t3); }
+.ranking-table .rank-squad { font-weight:600; color:var(--t1); }
+@media(max-width:520px){ .ranking-table th:nth-child(1), .ranking-table td:nth-child(1){ width:2.5rem; padding-left:.5rem; } .ranking-table .rank-logo{ width:24px; height:24px; margin-right:.4rem; } }
+</style>
+</head>
+<body class="gbg">
+
+<nav>
+  <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+  <ul class="nav-links">
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
+    <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
+    <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
+    <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+  </ul>
+</nav>
+
+<div class="ticker">
+  <div class="ticker-lbl">Live</div>
+  <div class="ticker-inner"><div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Ranking FMTO 2.0 — 56 squadre</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.400 giocatori · FM26</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Ranking FMTO 2.0 — 56 squadre</span>
+  </div></div>
+</div>
+
+<div class="sec">
+  <div style="margin-bottom:1rem">
+    <div class="sec-tag">Classifica</div>
+    <h2 class="sec-title">Ranking</h2>
+    <p class="ranking-intro">Classifica generale delle 56 squadre del torneo FMTO 2.0 in base al punteggio.</p>
+  </div>
+
+  <div class="ranking-wrap">
+    <div class="ranking-table-wrap">
+      <table class="ranking-table" id="ranking-table">
+        <thead>
+          <tr>
+            <th>POS</th>
+            <th>SQUADRA</th>
+            <th>PUNTEGGIO</th>
+          </tr>
+        </thead>
+        <tbody id="ranking-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="shared.js"></script>
+<script>
+(function(){
+  var RANKING = [
+    { pos:1, squadra:"Liverpool", punteggio:7462.5 },
+    { pos:2, squadra:"Ajax", punteggio:6875 },
+    { pos:3, squadra:"Bayern Monaco", punteggio:6500 },
+    { pos:4, squadra:"Juventus", punteggio:6475 },
+    { pos:5, squadra:"Chelsea", punteggio:6350 },
+    { pos:6, squadra:"Borussia Dortmund", punteggio:6262.5 },
+    { pos:7, squadra:"Atalanta", punteggio:6175 },
+    { pos:8, squadra:"Dinamo Kiev", punteggio:6075 },
+    { pos:9, squadra:"Zenit", punteggio:6050 },
+    { pos:10, squadra:"Paris Saint Germain", punteggio:5912.5 },
+    { pos:11, squadra:"Athletic Bilbao", punteggio:5612.5 },
+    { pos:12, squadra:"Manchester City", punteggio:5450 },
+    { pos:13, squadra:"Eintracht Francoforte", punteggio:5237.5 },
+    { pos:14, squadra:"Villarreal", punteggio:5150 },
+    { pos:15, squadra:"Inter", punteggio:5075 },
+    { pos:16, squadra:"Copenaghen", punteggio:5012.5 },
+    { pos:17, squadra:"Leeds", punteggio:4850 },
+    { pos:18, squadra:"Dinamo Zagabria", punteggio:4837.5 },
+    { pos:19, squadra:"Lazio", punteggio:4675 },
+    { pos:20, squadra:"Valencia", punteggio:4662.5 },
+    { pos:21, squadra:"Crystal Palace", punteggio:4637.5 },
+    { pos:22, squadra:"Bologna", punteggio:4625 },
+    { pos:23, squadra:"Arsenal", punteggio:4562.5 },
+    { pos:24, squadra:"Lipsia", punteggio:4350 },
+    { pos:25, squadra:"Siviglia", punteggio:4312.5 },
+    { pos:26, squadra:"Tottenham", punteggio:4050 },
+    { pos:27, squadra:"Paok Salonicco", punteggio:3550 },
+    { pos:28, squadra:"Milan", punteggio:3525 },
+    { pos:29, squadra:"Roma", punteggio:3450 },
+    { pos:30, squadra:"Benfica", punteggio:3312.5 },
+    { pos:31, squadra:"Celtic", punteggio:3250 },
+    { pos:32, squadra:"Manchester United", punteggio:3237.5 },
+    { pos:33, squadra:"Basilea", punteggio:3087.5 },
+    { pos:34, squadra:"Lione", punteggio:3075 },
+    { pos:35, squadra:"Sporting Lisbona", punteggio:2925 },
+    { pos:36, squadra:"Barcelona", punteggio:2850 },
+    { pos:37, squadra:"Gent", punteggio:2750 },
+    { pos:38, squadra:"Atletico Madrid", punteggio:2600 },
+    { pos:39, squadra:"Astana", punteggio:2512.5 },
+    { pos:40, squadra:"Bate Borisov", punteggio:2512.5 },
+    { pos:41, squadra:"Stella Rossa", punteggio:2362.5 },
+    { pos:42, squadra:"Olympiakos", punteggio:2187.5 },
+    { pos:43, squadra:"Fiorentina", punteggio:1962.5 },
+    { pos:44, squadra:"Schalke 04", punteggio:1875 },
+    { pos:45, squadra:"Glasgow Rangers", punteggio:1662.5 },
+    { pos:46, squadra:"Anderlecht", punteggio:1637.5 },
+    { pos:47, squadra:"Borussia Monchengladbach", punteggio:1625 },
+    { pos:48, squadra:"Newcastle", punteggio:1587.5 },
+    { pos:49, squadra:"Porto", punteggio:1537.5 },
+    { pos:50, squadra:"Club Brugge", punteggio:1437.5 },
+    { pos:51, squadra:"PSV", punteggio:1175 },
+    { pos:52, squadra:"Real Madrid", punteggio:1150 },
+    { pos:53, squadra:"Real Sociedad", punteggio:825 },
+    { pos:54, squadra:"Bayer Leverkusen", punteggio:475 },
+    { pos:55, squadra:"Napoli", punteggio:462.5 },
+    { pos:56, squadra:"AZ Alkmaar", punteggio:287.5 }
+  ];
+
+  function norm(s){ return (s||'').toUpperCase().replace(/[ÀÁÂÃÄÅàáâãäå]/g,'A').replace(/[ÈÉÊËèéêë]/g,'E').replace(/[ÌÍÎÏìíîï]/g,'I').replace(/[ÒÓÔÕÖòóôõö]/g,'O').replace(/[ÙÚÛÜùúûü]/g,'U').replace(/[Çç]/g,'C').replace(/[Ññ]/g,'N').replace(/[Öö]/g,'O').replace(/[Üü]/g,'U').trim(); }
+  function findSquad(displayName){
+    if(typeof SQUADS==='undefined') return null;
+    var d = norm(displayName);
+    var exact = SQUADS.find(function(s){ return norm(s.name) === d; });
+    if(exact) return exact;
+    var partial = SQUADS.find(function(s){ return norm(s.name).indexOf(d)!==-1 || d.indexOf(norm(s.name))!==-1; });
+    if(partial) return partial;
+    var words = d.split(/\s+/);
+    return SQUADS.find(function(s){
+      var sn = norm(s.name);
+      return words.every(function(w){ return sn.indexOf(w)!==-1; }) || sn.split(/\s+/).every(function(w){ return d.indexOf(w)!==-1; });
+    }) || null;
+  }
+
+  var tbody = document.getElementById('ranking-tbody');
+  if(tbody){
+    tbody.innerHTML = RANKING.map(function(r){
+      var sq = findSquad(r.squadra);
+      var logoHtml = sq && sq.logo
+        ? '<img src="'+sq.logo+'" alt="'+r.squadra+'"'+(sq.name==='JUVENTUS'?' style="background:#111;border-radius:50%;padding:2px"':'')+'>'
+        : '<span>'+(r.squadra.split(' ').map(function(w){ return w[0]; }).join('').slice(0,2))+'</span>';
+      var punteggioStr = String(r.punteggio).replace('.', ',');
+      return '<tr><td>'+r.pos+'º</td><td><div class="rank-logo">'+logoHtml+'</div><span class="rank-squad">'+r.squadra+'</span></td><td>'+punteggioStr+'</td></tr>';
+    }).join('');
+  }
+  if(typeof initNav==='function') initNav();
+})();
+</script>
+</body>
+</html>

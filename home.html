@@ -86,9 +86,19 @@
 .ql-arrow { position:absolute; bottom:1.2rem; right:1.2rem; color:var(--v); font-size:.85rem; transition:transform .18s; }
 .ql-card:hover .ql-arrow { transform:translateX(3px); }
 
-/* Mobile: 2 pulsanti per riga, ottimizzato per schermo cellulare */
+/* Mobile: logo e pulsanti più in alto, 2 per riga */
 @media (max-width: 768px) {
-  .quick-links-wrap { padding: 0 1rem 2.5rem; }
+  .hero {
+    min-height: 0;
+    justify-content: flex-start;
+    padding: 1rem 1rem 1.25rem;
+  }
+  .hero-logo { margin-bottom: 0.6rem; }
+  .eyebrow { margin-bottom: 0.5rem; }
+  .hero-title { margin-bottom: 0.15em; }
+  .hero-sub { margin-bottom: 1rem; }
+  .scroll-hint { display: none; }
+  .quick-links-wrap { padding: 0.5rem 1rem 2rem; margin-top: 0; }
   .quick-links-row-1,
   .quick-links-row-2 {
     grid-template-columns: repeat(2, 1fr);

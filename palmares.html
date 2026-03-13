@@ -6,29 +6,55 @@
   <title>FMTO 2.0 — Palmares</title>
   <link rel="stylesheet" href="style.css">
   <style>
-  .palmares-intro { font-size:.9rem; color:var(--t2); line-height:1.55; margin-bottom:1.8rem; max-width:640px; }
-  .palmares-grid { display:grid; gap:1rem; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); }
-  .palmares-card {
-    background:var(--card); border:1px solid var(--border); border-radius:12px;
-    padding:1.25rem 1.2rem; transition:border-color .2s, box-shadow .2s;
+  .uc-wrap {
+    min-height: calc(100vh - 140px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
   }
-  .palmares-card:hover { border-color:var(--v); box-shadow:0 6px 20px rgba(139,92,246,.12); }
-  .palmares-card h3 { font-family:'Barlow Condensed',sans-serif; font-size:1.15rem; font-weight:700; color:var(--t1); margin:0 0 .5rem; }
-  .palmares-card .meta { font-size:.78rem; color:var(--t3); margin-bottom:.6rem; }
-  .palmares-card .winner { font-weight:600; color:var(--vb); font-size:.9rem; }
-  .palmares-card .detail { font-size:.8rem; color:var(--t2); margin-top:.35rem; }
-  .albo-section { margin-top:2.5rem; }
-  .albo-section h3 { font-family:'Barlow Condensed',sans-serif; font-size:1.35rem; font-weight:800; color:var(--t1); margin:0 0 .5rem; }
-  .albo-source { font-size:.78rem; color:var(--t3); margin-bottom:1rem; }
-  .albo-source a { color:var(--vb); text-decoration:none; }
-  .albo-source a:hover { text-decoration:underline; }
-  .albo-table { width:100%; max-width:480px; border-collapse:collapse; font-size:.88rem; }
-  .albo-table th { text-align:left; padding:.5rem .75rem; color:var(--t3); font-weight:600; text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--border); }
-  .albo-table td { padding:.55rem .75rem; border-bottom:1px solid rgba(139,92,246,.08); }
-  .albo-table tr:hover td { background:rgba(139,92,246,.04); }
-  .albo-table .stagione { color:var(--t2); font-variant-numeric:tabular-nums; }
-  .albo-table .vincitore { font-weight:600; color:var(--vb); }
-  @media (max-width:480px) { .albo-table { font-size:.82rem; } .albo-table th, .albo-table td { padding:.45rem .5rem; } }
+  .uc-box {
+    text-align:center;
+    padding:2.5rem 2rem;
+    border-radius:16px;
+    background:radial-gradient(circle at top,rgba(139,92,246,.22),rgba(15,23,42,.95));
+    box-shadow:0 18px 45px rgba(15,23,42,.9);
+    border:1px solid rgba(148,163,184,.3);
+  }
+  .uc-logo {
+    font-family:'Barlow Condensed',sans-serif;
+    font-size:2.4rem;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    margin-bottom:.4rem;
+  }
+  .uc-logo span {
+    background:linear-gradient(135deg,var(--vb),var(--g));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+    background-clip:text;
+  }
+  .uc-sub { font-size:.8rem; color:var(--t3); margin-bottom:1.6rem; text-transform:uppercase; letter-spacing:.18em; }
+  .uc-title { font-size:1.4rem; font-weight:700; color:var(--t1); margin-bottom:.5rem; }
+  .uc-text { font-size:.9rem; color:var(--t2); max-width:420px; margin:0 auto 1.2rem; }
+  .uc-pill {
+    display:inline-flex;
+    align-items:center;
+    gap:.35rem;
+    padding:.35rem .8rem;
+    border-radius:999px;
+    background:rgba(34,197,94,.1);
+    color:#bbf7d0;
+    font-size:.75rem;
+  }
+  .uc-dot {
+    width:8px;height:8px;border-radius:999px;
+    background:radial-gradient(circle at 30% 30%,#bbf7d0,#22c55e);
+  }
+  @media (max-width:480px){
+    .uc-box{padding:2rem 1.4rem;}
+    .uc-logo{font-size:2rem;}
+  }
   </style>
 </head>
 <body class="gbg">
@@ -57,53 +83,17 @@
 </div>
 
 <section class="sec">
-  <div style="margin-bottom:1rem">
-    <div class="sec-tag">Albo d'oro</div>
-    <h2 class="sec-title">Palmares</h2>
-    <p class="palmares-intro">I trofei e i titoli del torneo FMTO. Campionato, coppe e riconoscimenti stagione per stagione.</p>
-  </div>
-
-  <div class="palmares-grid" id="palmares-grid">
-    <div class="palmares-card">
-      <h3>Serie A FMTO</h3>
-      <div class="meta">Stagione 26_1</div>
-      <div class="winner">—</div>
-      <div class="detail">Vincitore campionato</div>
+  <div class="uc-wrap">
+    <div class="uc-box">
+      <div class="uc-logo">FMTO<span> 2.0</span></div>
+      <div class="uc-sub">Palmares</div>
+      <div class="uc-title">Under Construction</div>
+      <p class="uc-text">
+        La sezione con l’albo d’oro ufficiale di FMTO è in fase di allestimento.
+        A breve troverai qui trofei, stagioni e vincitori aggiornati.
+      </p>
+      <div class="uc-pill"><span class="uc-dot"></span>Work in progress</div>
     </div>
-    <div class="palmares-card">
-      <h3>Coppa FMTO</h3>
-      <div class="meta">Stagione 26_1</div>
-      <div class="winner">—</div>
-      <div class="detail">Vincitore coppa</div>
-    </div>
-    <div class="palmares-card">
-      <h3>Champions League FMTO</h3>
-      <div class="meta">Stagione 26_1</div>
-      <div class="winner">—</div>
-      <div class="detail">Vincitore competizione europea</div>
-    </div>
-  </div>
-
-  <div class="albo-section">
-    <h3>Albo d'oro Serie A</h3>
-    <p class="albo-source">Dati aggiornati alla Stagione 2024_4. Fonte: <a href="https://www.fmfusion.it/Thread-FMTO-Serie-A-FMTO-Albo-d-oro-Serie-A?pid=21802#pid21802" target="_blank" rel="noopener">FMFusion — [FMTO] Albo d'oro Serie A</a></p>
-    <table class="albo-table">
-      <thead>
-        <tr><th>Stagione</th><th>Vincitore</th></tr>
-      </thead>
-      <tbody>
-        <tr><td class="stagione">2024_4</td><td class="vincitore">—</td></tr>
-        <tr><td class="stagione">2024_3</td><td class="vincitore">—</td></tr>
-        <tr><td class="stagione">2024_2</td><td class="vincitore">—</td></tr>
-        <tr><td class="stagione">2024_1</td><td class="vincitore">—</td></tr>
-        <tr><td class="stagione">2023_2</td><td class="vincitore">—</td></tr>
-        <tr><td class="stagione">2023_1</td><td class="vincitore">—</td></tr>
-        <tr><td class="stagione">2022_2</td><td class="vincitore">—</td></tr>
-        <tr><td class="stagione">2022_1</td><td class="vincitore">—</td></tr>
-        <tr><td class="stagione">2021_2</td><td class="vincitore">—</td></tr>
-        <tr><td class="stagione">2021_1</td><td class="vincitore">—</td></tr>
-      </tbody>
-    </table>
   </div>
 </section>
 

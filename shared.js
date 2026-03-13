@@ -64,7 +64,13 @@ function fmtPrice(v){
   if(v>=1000)return'€'+(v/1000).toFixed(0)+'K';
   return'€'+v;
 }
-function fmtStipendio(v){ return fmtPrice(v); }
+// Per gli stipendi: se < 1M mostra in milioni con una cifra decimale (es. 200k → "€0.2M"),
+// altrimenti usa il formato standard con € e M.
+function fmtStipendio(v){
+  if(!v||v<=0)return'—';
+  if(v<1000000)return'€'+(v/1000000).toFixed(1)+'M';
+  return fmtPrice(v);
+}
 function getStipendio(p){ return (typeof STIPENDI_BY_ID!=='undefined'&&STIPENDI_BY_ID[p.id])?STIPENDI_BY_ID[p.id]:null; }
 
 // ── WATCHLIST — per-squad, richiede autenticazione

@@ -745,7 +745,7 @@ function openFMCard(pid, sqName){
   document.getElementById('fm-hdr-name').textContent=p.nome;
   document.getElementById('fm-hdr-role').textContent=isGK?'Portiere':`${displayRole(p.posizione)} (${p.posizione||''})`;
   document.getElementById('fm-hdr-nat').innerHTML=`<span class="flag">${getFlag(p.naz)}</span> ${(p.naz||'').split(',')[0].trim()||'—'}`;
-  document.getElementById('fm-meta-age').textContent=`${p.eta} anni${p.dob?' · '+p.dob:''}`;
+  document.getElementById('fm-meta-age').textContent=`${p.eta} anni${p.dob?' · '+p.dob:''}${p.id?' · ID '+p.id:''}`;
   document.getElementById('fm-meta-height').textContent=p.altezza?p.altezza+' cm':'—';
   document.getElementById('fm-hdr-cname').textContent=sqName==='SVINCOLATI'?'Svincolato':sq.name;
   const caEl=document.getElementById('fm-ca-val'), paEl=document.getElementById('fm-pa-val');

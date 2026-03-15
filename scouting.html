@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+  <script>var _p=location.pathname; var _b=_p.slice(0,_p.lastIndexOf('/')+1); if(_b&&_b!=='/') document.write('<base href="'+location.origin+_b+'">');</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FMTO 2.0 — Scouting</title>
@@ -438,7 +439,7 @@
   <script src="config.js"></script>
   <script src="load-svincolati.js"></script>
   <script>
-    (window.SVINCOLATI_READY||Promise.resolve()).then(function(){
+    (window.SVINCOLATI_READY||Promise.resolve()).catch(function(){return Promise.resolve();}).then(function(){
     // ── SCOUTING LOGIC ──
     function _preferredFoot(p) {
       var rd = p.pie_des || 0;

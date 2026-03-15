@@ -15,6 +15,7 @@
       })
       .catch(function () {
         window.SVINCOLATI_EXTRA = [];
+        return Promise.resolve();
       });
   } else {
     document.write('<script src="' + url + '"><\/script>');

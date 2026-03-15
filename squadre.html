@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
+<script>var _p=location.pathname; var _b=_p.slice(0,_p.lastIndexOf('/')+1); if(_b&&_b!=='/') document.write('<base href="'+location.origin+_b+'">');</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FMTO 2.0 — Squadre</title>
@@ -497,7 +498,7 @@ body.direct-card #view-squad{visibility:hidden;}
 <script src="shared.js"></script>
 <script src="under-by-squad.js"></script>
 <script>
-(window.SVINCOLATI_READY||Promise.resolve()).then(function(){
+(window.SVINCOLATI_READY||Promise.resolve()).catch(function(){return Promise.resolve();}).then(function(){
 /* ═══ SVINCOLATI — da release GitHub (svincolati.json) o svincolati-csv.js ═══ */
 var SVINCOLATI_SQUAD = { id:'svincolati', name:'SVINCOLATI', color1:'#6b7280', color2:'#374151', logo:null, manager:'—' };
 var SVINCOLATI_BY_ID = {};
@@ -786,7 +787,7 @@ function openFMCard(pid, sqName){
   });
 }
 function _fillFMCard(p,sq,sqName){
-  const isGK=p.posizione?.toUpperCase().startsWith('P');
+  const isGK=(p.posizione||'').toUpperCase().startsWith('P');
   var dotsGroup=document.getElementById('fm-pitch-dots');
   if(dotsGroup){
     dotsGroup.innerHTML='';
@@ -891,7 +892,7 @@ function switchTab(name, clickedEl){
 
 /* ═══ RADAR ═══ */
 function radarAxes(p){
-  const isGK=p.posizione?.toUpperCase().startsWith('P');
+  const isGK=(p.posizione||'').toUpperCase().startsWith('P');
   if(isGK) return [
     {label:'Riflessi',    v:p.rifl,     color:'#22d3a0'},
     {label:'Uno vs uno',  v:p.uno_v_uno,color:'#60a5fa'},
@@ -989,7 +990,7 @@ function buildRadar(p){
 
 /* ═══ SCOUT ═══ */
 function buildScout(p){
-  const isGK=p.posizione?.toUpperCase().startsWith('P');
+  const isGK=(p.posizione||'').toUpperCase().startsWith('P');
   const role=displayRole(p.posizione);
 
   // Calculate strengths/weaknesses
@@ -1180,7 +1181,7 @@ function cosineSim(a,b){
 }
 
 function buildSimili(p){
-  const isGK=p.posizione?.toUpperCase().startsWith('P');
+  const isGK=(p.posizione||'').toUpperCase().startsWith('P');
   const vec=isGK?gkVector(p):playerVector(p);
   const pPos=posOrder(p.posizione);
 

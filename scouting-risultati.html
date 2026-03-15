@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FMTO 2.0 — Risultati Scouting</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="gbg scout-page-fm26">
+
+  <nav>
+    <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+    <ul class="nav-links">
+      <li><a href="home.html" id="nav-home">Home</a></li>
+      <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
+      <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+      <li><a href="mister.html" id="nav-mister">Mister</a></li>
+      <li><a href="forum.html" id="nav-forum">Forum</a></li>
+      <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
+      <li><a href="calendario.html" id="nav-calendario">Calendario</a></li>
+      <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+    </ul>
+  </nav>
+
+  <section class="sec gbg" style="padding-top:5rem">
+    <div class="sec-tag">Risultati</div>
+    <h1 class="sec-title">Risultati scouting</h1>
+    <p style="margin-top:.5rem;margin-bottom:1rem">
+      <a href="scouting.html" class="nav-cta" style="display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .9rem;font-size:.85rem;text-decoration:none;border-radius:8px;background:var(--fm26-surface2);color:var(--fm26-text);border:1px solid var(--fm26-border)">← Modifica ricerca</a>
+    </p>
+
+    <div class="scout-results-shell">
+      <table class="player-tbl">
+        <thead>
+          <tr>
+            <th>Giocatore</th>
+            <th>Squadra</th>
+            <th>Ruolo</th>
+            <th>CA</th>
+            <th>Età</th>
+            <th>Naz.</th>
+            <th>TEC</th>
+            <th>REN</th>
+            <th>CP</th>
+            <th>Stipendio</th>
+            <th style="text-align:right">WL</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="11" class="scout-empty-row">Caricamento…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <script src="data.js"></script>
+  <script src="players.js"></script>
+  <script src="stipendi.js"></script>
+  <script src="shared.js"></script>
+  <script src="config.js"></script>
+  <script src="load-svincolati.js"></script>
+  <script>
+    (window.SVINCOLATI_READY||Promise.resolve()).then(function(){
+    (function () {
+      function _preferredFoot(p) {
+        var rd = p.pie_des || 0, ls = p.pie_sin || 0;
+        if (!rd && !ls) return '';
+        if (Math.abs(rd - ls) <= 2 && Math.max(rd, ls) >= 10) return 'Entrambi';
+        return rd >= ls ? 'Destro' : 'Mancino';
+      }
+      function _roleGroups(p) {
+        var pos = (p.posizione || '').toUpperCase();
+        var groups = [];
+        if (!pos) return groups;
+        if (pos.startsWith('P')) groups.push('POR');
+        if (pos.startsWith('D')) { if (pos.includes('TF')) groups.push('TER'); else groups.push('DIF'); }
+        if (pos.startsWith('M') || pos.startsWith('C')) groups.push('CEN');
+        if (pos.startsWith('T') || pos.startsWith('C/T')) groups.push('TRE');
+        if (pos.startsWith('S') || pos.startsWith('T/S')) groups.push('ATT');
+        return Array.from(new Set(groups));
+      }
+      function _isSvincolato(p) {
+        var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
+        return !squadNamesSet.has((p.squadra || '').trim().toUpperCase());
+      }
+      function _matchPlayer(p, f) {
+        if (f.soloSvincolati && !_isSvincolato(p)) return false;
+        if (f.name && !p.nome.toLowerCase().includes(f.name)) return false;
+        if (f.naz && !(p.naz || '').includes(f.naz)) return false;
+        if (f.club) {
+          var c = (f.club || '').toLowerCase().trim();
+          var wantSvincolati = c === 'svincolato' || c === 'svincolati' || c.indexOf('svincolat') !== -1;
+          if (wantSvincolati) { if (!_isSvincolato(p)) return false; }
+          else if (!(p.squadra || '').toLowerCase().includes(f.club)) return false;
+        }
+        if (f.ageMin != null && p.eta < f.ageMin) return false;
+        if (f.ageMax != null && p.eta > f.ageMax) return false;
+        if (f.foot) { var pf = _preferredFoot(p); if (pf && pf !== f.foot) return false; }
+        if (f.posGroups && f.posGroups.length) {
+          var g = _roleGroups(p);
+          if (!g.some(function (gg) { return f.posGroups.indexOf(gg) !== -1; })) return false;
+        }
+        function checkBlock(block, playerAccessor) {
+          for (var key in block) {
+            if (!Object.prototype.hasOwnProperty.call(block, key)) continue;
+            var thr = block[key];
+            if (thr == null) continue;
+            var val = playerAccessor(key);
+            if (val == null) return true;
+            if (val < thr) return false;
+          }
+          return true;
+        }
+        if (!checkBlock(f.tech, function (key) { return p[key]; })) return false;
+        if (!checkBlock(f.ment, function (key) { if (key === 'int_ment_extra') return p.int_ment; return p[key]; })) return false;
+        if (!checkBlock(f.phys, function (key) { return p[key]; })) return false;
+        var isGK = (p.posizione || '').toUpperCase().startsWith('P');
+        if (isGK && !checkBlock(f.gk, function (key) { return p[key]; })) return false;
+        var ca = parseInt(p.ca, 10), pa = parseInt(p.pa, 10);
+        if (isNaN(ca)) ca = null; if (isNaN(pa)) pa = null;
+        var caMin = f.caPa && f.caPa.caMin != null ? parseInt(f.caPa.caMin, 10) : null;
+        var caMax = f.caPa && f.caPa.caMax != null ? parseInt(f.caPa.caMax, 10) : null;
+        var paMin = f.caPa && f.caPa.paMin != null ? parseInt(f.caPa.paMin, 10) : null;
+        var paMax = f.caPa && f.caPa.paMax != null ? parseInt(f.caPa.paMax, 10) : null;
+        if (caMin != null && ca !== null && ca < caMin) return false;
+        if (caMax != null && ca !== null && ca > caMax) return false;
+        if (paMin != null && pa !== null && pa < paMin) return false;
+        if (paMax != null && pa !== null && pa > paMax) return false;
+        return true;
+      }
+
+      function sliderVal(ids, id) {
+        var v = ids[id];
+        if (v === '' || v == null) return null;
+        var n = Number(v);
+        return isNaN(n) ? null : n;
+      }
+      function readNum(ids, id) {
+        var v = ids[id];
+        if (v === '' || v == null) return null;
+        var n = parseInt(v, 10);
+        return isNaN(n) ? null : n;
+      }
+
+      function filtersFromState(state) {
+        var ids = state.ids || {};
+        var name = (ids['f-name'] || '').trim().toLowerCase();
+        var naz = ids['f-naz'] || '';
+        var club = (ids['f-club'] || '').trim().toLowerCase();
+        var soloSvincolati = !!(ids['f-solo-svincolati']);
+        var ageMin = readNum(ids, 'f-age-min');
+        var ageMax = readNum(ids, 'f-age-max');
+        var foot = ids['f-foot'] || '';
+        var posGroups = (ids['f-pos-dropdown']) ? [ids['f-pos-dropdown']] : (state.pos || []);
+
+        var tech = {
+          tecn: sliderVal(ids, 't-tecnica-min'),
+          pass: sliderVal(ids, 't-passaggi-min'),
+          drib: sliderVal(ids, 't-dribbling-min'),
+          final: sliderVal(ids, 't-finalizzazione-min'),
+          tir_lont: sliderVal(ids, 't-tiro-lontano-min'),
+          cross: sliderVal(ids, 't-cross-min'),
+          cont: sliderVal(ids, 't-contrasto-min'),
+          marc: sliderVal(ids, 't-marcatura-min'),
+          int_ment: sliderVal(ids, 't-intercettamenti-min'),
+          testa: sliderVal(ids, 't-colpo-testa-min'),
+          gioc_prima: sliderVal(ids, 't-primo-tocco-min'),
+          crea: sliderVal(ids, 't-visione-min'),
+          angoli: sliderVal(ids, 't-calci-piazzati-min'),
+          pun: sliderVal(ids, 't-rigori-min')
+        };
+        var ment = {
+          conc: sliderVal(ids, 'm-concentrazione-min'),
+          cor: sliderVal(ids, 'm-coraggio-min'),
+          det: sliderVal(ids, 'm-determinazione-min'),
+          car: sliderVal(ids, 'm-ambizione-min'),
+          fan: sliderVal(ids, 'm-fantasia-min'),
+          pos_ment: sliderVal(ids, 'm-posizionamento-min'),
+          dec: sliderVal(ids, 'm-decisione-min'),
+          gioc_squa: sliderVal(ids, 'm-lavoro-squadra-min'),
+          agr: sliderVal(ids, 'm-aggressivita-min'),
+          int_ment_extra: sliderVal(ids, 'm-anticipazione-min'),
+          fred: sliderVal(ids, 'm-freddezza-min'),
+          imp: sliderVal(ids, 'm-professionalita-min')
+        };
+        var phys = {
+          vel: sliderVal(ids, 'f-velocita-min'),
+          acc: sliderVal(ids, 'f-accelerazione-min'),
+          res: sliderVal(ids, 'f-resistenza-min'),
+          forza: sliderVal(ids, 'f-forza-min'),
+          agi: sliderVal(ids, 'f-agilita-min'),
+          equ: sliderVal(ids, 'f-equilibrio-min'),
+          ele: sliderVal(ids, 'f-salto-min'),
+          int_fis: sliderVal(ids, 'f-forma-naturale-min')
+        };
+        var gk = {
+          rifl: sliderVal(ids, 'gk-riflessi-min'),
+          bloc_tir: sliderVal(ids, 'gk-presa-min'),
+          uno_v_uno: sliderVal(ids, 'gk-uno-contro-uno-min'),
+          usc: sliderVal(ids, 'gk-uscita-alta-min'),
+          rinv: sliderVal(ids, 'gk-rinvio-min'),
+          aut_area: sliderVal(ids, 'gk-comando-area-min'),
+          ril: sliderVal(ids, 'gk-lancio-mani-min'),
+          comm: sliderVal(ids, 'gk-comunicazione-min')
+        };
+        var caPa = {
+          caMin: readNum(ids, 'r-ca-min'),
+          caMax: readNum(ids, 'r-ca-max'),
+          paMin: readNum(ids, 'r-cp-min'),
+          paMax: readNum(ids, 'r-cp-max')
+        };
+        return { name: name, naz: naz, club: club, soloSvincolati: soloSvincolati, ageMin: ageMin, ageMax: ageMax, foot: foot, posGroups: posGroups, tech: tech, ment: ment, phys: phys, gk: gk, caPa: caPa };
+      }
+
+      function runSearch() {
+        var raw = sessionStorage.getItem('scout_restore_state');
+        var tbody = document.querySelector('.scout-results-shell tbody');
+        if (!tbody) return;
+
+        if (!raw) {
+          tbody.innerHTML = '<tr><td colspan="11" class="scout-empty-row">Nessun risultato da mostrare. Vai alla <a href="scouting.html">ricerca</a> e applica i filtri.</td></tr>';
+          return;
+        }
+
+        var state;
+        try { state = JSON.parse(raw); } catch (e) {
+          tbody.innerHTML = '<tr><td colspan="11" class="scout-empty-row">Stato non valido. <a href="scouting.html">Torna alla ricerca</a>.</td></tr>';
+          return;
+        }
+
+        if (typeof ALL_PLAYERS === 'undefined') {
+          tbody.innerHTML = '<tr><td colspan="11" class="scout-empty-row">Dati non caricati. <a href="scouting.html">Riprova</a>.</td></tr>';
+          return;
+        }
+
+        window.__scoutState = state;
+        var filters = filtersFromState(state);
+        var pool = (ALL_PLAYERS || []).concat(typeof SVINCOLATI_EXTRA !== 'undefined' && Array.isArray(SVINCOLATI_EXTRA) ? SVINCOLATI_EXTRA : []);
+        var matches = pool.filter(function (p) { return _matchPlayer(p, filters); });
+        var caA = parseInt(filters.caPa.caMin, 10), caB = parseInt(filters.caPa.caMax, 10);
+        var hasCaRange = !isNaN(caA) || !isNaN(caB);
+        matches.sort(function (a, b) {
+          var ca1 = parseInt(a.ca, 10) || 0, ca2 = parseInt(b.ca, 10) || 0;
+          if (ca1 !== ca2) return hasCaRange ? ca1 - ca2 : ca2 - ca1;
+          return a.nome.localeCompare(b.nome);
+        });
+        var list = matches.slice(0, 500);
+
+        if (!list.length) {
+          tbody.innerHTML = '<tr><td colspan="11" class="scout-empty-row">Nessun giocatore trovato con i criteri selezionati. <a href="scouting.html">Modifica ricerca</a>.</td></tr>';
+          return;
+        }
+
+        var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
+        var rows = list.map(function (p) {
+          var isSvincolato = !squadNamesSet.has((p.squadra || '').trim().toUpperCase());
+          var squad = isSvincolato ? '—' : (p.squadra || '—');
+          var role = displayRole(p.posizione);
+          var roleClass = getRoleClassFromPos(p.posizione);
+          var flag = getFlag(p.naz);
+          var ovrClass = getOvrClass(p.ca);
+          var stipDisplay = (typeof getStipendio === 'function' && typeof fmtStipendio === 'function') ? fmtStipendio(getStipendio(p)) : '—';
+          var inList = typeof inWL === 'function' && inWL(p.id);
+          var squadParam = isSvincolato ? 'SVINCOLATI' : (p.squadra || '');
+          var squadEnc = encodeURIComponent(squadParam);
+          var pidEnc = encodeURIComponent(String(p.id));
+          var href = 'squadre.html?sq=' + squadEnc + '&pid=' + pidEnc + '&from=scouting';
+          var nameCell = '<td style="font-weight:500">' + p.nome +
+            (isSvincolato ? ' <span style="font-size:.7rem;background:linear-gradient(135deg,#6b7280,#374151);color:#fff;padding:.15rem .4rem;border-radius:4px;margin-left:.35rem;font-weight:600">Svincolato</span>' : '') + '</td>';
+          return '<tr style="cursor:pointer" onclick="(function(){try{sessionStorage.setItem(\'scout_restore_state\',JSON.stringify(window.__scoutState));}catch(e){}location.href=\'' + href.replace(/'/g, '\\\'') + '\';})()">' +
+            nameCell +
+            '<td>' + squad + '</td>' +
+            '<td><span class="rb ' + roleClass + '">' + role + '</span></td>' +
+            '<td><span class="ov ' + ovrClass + '">' + p.ca + '</span></td>' +
+            '<td style="color:var(--t2)">' + (p.eta || '—') + '</td>' +
+            '<td title="' + (p.naz || '—') + '">' + flag + '</td>' +
+            '<td>' + (p.tecn != null ? ('<span class="ov ' + getOvrClass(p.tecn * 8 || 0) + '">' + p.tecn + '</span>') : '—') + '</td>' +
+            '<td style="color:var(--t2)">—</td>' +
+            '<td style="color:var(--t2)">' + (p.pa != null ? p.pa : '—') + '</td>' +
+            '<td class="val-tag">' + stipDisplay + '</td>' +
+            '<td style="text-align:right"><button class="wl-btn ' + (inList ? 'inw' : '') + '" data-pid="' + p.id + '" onclick="toggleWLPlayer && toggleWLPlayer(\'' + String(p.id) + '\', \'' + String(isSvincolato ? 'SVINCOLATI' : (p.squadra || '')).replace(/'/g, '\\\'') + '\');event.stopPropagation()">' + (inList ? '★' : '☆') + '</button></td>' +
+            '</tr>';
+        });
+        tbody.innerHTML = rows.join('');
+        if (typeof refreshWLButtons === 'function') refreshWLButtons();
+      }
+
+      runSearch();
+
+      var urlRestore = new URLSearchParams(location.search).get('restore') === '1';
+      if (urlRestore) {
+        try {
+          var params = new URLSearchParams(location.search);
+          params.delete('restore');
+          var qs = params.toString();
+          var clean = location.pathname + (qs ? '?' + qs : '') + (location.hash || '');
+          history.replaceState(null, '', clean);
+        } catch (e) {}
+      }
+    })();
+    });
+  </script>
+</body>
+</html>

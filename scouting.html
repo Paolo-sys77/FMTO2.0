@@ -93,6 +93,14 @@
               <input id="f-club" class="scout-input" type="text" placeholder="Es. &quot;Milan&quot;, &quot;Real Madrid&quot;, &quot;Svincolati&quot;…">
             </div>
 
+            <div class="scout-field" style="grid-column:1 / span 2;display:flex;align-items:center;gap:.5rem">
+              <label class="scout-pos-pill" style="margin:0;cursor:pointer">
+                <input type="checkbox" id="f-solo-svincolati" name="solo-svincolati">
+                <span class="scout-pos-label">Solo svincolati</span>
+              </label>
+              <small style="color:var(--t3)">Cerca solo tra i giocatori senza squadra FMTO</small>
+            </div>
+
             <div class="scout-field">
               <label class="scout-label">Età
                 <small>Intervallo minimo / massimo</small>
@@ -411,42 +419,13 @@
           </div>
         </div>
 
-      <!-- 3° FINESTRA: Risultati scouting -->
       <div class="scout-panel">
         <div class="scout-panel-title">
-          <span>Risultati scouting</span>
-          <span class="scout-panel-meta">Elenco giocatori che rispettano i criteri</span>
+          <span>Risultati</span>
+          <span class="scout-panel-meta">La lista si apre in una pagina dedicata</span>
         </div>
-
-        <div class="scout-results-shell">
-          <table class="player-tbl">
-            <thead>
-              <tr>
-                <th>Giocatore</th>
-                <th>Squadra</th>
-                <th>Ruolo</th>
-                <th>CA</th>
-                <th>Età</th>
-                <th>Naz.</th>
-                <th>TEC</th>
-                <th>REN</th>
-                <th>CP</th>
-                <th>Stipendio</th>
-                <th style="text-align:right">WL</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colspan="11" class="scout-empty-row">
-                  Nessun filtro applicato. Imposta i criteri sopra e avvia la ricerca per vedere qui i profili più adatti.
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <p style="margin-top:.75rem;font-size:.74rem;color:var(--t3)">
-          Clicca su un giocatore per aprire la scheda completa con attributi, storico e note scouting.
+        <p style="padding:1.25rem;font-size:.9rem;color:var(--fm26-muted)">
+          Imposta i criteri sopra e clicca <strong>Applica filtri</strong> per aprire l’elenco dei giocatori trovati in una nuova pagina.
         </p>
       </div>
     </div>
@@ -456,7 +435,10 @@
   <script src="players.js"></script>
   <script src="stipendi.js"></script>
   <script src="shared.js"></script>
+  <script src="config.js"></script>
+  <script src="load-svincolati.js"></script>
   <script>
+    (window.SVINCOLATI_READY||Promise.resolve()).then(function(){
     // ── SCOUTING LOGIC ──
     function _preferredFoot(p) {
       var rd = p.pie_des || 0;
@@ -492,6 +474,7 @@
       var name = document.getElementById('f-name').value.trim().toLowerCase();
       var naz = document.getElementById('f-naz').value;
       var club = document.getElementById('f-club').value.trim().toLowerCase();
+      var soloSvincolati = !!(document.getElementById('f-solo-svincolati') && document.getElementById('f-solo-svincolati').checked);
       var ageMin = _readNumber('f-age-min');
       var ageMax = _readNumber('f-age-max');
       var foot = document.getElementById('f-foot').value;
@@ -576,6 +559,7 @@
         name: name,
         naz: naz,
         club: club,
+        soloSvincolati: soloSvincolati,
         ageMin: ageMin,
         ageMax: ageMax,
         foot: foot,
@@ -588,15 +572,20 @@
       };
     }
 
+    function _isSvincolato(p) {
+      var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
+      return !squadNamesSet.has((p.squadra || '').trim().toUpperCase());
+    }
+
     function _matchPlayer(p, f) {
+      if (f.soloSvincolati && !_isSvincolato(p)) return false;
       if (f.name && !p.nome.toLowerCase().includes(f.name)) return false;
       if (f.naz && !(p.naz || '').includes(f.naz)) return false;
       if (f.club) {
         var c = (f.club || '').toLowerCase().trim();
         var wantSvincolati = c === 'svincolato' || c === 'svincolati' || c.indexOf('svincolat') !== -1;
         if (wantSvincolati) {
-          var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
-          if (squadNamesSet.has((p.squadra || '').trim().toUpperCase())) return false;
+          if (!_isSvincolato(p)) return false;
         } else if (!(p.squadra || '').toLowerCase().includes(f.club)) return false;
       }
 
@@ -681,7 +670,7 @@
         var nameCell = '<td style="font-weight:500">' + p.nome +
           (isSvincolato ? ' <span style="font-size:.7rem;background:linear-gradient(135deg,#6b7280,#374151);color:#fff;padding:.15rem .4rem;border-radius:4px;margin-left:.35rem;font-weight:600">Svincolato</span>' : '') + '</td>';
 
-        return '<tr style="cursor:pointer" onclick="location.href=\'' + href.replace(/'/g, '\\\'') + '\'">' +
+        return '<tr style="cursor:pointer" onclick="saveScoutState();location.href=\'' + href.replace(/'/g, '\\\'') + '\'">' +
           nameCell +
           '<td>' + squad + '</td>' +
           '<td><span class="rb ' + roleClass + '">' + role + '</span></td>' +
@@ -709,7 +698,8 @@
         return;
       }
       var filters = _collectFilters();
-      var matches = ALL_PLAYERS.filter(function (p) {
+      var pool = (ALL_PLAYERS || []).concat(typeof SVINCOLATI_EXTRA !== 'undefined' && Array.isArray(SVINCOLATI_EXTRA) ? SVINCOLATI_EXTRA : []);
+      var matches = pool.filter(function (p) {
         return _matchPlayer(p, filters);
       });
       var caA = parseInt(filters.caPa.caMin, 10);
@@ -721,13 +711,16 @@
         if (ca1 !== ca2) return hasCaRange ? ca1 - ca2 : ca2 - ca1;
         return a.nome.localeCompare(b.nome);
       });
-      _renderResults(matches.slice(0, 500));
+      saveScoutState();
+      location.href = 'scouting-risultati.html';
     }
 
     function resetScoutingFilters() {
       document.getElementById('f-name').value = '';
       document.getElementById('f-naz').value = '';
       document.getElementById('f-club').value = '';
+      var soloEl = document.getElementById('f-solo-svincolati');
+      if (soloEl) soloEl.checked = false;
       document.getElementById('f-age-min').value = '';
       document.getElementById('f-age-max').value = '';
       document.getElementById('f-foot').value = '';
@@ -744,15 +737,46 @@
         var el = document.getElementById(id);
         if (el) el.value = '';
       });
+    }
 
-      var tbody = document.querySelector('.scout-results-shell tbody');
-      if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="11" class="scout-empty-row">Nessun filtro applicato. Imposta i criteri sopra e avvia la ricerca per vedere qui i profili più adatti.</td></tr>';
-      }
+    function saveScoutState() {
+      var state = { ids: {}, pos: [] };
+      document.querySelectorAll('.scout-layout input[id], .scout-layout select[id]').forEach(function (el) {
+        if (el.id) state.ids[el.id] = el.type === 'checkbox' ? el.checked : (el.value || '');
+      });
+      document.querySelectorAll('input[name="pos"]:checked').forEach(function (c) { state.pos.push(c.value); });
+      try { sessionStorage.setItem('scout_restore_state', JSON.stringify(state)); } catch (e) {}
+    }
+    function restoreScoutState() {
+      var raw = sessionStorage.getItem('scout_restore_state');
+      if (!raw) return;
+      try {
+        var state = JSON.parse(raw);
+        sessionStorage.removeItem('scout_restore_state');
+        if (state.ids) {
+          for (var id in state.ids) {
+            var el = document.getElementById(id);
+            if (el) {
+              if (el.type === 'checkbox') el.checked = !!state.ids[id];
+              else el.value = state.ids[id] || '';
+            }
+          }
+        }
+        if (state.pos && state.pos.length) {
+          document.querySelectorAll('input[name="pos"]').forEach(function (c) { c.checked = state.pos.indexOf(c.value) !== -1; });
+        }
+        applyScoutingFilters();
+      } catch (e) {}
+    }
+    var urlRestore = new URLSearchParams(location.search).get('restore') === '1';
+    var hasStoredState = !!sessionStorage.getItem('scout_restore_state');
+    if (hasStoredState && (urlRestore || (document.referrer || '').indexOf('squadre') !== -1)) {
+      location.href = 'scouting-risultati.html' + (urlRestore ? '?restore=1' : '');
     }
 
     document.getElementById('btn-apply-filters')?.addEventListener('click', applyScoutingFilters);
     document.getElementById('btn-reset-filters')?.addEventListener('click', resetScoutingFilters);
+    });
   </script>
 </body>
 </html>

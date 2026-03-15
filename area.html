@@ -477,6 +477,17 @@ function onTactSelect(sel){
 }
 
 populateSelect();
+// Se c'è già una sessione (login fatto in questa tab), mostra subito la dashboard senza chiedere il PIN
+(function(){
+  var sess = typeof getSession === 'function' ? getSession() : null;
+  if (sess && typeof SQUADS !== 'undefined') {
+    var sq = SQUADS.find(function(s){ return s.id === sess.sqId; });
+    if (sq) {
+      loggedSq = sq;
+      showDashboard(sq);
+    }
+  }
+})();
 </script>
 </body>
 </html>

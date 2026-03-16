@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<script>var _p=location.pathname; var _b=_p.slice(0,_p.lastIndexOf('/')+1); if(_b&&_b!=='/') document.write('<base href="'+location.origin+_b+'">');</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FMTO 2.0 — Squadre</title>
@@ -19,15 +18,9 @@
 .ss-val{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
 .ss-lbl{font-size:.58rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--t3)}
 .view{display:none}.view.active{display:block;animation:fadeUp .3s ease both}
+body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad{display:none!important}
 .player-tbl th.sortable{cursor:pointer;user-select:none}
 .player-tbl th.sortable:hover{color:var(--vb)}
-.squad-section-tab{background:var(--sf);border:1px solid var(--border);color:var(--t2);font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:700;letter-spacing:.06em;padding:.5rem 1rem;border-radius:6px;cursor:pointer;transition:all .18s}
-.squad-section-tab:hover{border-color:var(--vb);color:var(--t1)}
-.squad-section-tab.active{background:linear-gradient(135deg,rgba(139,92,246,.2),rgba(34,211,160,.12));border-color:var(--vb);color:var(--vb)}
-
-/* Cerca squadra / Cerca giocatore — placeholder più visibile */
-.search-input::placeholder,.squad-player-search::placeholder{color:rgba(255,255,255,.92);}
-.search-wrap .search-icon{color:rgba(255,255,255,.75);}
 
 /* ═══════════════════════════════════════════════════
    FM PLAYER CARD — Stile scheda FM
@@ -38,8 +31,6 @@
   display:none;align-items:flex-start;justify-content:center;
   padding:1.2rem 1rem;overflow-y:auto;
 }
-body.direct-card #view-grid,
-body.direct-card #view-squad{visibility:hidden;}
 .fm-overlay.open{display:flex}
 .fm-card{
   background:var(--card-surface,#161b22);border:1px solid var(--card-border,#2a3245);border-radius:4px;
@@ -249,13 +240,16 @@ body.direct-card #view-squad{visibility:hidden;}
 </style>
 </head>
 <body class="gbg">
-<script>if(new URLSearchParams(location.search).get('pid'))document.body.classList.add('direct-card');</script>
+<script>
+(function(){var p=new URLSearchParams(location.search);if(p.get('from')==='scouting'&&p.get('sq')&&p.get('pid'))document.body.classList.add('card-only-from-scouting');})();
+</script>
 <nav>
   <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
   <ul class="nav-links">
     <li><a href="home.html" id="nav-home">Home</a></li>
     <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
     <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="scouting.html" id="nav-scouting">Scouting</a></li>
     <li><a href="mister.html" id="nav-mister">Mister</a></li>
     <li><a href="forum.html" id="nav-forum">Forum</a></li>
     <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
@@ -291,9 +285,8 @@ body.direct-card #view-squad{visibility:hidden;}
       </div>
       <div class="search-wrap squad-search-wrap" style="margin-bottom:0;flex:1;min-width:240px">
         <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" class="search-input" id="grid-player-search" placeholder="Cerca giocatore..." oninput="filterSquads();updateGridPlayerResults();" autocomplete="off">
+        <input type="text" class="search-input" id="grid-player-search" placeholder="Cerca giocatore (nome o ID)..." oninput="filterSquads();updateGridPlayerResults();" autocomplete="off">
       </div>
-      <button type="button" class="nav-cta" id="btn-svincolati" onclick="typeof openSquad==='function'&&openSquad('SVINCOLATI')" style="padding:.5rem 1.05rem;cursor:pointer;border:none;text-decoration:none">Svincolati</button>
       <a class="nav-cta" href="scouting.html" style="padding:.5rem 1.05rem">Scouting</a>
     </div>
     <div id="grid-player-results" class="grid-player-results" style="display:none;margin-bottom:1.25rem">
@@ -319,12 +312,8 @@ body.direct-card #view-squad{visibility:hidden;}
     </div>
   </div>
   <div class="sec" style="padding-top:1.8rem">
-    <div class="squad-section-tabs" style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
-      <button type="button" class="squad-section-tab active" data-section="rosa" onclick="switchSquadSection('rosa')">Rosa</button>
-      <button type="button" class="squad-section-tab" data-section="under" onclick="switchSquadSection('under')">Under</button>
-    </div>
     <div class="squad-search-wrap" style="margin-bottom:1rem">
-      <input type="text" id="squad-player-search" class="squad-player-search" placeholder="Cerca giocatore per nome..." oninput="applySquadSearch()" autocomplete="off">
+      <input type="text" id="squad-player-search" class="squad-player-search" placeholder="Cerca giocatore per nome o ID..." oninput="applySquadSearch()" autocomplete="off">
     </div>
     <div style="overflow-x:auto">
       <table class="player-tbl">
@@ -342,6 +331,13 @@ body.direct-card #view-squad{visibility:hidden;}
         </tr></thead>
         <tbody id="squad-tbody"></tbody>
       </table>
+    </div>
+    <div class="squad-under-sec" style="margin-top:2.5rem;padding-top:1.5rem;border-top:1px solid var(--border)">
+      <h3 class="squad-under-title" style="font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;letter-spacing:.04em;color:var(--t1);margin-bottom:.5rem">Under</h3>
+      <p id="squad-under-desc" style="font-size:.8rem;color:var(--t3);margin-bottom:1rem">Giocatori Under collegati alla squadra tramite file Excel Under.</p>
+      <div id="squad-under-content" class="squad-under-content">
+        <!-- Contenuto Under popolato via JS -->
+      </div>
     </div>
   </div>
 
@@ -490,32 +486,31 @@ body.direct-card #view-squad{visibility:hidden;}
 </div><!-- /fm-overlay -->
 
 <script src="data.js"></script>
-<script src="misters.js"></script>
 <script src="players.js"></script>
+<script src="under.js"></script>
 <script src="stipendi.js"></script>
 <script src="config.js"></script>
+<script src="svincolati-data.js"></script>
+<script src="svincolati-scouting.js"></script>
 <script src="load-svincolati.js"></script>
 <script src="shared.js"></script>
-<script src="under-by-squad.js"></script>
 <script>
-(window.SVINCOLATI_READY||Promise.resolve()).catch(function(){return Promise.resolve();}).then(function(){
-/* ═══ SVINCOLATI — da release GitHub (svincolati.json) o svincolati-csv.js ═══ */
+/* ═══ SVINCOLATI — popolato da load-svincolati.js (svincolati-data.js o fetch), primi 1000 ═══ */
 var SVINCOLATI_SQUAD = { id:'svincolati', name:'SVINCOLATI', color1:'#6b7280', color2:'#374151', logo:null, manager:'—' };
-var SVINCOLATI_BY_ID = {};
 (function(){
-  if(typeof SQUADS==='undefined'||typeof PLAYERS_BY_TEAM==='undefined'||typeof ALL_PLAYERS==='undefined')return;
-  var squadNames=new Set(SQUADS.map(function(s){return s.name;}));
-  PLAYERS_BY_TEAM['SVINCOLATI']=(ALL_PLAYERS||[]).filter(function(p){return !squadNames.has((p.squadra||'').trim().toUpperCase());});
-  if(typeof SVINCOLATI_EXTRA!=='undefined'&&Array.isArray(SVINCOLATI_EXTRA))
-    PLAYERS_BY_TEAM['SVINCOLATI']=PLAYERS_BY_TEAM['SVINCOLATI'].concat(SVINCOLATI_EXTRA);
-  var list=PLAYERS_BY_TEAM['SVINCOLATI']||[];
-  for(var i=0;i<list.length;i++) SVINCOLATI_BY_ID[String(list[i].id)]=list[i];
+  if(typeof PLAYERS_BY_TEAM==='undefined')return;
+  if(PLAYERS_BY_TEAM['SVINCOLATI']===undefined) PLAYERS_BY_TEAM['SVINCOLATI']=[];
 })();
 
 /* ═══ STATE ═══ */
-let curSqName = null, curSquadSection = 'rosa', sortCol = 'role', sortDir = 1;
+let curSqName = null, sortCol = 'role', sortDir = 1;
 let curPlayerData = null;
 let openedFMCardFromGrid = false;
+var curSvincolatiList = [];
+function getCurrentSquadPlayers(){
+  if(curSqName==='SVINCOLATI')return curSvincolatiList;
+  return PLAYERS_BY_TEAM[curSqName]||[];
+}
 
 /* ═══ VIEW ═══ */
 function showView(name) {
@@ -552,27 +547,46 @@ function updateGridPlayerResults(){
   const box=document.getElementById('grid-player-results');
   const titleEl=document.getElementById('grid-player-results-title');
   const listEl=document.getElementById('grid-player-results-list');
-  const pq=(inp&&inp.value||'').trim().toLowerCase();
-  if(!pq){ box.style.display='none'; return; }
+  const rawQ=(inp&&inp.value||'').trim();
+  const pq=rawQ.toLowerCase();
+  if(!rawQ){ box.style.display='none'; return; }
+  var seenIds=new Set();
+  function addMatch(p,teamName){
+    var key=String(p.id)+'|'+teamName;
+    if(seenIds.has(key))return;
+    seenIds.add(key);
+    matches.push({ p:p, teamName:teamName });
+  }
   var matches=[];
-  SQUADS.forEach(function(sq){
-    var teamPlayers=PLAYERS_BY_TEAM[sq.name]||[];
-    teamPlayers.forEach(function(p){
-      if((p.nome||'').toLowerCase().includes(pq)) matches.push({ p:p, teamName:sq.name });
-    });
+  var matchByName=function(p){ return (p.nome||'').toLowerCase().includes(pq); };
+  var matchById=function(p){ return String(p.id)===(rawQ)||String(p.id).toLowerCase().includes(pq); };
+  var squadPlayers=typeof ALL_PLAYERS!=='undefined'?ALL_PLAYERS:[];
+  var svincolati=(typeof window.SVINCOLATI_SCOUTING!=='undefined'&&Array.isArray(window.SVINCOLATI_SCOUTING))?window.SVINCOLATI_SCOUTING:(PLAYERS_BY_TEAM['SVINCOLATI']||[]);
+  squadPlayers.forEach(function(p){
+    if(matchByName(p)||matchById(p)) addMatch(p,p.squadra||'');
   });
-  (PLAYERS_BY_TEAM['SVINCOLATI']||[]).forEach(function(p){
-    if((p.nome||'').toLowerCase().includes(pq)) matches.push({ p:p, teamName:'SVINCOLATI' });
+  svincolati.forEach(function(p){
+    if(matchByName(p)||matchById(p)) addMatch(p,'SVINCOLATI');
   });
   box.style.display='block';
-  if(matches.length===0){ titleEl.textContent='Nessun giocatore trovato per "'+pq+'"'; listEl.innerHTML=''; return; }
+  if(matches.length===0){ titleEl.textContent='Nessun giocatore trovato per "'+rawQ+'" (nome o ID)'; listEl.innerHTML=''; return; }
   titleEl.textContent=matches.length===1 ? '1 giocatore trovato' : matches.length+' giocatori trovati';
-  listEl.innerHTML=matches.slice(0,50).map(function(m){
+  window._gridSearchMatches=matches;
+  listEl.innerHTML=matches.slice(0,50).map(function(m,idx){
     var p=m.p, tn=m.teamName, tnDisplay=tn==='SVINCOLATI'?'Svincolati':tn;
-    return '<a href="#" class="grid-player-hit" onclick="openPlayerFromGrid(\''+p.id+'\',\''+tn.replace(/'/g,"\\'")+'\');return false">'+
-      '<span class="gph-name">'+p.nome+'</span> <span class="gph-meta">'+tnDisplay+' · CA '+p.ca+'</span></a>';
+    return '<a href="#" class="grid-player-hit" onclick="openPlayerFromGridByIndex('+idx+');return false">'+
+      '<span class="gph-name">'+p.nome+'</span> <span class="gph-meta">'+tnDisplay+' · ID '+p.id+' · CA '+p.ca+'</span></a>';
   }).join('');
-  if(matches.length>50) listEl.innerHTML+='<p style="font-size:.8rem;color:var(--t3);margin-top:.5rem">Mostrati i primi 50. Affina la ricerca per nome.</p>';
+  if(matches.length>50) listEl.innerHTML+='<p style="font-size:.8rem;color:var(--t3);margin-top:.5rem">Mostrati i primi 50. Affina la ricerca per nome o ID.</p>';
+}
+
+function openPlayerFromGridByIndex(idx){
+  var matches=window._gridSearchMatches;
+  if(!matches||!matches[idx])return;
+  var m=matches[idx];
+  openedFMCardFromGrid=true;
+  curSqName=m.teamName;
+  openFMCard(m.p.id,m.teamName,m.p);
 }
 
 function openPlayerFromGrid(pid, teamName){
@@ -585,7 +599,13 @@ function openPlayerFromGrid(pid, teamName){
 function openSquad(sqName){
   const sq=SQUADS.find(s=>s.name===sqName)||(sqName==='SVINCOLATI'?SVINCOLATI_SQUAD:null); if(!sq) return;
   curSqName=sqName; sortCol='role'; sortDir=1;
-  const players=PLAYERS_BY_TEAM[sqName]||[];
+  var players;
+  if(sqName==='SVINCOLATI'){
+    curSvincolatiList=(typeof window.SVINCOLATI_SCOUTING!=='undefined'&&Array.isArray(window.SVINCOLATI_SCOUTING))?window.SVINCOLATI_SCOUTING:(PLAYERS_BY_TEAM['SVINCOLATI']||[]);
+    players=curSvincolatiList;
+  } else {
+    players=PLAYERS_BY_TEAM[sqName]||[];
+  }
   const bl=document.getElementById('squad-big-logo');
   bl.style.background=sq.name==='JUVENTUS'?'#111':'';
   if(sq.logo){
@@ -597,70 +617,46 @@ function openSquad(sqName){
   }
   document.getElementById('squad-hero-bg').style.backgroundImage=sq.logo?`url(${sq.logo})`:'';
   document.getElementById('squad-name').textContent=sq.name==='SVINCOLATI'?'Svincolati':sq.name;
-  var managerLabel = (typeof MISTERS_DATA !== 'undefined' && MISTERS_DATA[sq.name] && (MISTERS_DATA[sq.name].nome || '').trim()) ? MISTERS_DATA[sq.name].nome.trim() : (sq.manager || '—');
-  document.getElementById('squad-meta').textContent=sq.name==='SVINCOLATI'?players.length+' giocatori senza squadra':`Mister: ${managerLabel} · ${players.length} giocatori`;
+  document.getElementById('squad-meta').textContent=sq.name==='SVINCOLATI'?'220.309 giocatori senza squadra FMTO':`Mister: ${sq.manager} · ${players.length} giocatori`;
   if(players.length){
     const avgCA=Math.round(players.reduce((s,p)=>s+p.ca,0)/players.length);
     const avgPA=Math.round(players.reduce((s,p)=>s+p.pa,0)/players.length);
-    var topCA=0; for(var i=0;i<players.length;i++) if(players[i].ca>topCA) topCA=players[i].ca;
+    const topCA=players.reduce(function(m,p){ return p.ca>m?p.ca:m; },0);
     const totStip=players.reduce((s,p)=>s+((typeof getStipendio==='function'?getStipendio(p):null)||p.prezzo||0),0);
-    document.getElementById('squad-summary').innerHTML=sq.name==='SVINCOLATI'?`
-      <div class="ss-item"><div class="ss-val">${players.length}</div><div class="ss-lbl">Giocatori</div></div>
-      <div class="ss-item"><div class="ss-val">${avgCA}</div><div class="ss-lbl">CA medio</div></div>
-      <div class="ss-item"><div class="ss-val">${avgPA}</div><div class="ss-lbl">PA medio</div></div>
-      <div class="ss-item"><div class="ss-val">${topCA}</div><div class="ss-lbl">CA top</div></div>`:`
+    if(sq.name!=='SVINCOLATI'){
+      document.getElementById('squad-summary').innerHTML=`
       <div class="ss-item"><div class="ss-val">${avgCA}</div><div class="ss-lbl">CA medio</div></div>
       <div class="ss-item"><div class="ss-val">${avgPA}</div><div class="ss-lbl">PA medio</div></div>
       <div class="ss-item"><div class="ss-val">${topCA}</div><div class="ss-lbl">CA top</div></div>
       <div class="ss-item"><div class="ss-val">${typeof fmtStipendio==='function'?fmtStipendio(totStip):'—'}</div><div class="ss-lbl">Stipendio rosa</div></div>`;
+    } else {
+      document.getElementById('squad-summary').innerHTML='';
+    }
+  } else if(sq.name==='SVINCOLATI'){
+    document.getElementById('squad-summary').innerHTML='<div class="ss-item" style="grid-column:1/-1;color:var(--t2);font-size:.9rem">Nessun giocatore in lista. Caricare i dati dal file degli svincolati (es. <code>svincolati.json</code> o <code>svincolati.json.gz</code>). Avvia il sito con un server (es. <code>npx serve .</code>).</div>';
   }
   var searchEl = document.getElementById('squad-player-search');
   if (searchEl) searchEl.value = '';
-  curSquadSection = 'rosa';
-  document.querySelectorAll('.squad-section-tab').forEach(function(t){ t.classList.toggle('active', t.getAttribute('data-section')==='rosa'); });
-  renderSquadTable(getSquadPlayersForSection());
-  if (!(arguments[1] && arguments[1].openCardOnly)) showView('squad');
-}
-function _underIdsForSquad(){
-  if (typeof UNDER_PLAYER_IDS_BY_SQUAD === 'undefined') return [];
-  var name = curSqName || '';
-  return UNDER_PLAYER_IDS_BY_SQUAD[name] || UNDER_PLAYER_IDS_BY_SQUAD[name.toUpperCase()] || [];
-}
-function getSquadPlayersForSection(){
-  var list = PLAYERS_BY_TEAM[curSqName]||[];
-  var underIds = _underIdsForSquad();
-  if (curSquadSection === 'under') {
-    var fromSquad = list.filter(function(p){ return underIds.indexOf(String(p.id)) !== -1; });
-    var svincolati = curSqName !== 'SVINCOLATI' ? (PLAYERS_BY_TEAM['SVINCOLATI'] || []) : [];
-    var fromSvincolati = svincolati.filter(function(p){ return underIds.indexOf(String(p.id)) !== -1; });
-    var seen = {};
-    var out = [];
-    fromSquad.forEach(function(p){ seen[String(p.id)] = true; out.push(p); });
-    fromSvincolati.forEach(function(p){ if (!seen[String(p.id)]) { seen[String(p.id)] = true; out.push(p); } });
-    return out;
-  }
-  return list.filter(function(p){ return underIds.indexOf(String(p.id)) === -1; });
-}
-function switchSquadSection(section){
-  curSquadSection = section;
-  document.querySelectorAll('.squad-section-tab').forEach(function(t){ t.classList.toggle('active', t.getAttribute('data-section')===section); });
-  renderSquadTable(getSquadPlayersForSection());
+  renderSquadTable(players);
+  renderSquadUnder(sq.name);
+  showView('squad');
 }
 function applySquadSearch(){
-  renderSquadTable(getSquadPlayersForSection());
+  renderSquadTable(getCurrentSquadPlayers());
 }
-var MAX_SVINCOLATI_ROWS = 2000;
+var SVINCOLATI_PAGE_SIZE = 1000;
 function renderSquadTable(players){
-  var q = (document.getElementById('squad-player-search')&&document.getElementById('squad-player-search').value||'').trim().toLowerCase();
-  if (q) players = players.filter(function(p){ return (p.nome||'').toLowerCase().includes(q) || (p.naz||'').toLowerCase().includes(q) || (p.posizione||'').toLowerCase().includes(q); });
+  var rawQ = (document.getElementById('squad-player-search')&&document.getElementById('squad-player-search').value||'').trim();
+  var q = rawQ.toLowerCase();
+  if (rawQ) players = players.filter(function(p){ return (p.nome||'').toLowerCase().includes(q) || (p.naz||'').toLowerCase().includes(q) || (p.posizione||'').toLowerCase().includes(q) || String(p.id)===(rawQ) || String(p.id).toLowerCase().includes(q); });
   let sorted = sortCol==='role' ? sortByRole(players) : sortCol==='stipendio' ?
     [...players].sort((a,b)=>{const va=getStipendio(a)||0,vb=getStipendio(b)||0;return sortDir*(vb-va);}) :
     [...players].sort((a,b)=>{const va=a[sortCol]??0,vb=b[sortCol]??0;return typeof va==='string'?sortDir*va.localeCompare(vb):sortDir*(vb-va);});
-  var isSvincolati = curSqName==='SVINCOLATI';
   var total = sorted.length;
-  if (isSvincolati && total > MAX_SVINCOLATI_ROWS) sorted = sorted.slice(0, MAX_SVINCOLATI_ROWS);
-  document.getElementById('squad-tbody').innerHTML=sorted.map(p=>`
-    <tr onclick="openFMCard('${p.id}','${curSqName.replace(/'/g,"\\'")}')">
+  if (curSqName==='SVINCOLATI'){ window._svincolatiTableList=sorted; }
+  if (curSqName==='SVINCOLATI' && total > SVINCOLATI_PAGE_SIZE) sorted = sorted.slice(0, SVINCOLATI_PAGE_SIZE);
+  document.getElementById('squad-tbody').innerHTML=sorted.map((p,i)=>`
+    <tr onclick="${curSqName==='SVINCOLATI'?'openFMCardFromSvincolatiRow('+i+')':'openFMCard(\''+p.id+'\',\''+curSqName.replace(/'/g,"\\'")+'\')'}">
       <td style="font-weight:500">${p.nome}</td>
       <td><span class="rb ${getRoleClassFromPos(p.posizione)}">${displayRole(p.posizione)}</span></td>
       <td style="color:var(--t2)">${p.eta}</td>
@@ -672,11 +668,106 @@ function renderSquadTable(players){
       <td style="color:var(--t3);font-size:.74rem;white-space:nowrap">${p.posizione||'—'}</td>
       <td><button class="wl-btn ${inWL(p.id)?'inw':''}" data-pid="${p.id}"
         onclick="toggleWLPlayer('${p.id}','${curSqName.replace(/'/g,"\\'")}');event.stopPropagation()">${inWL(p.id)?'★':'☆'}</button></td>
-    </tr>`).join('') + (isSvincolati && total > MAX_SVINCOLATI_ROWS ? '<tr><td colspan="10" style="text-align:center;padding:1rem;color:var(--t3);font-size:.9rem">Mostrati i primi ' + MAX_SVINCOLATI_ROWS + ' di ' + total + '. Usa la ricerca sopra per trovare un giocatore.</td></tr>' : '');
+    </tr>`).join('') + (curSqName==='SVINCOLATI'&&total>SVINCOLATI_PAGE_SIZE ? '<tr><td colspan="10" style="padding:1rem;color:var(--t2);font-size:.85rem">Mostrati i primi '+SVINCOLATI_PAGE_SIZE+' di '+total+'. Usa la ricerca sopra per filtrare per nome, nazionalit&agrave;, ruolo o ID.</td></tr>' : '');
+}
+
+function renderSquadUnder(sqName){
+  const box = document.getElementById('squad-under-content');
+  const desc = document.getElementById('squad-under-desc');
+  if (!box || !desc) return;
+
+  // Svincolati non hanno Under
+  if (sqName === 'SVINCOLATI') {
+    desc.textContent = 'Gli svincolati non hanno lista Under.';
+    box.innerHTML = '';
+    return;
+  }
+
+  if (typeof UNDER_PLAYERS_BY_TEAM === 'undefined') {
+    desc.textContent = 'Under non configurati (manca under.js o UNDER_PLAYERS_BY_TEAM).';
+    box.innerHTML = '';
+    return;
+  }
+
+  // Prova match diretto sul nome squadra
+  let players = UNDER_PLAYERS_BY_TEAM[sqName];
+  // Se non trova, prova match "fuzzy" ignorando maiuscole/minuscole/spazi
+  if (!players) {
+    const target = String(sqName || '').trim().toUpperCase();
+    for (const k in UNDER_PLAYERS_BY_TEAM) {
+      if (!Object.prototype.hasOwnProperty.call(UNDER_PLAYERS_BY_TEAM, k)) continue;
+      const keyNorm = String(k || '').trim().toUpperCase();
+      if (keyNorm === target || keyNorm.includes(target) || target.includes(keyNorm)) {
+        players = UNDER_PLAYERS_BY_TEAM[k];
+        break;
+      }
+    }
+  }
+  players = players || [];
+  if (!players.length) {
+    desc.textContent = 'Nessun giocatore Under configurato per questa squadra.';
+    box.innerHTML = '';
+    return;
+  }
+
+  desc.textContent = 'Giocatori Under collegati alla squadra tramite file Excel Under.';
+  const rowsHtml = players.map(function(p){
+    const ruolo = displayRole(p.posizione);
+    const flag = getFlag(p.naz);
+    const safeSq = String(p.squadra || sqName || '').replace(/'/g, "\\'");
+    const rawStip = p.stipendio != null ? p.stipendio : p.prezzo || 0;
+    const stipendio = typeof fmtStipendio==='function'
+      ? fmtStipendio(rawStip)
+      : rawStip;
+    return `
+      <tr onclick="openUnderCard('${safeSq}','${p.id}')">
+        <td style="font-weight:500">${p.nome}</td>
+        <td><span class="rb ${getRoleClassFromPos(p.posizione)}">${ruolo}</span></td>
+        <td style="color:var(--t2)">${p.eta}</td>
+        <td title="${p.naz}">${flag}</td>
+        <td><span class="ov ${getOvrClass(p.ca)}">${p.ca}</span></td>
+        <td style="color:var(--t2)">${p.pa}</td>
+        <td style="color:var(--t2)">${p.vel}</td>
+        <td class="val-tag">${stipendio}</td>
+        <td style="color:var(--t3);font-size:.74rem;white-space:nowrap">${p.posizione || '—'}</td>
+        <td></td>
+      </tr>`;
+  }).join('');
+
+  box.innerHTML = rowsHtml
+    ? `<div style="overflow-x:auto"><table class="player-tbl player-tbl-under"><tbody>${rowsHtml}</tbody></table></div>`
+    : '<span style="font-size:.8rem;color:var(--t3)">Nessun giocatore Under valido trovato per questa squadra.</span>';
+}
+function openFMCardFromSvincolatiRow(idx){
+  var list=window._svincolatiTableList;
+  if(!list||!list[idx])return;
+  var p=list[idx];
+  curSqName='SVINCOLATI';
+  openFMCard(p.id,'SVINCOLATI',p);
 }
 function sortTable(col){
   if(sortCol===col)sortDir*=-1;else{sortCol=col;sortDir=-1;}
-  renderSquadTable(getSquadPlayersForSection());
+  renderSquadTable(getCurrentSquadPlayers());
+}
+
+// Apertura scheda per Under basandosi solo sui dati del dataset Under
+function openUnderCard(teamName, pid){
+  if (typeof UNDER_PLAYERS_BY_TEAM === 'undefined') return;
+  const list = (UNDER_PLAYERS_BY_TEAM[teamName] || []).slice();
+  if (!list.length) {
+    // fallback: cerca squadra con nome simile
+    const target = String(teamName || '').trim().toUpperCase();
+    for (const k in UNDER_PLAYERS_BY_TEAM) {
+      if (!Object.prototype.hasOwnProperty.call(UNDER_PLAYERS_BY_TEAM, k)) continue;
+      const keyNorm = String(k || '').trim().toUpperCase();
+      if (keyNorm === target || keyNorm.includes(target) || target.includes(keyNorm)) {
+        list.push.apply(list, UNDER_PLAYERS_BY_TEAM[k]);
+      }
+    }
+  }
+  const p = list.find(pl => String(pl.id) === String(pid));
+  if (!p) return;
+  openFMCard(pid, teamName, p);
 }
 
 /* ═══ HELPERS ═══ */
@@ -771,23 +862,18 @@ function getPlayerPositions(p){
 }
 
 /* ═══ OPEN FM CARD ═══ */
-function openFMCard(pid, sqName){
+function openFMCard(pid, sqName, playerFromStorage){
   const sq=SQUADS.find(s=>s.name===sqName)||(sqName==='SVINCOLATI'?SVINCOLATI_SQUAD:null);
-  const pidStr=String(pid);
-  var p;
-  if(sqName==='SVINCOLATI') p=SVINCOLATI_BY_ID[pidStr]||null;
-  else { p=(PLAYERS_BY_TEAM[sqName]||[]).find(pl=>String(pl.id)===pidStr); if(!p) p=SVINCOLATI_BY_ID[pidStr]||null; }
+  let p=playerFromStorage;
+  if(!p){
+    const players=PLAYERS_BY_TEAM[sqName]||[];
+    p=players.find(pl=>String(pl.id)===String(pid));
+  }
   if(!p||!sq)return;
   curPlayerData={p,sq}; curSqName=sqName;
-  document.getElementById('fm-overlay').classList.add('open');
-  document.getElementById('fm-card').scrollTop=0;
-  document.body.style.overflow='hidden';
-  requestAnimationFrame(function(){
-    _fillFMCard(p,sq,sqName);
-  });
-}
-function _fillFMCard(p,sq,sqName){
-  const isGK=(p.posizione||'').toUpperCase().startsWith('P');
+  const isGK=p.posizione?.toUpperCase().startsWith('P');
+
+  // HEADER (mini campo: un puntino per ogni ruolo che il giocatore può coprire)
   var dotsGroup=document.getElementById('fm-pitch-dots');
   if(dotsGroup){
     dotsGroup.innerHTML='';
@@ -828,11 +914,15 @@ function _fillFMCard(p,sq,sqName){
     starBtn.textContent=inWL(p.id)?'★':'☆';
     starBtn.classList.toggle('active',inWL(p.id));
   }
+
+  // VALUE STRIP (stipendio da CSV)
   document.getElementById('fm-stipendio').textContent=typeof fmtStipendio==='function'?(fmtStipendio((typeof getStipendio==='function'?getStipendio(p):null)||p.prezzo)||'—'):'—';
   document.getElementById('fm-contratto').textContent='—';
   document.getElementById('fm-presenze').textContent='0';
   document.getElementById('fm-personalita').textContent='—';
   document.getElementById('fm-potenziale').textContent=p.pa>=170?'Campione':p.pa>=150?'Ottimo':p.pa>=130?'Buon potenziale':'In crescita';
+
+  // FOOTER (piede, reputazione, caratteristica, ruolo)
   const pieSin=p.pie_sin!=null?p.pie_sin:0, pieDes=p.pie_des!=null?p.pie_des:0;
   const piedeForte=pieDes>=pieSin?'Destro':'Sinistro', piedeDebole=pieDes>=pieSin?'Sinistro':'Destro';
   document.getElementById('fm-foot-piede-forte').textContent=piedeForte;
@@ -840,12 +930,21 @@ function _fillFMCard(p,sq,sqName){
   document.getElementById('fm-foot-reputazione').textContent='Nazionale';
   document.getElementById('fm-foot-caratteristica').textContent=!isGK&&(p.tecn>=14&&p.pass>=14)?'Esce palla al piede':'—';
   document.getElementById('fm-foot-ruolo').textContent=bestRoleLabel(p.posizione)+' ★★';
-  buildFMColumns(p,isGK);
-  document.getElementById('fm-section-1-title').textContent=isGK?'🧤 Portiere':'⚙ Tecnica';
-  switchTab('panoramica', document.querySelector('.fm-tbtab'));
-  document.getElementById('vs-search-input').value='';
-  document.getElementById('vs-results').style.display='none';
-  document.getElementById('vs-comparison').style.display='none';
+
+  document.getElementById('fm-overlay').classList.add('open');
+  document.getElementById('fm-card').scrollTop=0;
+  document.body.style.overflow='hidden';
+
+  var fillCard=function(){
+    buildFMColumns(p,isGK);
+    document.getElementById('fm-section-1-title').textContent=isGK?'🧤 Portiere':'⚙ Tecnica';
+    switchTab('panoramica', document.querySelector('.fm-tbtab'));
+    document.getElementById('vs-search-input').value='';
+    document.getElementById('vs-results').style.display='none';
+    document.getElementById('vs-comparison').style.display='none';
+  };
+  if(typeof requestAnimationFrame!=='undefined') requestAnimationFrame(fillCard);
+  else fillCard();
 }
 
 /* ═══ ATTR COLUMNS (3 sezioni con barre) ═══ */
@@ -892,7 +991,7 @@ function switchTab(name, clickedEl){
 
 /* ═══ RADAR ═══ */
 function radarAxes(p){
-  const isGK=(p.posizione||'').toUpperCase().startsWith('P');
+  const isGK=p.posizione?.toUpperCase().startsWith('P');
   if(isGK) return [
     {label:'Riflessi',    v:p.rifl,     color:'#22d3a0'},
     {label:'Uno vs uno',  v:p.uno_v_uno,color:'#60a5fa'},
@@ -990,7 +1089,7 @@ function buildRadar(p){
 
 /* ═══ SCOUT ═══ */
 function buildScout(p){
-  const isGK=(p.posizione||'').toUpperCase().startsWith('P');
+  const isGK=p.posizione?.toUpperCase().startsWith('P');
   const role=displayRole(p.posizione);
 
   // Calculate strengths/weaknesses
@@ -1181,7 +1280,7 @@ function cosineSim(a,b){
 }
 
 function buildSimili(p){
-  const isGK=(p.posizione||'').toUpperCase().startsWith('P');
+  const isGK=p.posizione?.toUpperCase().startsWith('P');
   const vec=isGK?gkVector(p):playerVector(p);
   const pPos=posOrder(p.posizione);
 
@@ -1231,7 +1330,7 @@ function closeFMCard(e){
   document.getElementById('fm-overlay').classList.remove('open');
   document.body.style.overflow='';
   if(new URLSearchParams(location.search).get('from')==='scouting'){
-    location.href='scouting-risultati.html?restore=1';
+    location.href='scouting-risultati.html';
   } else if(openedFMCardFromGrid){
     openedFMCardFromGrid = false;
     showView('grid');
@@ -1259,20 +1358,32 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
     document.getElementById('fm-overlay').classList.remove('open');
     document.body.style.overflow='';
-    if(new URLSearchParams(location.search).get('from')==='scouting')location.href='scouting-risultati.html?restore=1';
+    if(new URLSearchParams(location.search).get('from')==='scouting')location.href='scouting-risultati.html';
     else if(openedFMCardFromGrid){ openedFMCardFromGrid=false; showView('grid'); }
   }
 });
 
 
-buildSquadGrid(); refreshWLButtons();
-const params=new URLSearchParams(location.search);
-const sqParam=params.get('sq'),pidParam=params.get('pid');
-if(sqParam&&pidParam){
-  openSquad(sqParam,{openCardOnly:true});
-  requestAnimationFrame(function(){ requestAnimationFrame(function(){ openFMCard(pidParam,sqParam); }); });
-}else if(sqParam){openSquad(sqParam);}
-});
+(function init(){
+  var params=new URLSearchParams(location.search);
+  var sqParam=params.get('sq'),pidParam=params.get('pid'),fromScouting=params.get('from')==='scouting';
+  if(sqParam && pidParam && fromScouting){
+    var stored=null;
+    try{ var raw=sessionStorage.getItem('fmto_card_player'); if(raw)stored=JSON.parse(raw); }catch(e){}
+    curSqName=sqParam;
+    if(stored){ openFMCard(pidParam,sqParam,stored); try{ sessionStorage.removeItem('fmto_card_player'); }catch(e){} }
+    else { (window.SVINCOLATI_READY||Promise.resolve()).then(function(){ openFMCard(pidParam,sqParam,null); }); }
+    (window.SVINCOLATI_READY||Promise.resolve()).then(function(){ buildSquadGrid(); refreshWLButtons(); });
+    return;
+  }
+  (window.SVINCOLATI_READY||Promise.resolve()).then(function(){
+    buildSquadGrid(); refreshWLButtons();
+    if(sqParam){
+      openSquad(sqParam);
+      if(pidParam){ var stored=null; setTimeout(function(){ openFMCard(pidParam,sqParam,stored); },80); }
+    }
+  });
+})();
 </script>
 </body>
 </html>

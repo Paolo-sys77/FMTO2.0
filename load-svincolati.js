@@ -1,24 +1,55 @@
 /**
- * Carica i dati svincolati da URL in config (JSON dalla release GitHub o .js locale).
- * Definisce window.SVINCOLATI_READY (Promise) e window.SVINCOLATI_EXTRA (array).
+ * Carica gli svincolati: prima da svincolati-data.js (funziona senza server, file://),
+ * altrimenti da fetch (svincolati.json/.gz). Primi 1000 giocatori. Schede identiche alle 56 squadre.
  */
 (function () {
-  var url = (typeof SVINCOLATI_CSV_SCRIPT_URL !== 'undefined' && SVINCOLATI_CSV_SCRIPT_URL)
-    ? SVINCOLATI_CSV_SCRIPT_URL
-    : 'svincolati-csv.js';
+  var SVINCOLATI_MAX = 1000;
 
-  if (url.toLowerCase().indexOf('.json') !== -1) {
+  function setExtra(data) {
+    var list = Array.isArray(data) ? data : (data && (data.players || data.data));
+    if (!Array.isArray(list)) list = [];
+    var first1000 = list.slice(0, SVINCOLATI_MAX);
+    window.SVINCOLATI_EXTRA = first1000;
+    if (typeof PLAYERS_BY_TEAM !== 'undefined') {
+      PLAYERS_BY_TEAM['SVINCOLATI'] = first1000;
+    }
+  }
+
+  function fail() {
+    window.SVINCOLATI_EXTRA = [];
+    if (typeof PLAYERS_BY_TEAM !== 'undefined') {
+      PLAYERS_BY_TEAM['SVINCOLATI'] = [];
+    }
+    return Promise.resolve();
+  }
+
+  if (typeof window.SVINCOLATI_INLINE !== 'undefined' && Array.isArray(window.SVINCOLATI_INLINE)) {
+    setExtra(window.SVINCOLATI_INLINE);
+    window.SVINCOLATI_READY = Promise.resolve();
+    return;
+  }
+
+  var url = (typeof SVINCOLATI_DATA_URL !== 'undefined' && SVINCOLATI_DATA_URL)
+    ? SVINCOLATI_DATA_URL
+    : 'svincolati.json';
+  var isGz = url.toLowerCase().indexOf('.gz') !== -1;
+
+  if (isGz) {
+    window.SVINCOLATI_READY = fetch(url)
+      .then(function (response) {
+        if (!response.ok) throw new Error('fetch');
+        if (response.headers.get('Content-Encoding') === 'gzip') {
+          return response.text();
+        }
+        if (!response.body || typeof DecompressionStream === 'undefined') throw new Error('unsupported');
+        return new Response(response.body.pipeThrough(new DecompressionStream('gzip'))).text();
+      })
+      .then(function (text) { setExtra(JSON.parse(text)); })
+      .catch(fail);
+  } else {
     window.SVINCOLATI_READY = fetch(url)
       .then(function (r) { return r.json(); })
-      .then(function (data) {
-        window.SVINCOLATI_EXTRA = Array.isArray(data) ? data : (data.players || data.data || []);
-      })
-      .catch(function () {
-        window.SVINCOLATI_EXTRA = [];
-        return Promise.resolve();
-      });
-  } else {
-    document.write('<script src="' + url + '"><\/script>');
-    window.SVINCOLATI_READY = Promise.resolve();
+      .then(setExtra)
+      .catch(fail);
   }
 })();

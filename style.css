@@ -147,21 +147,21 @@ nav {
 .search-icon { position:absolute; left:.8rem; top:50%; transform:translateY(-50%); color:var(--t2); pointer-events:none; }
 .search-input {
   width:100%; background:var(--card); border:1px solid var(--border);
-  color:var(--t1); font-family:'Outfit',sans-serif; font-size:.84rem;
-  padding:.65rem .85rem .65rem 2.5rem; border-radius:8px; outline:none;
+  color:var(--t1); font-family:'Outfit',sans-serif; font-size:1rem; font-weight:400;
+  padding:.7rem .9rem .7rem 2.6rem; border-radius:8px; outline:none;
   transition:border-color .18s,box-shadow .18s;
 }
-.search-input::placeholder { color:var(--t4); }
+.search-input::placeholder { color:var(--t2); opacity:.9; }
 .search-input:focus { border-color:var(--v); box-shadow:0 0 0 3px rgba(139,92,246,.1); }
 
 .squad-search-wrap { max-width:320px; }
 .squad-player-search {
   width:100%; background:var(--card); border:1px solid var(--border);
-  color:var(--t1); font-family:'Outfit',sans-serif; font-size:.84rem;
-  padding:.6rem .85rem; border-radius:8px; outline:none;
+  color:var(--t1); font-family:'Outfit',sans-serif; font-size:1rem; font-weight:400;
+  padding:.7rem .9rem; border-radius:8px; outline:none;
   transition:border-color .18s,box-shadow .18s;
 }
-.squad-player-search::placeholder { color:var(--t4); }
+.squad-player-search::placeholder { color:var(--t2); opacity:.9; }
 .squad-player-search:focus { border-color:var(--v); box-shadow:0 0 0 3px rgba(139,92,246,.1); }
 
 .grid-player-results { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:1rem 1.1rem; }
@@ -303,6 +303,38 @@ nav {
 .wl-remove:hover { background:rgba(239,68,68,.1); border-color:#f87171; }
 .wl-empty { text-align:center; padding:2.5rem 1rem; color:var(--t2); }
 
+/* ── UNDER LIST ── */
+.squad-under-content {
+  display:flex;
+  flex-wrap:wrap;
+  gap:.45rem;
+}
+.under-pill {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:.35rem .85rem;
+  display:inline-flex;
+  align-items:center;
+  gap:.45rem;
+  font-size:.8rem;
+  color:var(--t1);
+  cursor:pointer;
+  transition:all .14s;
+}
+.under-pill:hover {
+  border-color:var(--v);
+  box-shadow:0 4px 14px rgba(0,0,0,.35);
+  transform:translateY(-1px);
+}
+.under-pill .up-name {
+  font-weight:600;
+}
+.under-pill .up-meta {
+  font-size:.75rem;
+  color:var(--t3);
+}
+
 /* ── SCOUTING PAGE ── */
 .scout-layout {
   display:flex;
@@ -391,14 +423,16 @@ nav {
   border-radius:8px;
   color:var(--t1);
   font-family:'Outfit',sans-serif;
-  font-size:.82rem;
-  padding:.52rem .7rem;
+  font-size:.95rem;
+  font-weight:400;
+  padding:.6rem .8rem;
   outline:none;
   transition:border-color .16s, box-shadow .16s, background .16s;
 }
 
 .scout-input::placeholder {
-  color:var(--t4);
+  color:var(--t2);
+  opacity:.9;
 }
 
 .scout-input:focus,
@@ -654,7 +688,7 @@ body.scout-page-fm26 .scout-select {
   border:1px solid var(--fm26-border);
   color:var(--fm26-text);
 }
-body.scout-page-fm26 .scout-input::placeholder { color:var(--fm26-muted); opacity:.7; }
+body.scout-page-fm26 .scout-input::placeholder { color:var(--fm26-muted); opacity:.95; }
 body.scout-page-fm26 .scout-input:focus,
 body.scout-page-fm26 .scout-select:focus {
   border-color:var(--fm26-accent);

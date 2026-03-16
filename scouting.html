@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <script>var _p=location.pathname; var _b=_p.slice(0,_p.lastIndexOf('/')+1); if(_b&&_b!=='/') document.write('<base href="'+location.origin+_b+'">');</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FMTO 2.0 — Scouting</title>
@@ -16,6 +15,7 @@
     <li><a href="home.html" id="nav-home">Home</a></li>
     <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
 <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="scouting.html" id="nav-scouting">Scouting</a></li>
     <li><a href="mister.html" id="nav-mister">Mister</a></li>
       <li><a href="forum.html" id="nav-forum">Forum</a></li>
 <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
@@ -91,15 +91,14 @@
               <label class="scout-label" for="f-club">Club
                 <small>Squadra di appartenenza</small>
               </label>
-              <input id="f-club" class="scout-input" type="text" placeholder="Es. &quot;Milan&quot;, &quot;Real Madrid&quot;, &quot;Svincolati&quot;…">
+              <input id="f-club" class="scout-input" type="text" placeholder="Es. &quot;Milan&quot;, &quot;Real Madrid&quot;…">
             </div>
-
-            <div class="scout-field" style="grid-column:1 / span 2;display:flex;align-items:center;gap:.5rem">
-              <label class="scout-pos-pill" style="margin:0;cursor:pointer">
-                <input type="checkbox" id="f-solo-svincolati" name="solo-svincolati">
+            <div class="scout-field">
+              <label class="scout-pos-pill" style="display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;margin:0">
+                <input type="checkbox" id="f-solo-svincolati" name="f-solo-svincolati" value="1">
                 <span class="scout-pos-label">Solo svincolati</span>
               </label>
-              <small style="color:var(--t3)">Cerca solo tra i giocatori senza squadra FMTO</small>
+              <small style="display:block;color:var(--t3);margin-top:.25rem">Mostra solo giocatori senza squadra</small>
             </div>
 
             <div class="scout-field">
@@ -139,6 +138,7 @@
             <label class="scout-label">Ruolo in campo
               <small>Seleziona uno o più blocchi di posizione</small>
             </label>
+            <p class="scout-hint" style="margin:.35rem 0 0 0;font-size:.8rem;color:var(--t3)">Puoi filtrare <strong>solo per ruolo</strong>: seleziona una o più posizioni (o il menu sotto) e clicca Cerca senza compilare nome, nazionalità o altri campi.</p>
             <div class="scout-positions">
               <label class="scout-pos-pill">
                 <input type="checkbox" name="pos" value="POR">
@@ -420,26 +420,15 @@
           </div>
         </div>
 
-      <div class="scout-panel">
-        <div class="scout-panel-title">
-          <span>Risultati</span>
-          <span class="scout-panel-meta">La lista si apre in una pagina dedicata</span>
-        </div>
-        <p style="padding:1.25rem;font-size:.9rem;color:var(--fm26-muted)">
-          Imposta i criteri sopra e clicca <strong>Applica filtri</strong> per aprire l’elenco dei giocatori trovati in una nuova pagina.
-        </p>
-      </div>
     </div>
   </section>
 
   <script src="data.js"></script>
   <script src="players.js"></script>
   <script src="stipendi.js"></script>
-  <script src="shared.js"></script>
   <script src="config.js"></script>
-  <script src="load-svincolati.js"></script>
+  <script src="shared.js"></script>
   <script>
-    (window.SVINCOLATI_READY||Promise.resolve()).catch(function(){return Promise.resolve();}).then(function(){
     // ── SCOUTING LOGIC ──
     function _preferredFoot(p) {
       var rd = p.pie_des || 0;
@@ -475,15 +464,16 @@
       var name = document.getElementById('f-name').value.trim().toLowerCase();
       var naz = document.getElementById('f-naz').value;
       var club = document.getElementById('f-club').value.trim().toLowerCase();
-      var soloSvincolati = !!(document.getElementById('f-solo-svincolati') && document.getElementById('f-solo-svincolati').checked);
+      var soloSvincolati = document.getElementById('f-solo-svincolati') && document.getElementById('f-solo-svincolati').checked;
       var ageMin = _readNumber('f-age-min');
       var ageMax = _readNumber('f-age-max');
       var foot = document.getElementById('f-foot').value;
 
       var posDropdown = document.getElementById('f-pos-dropdown');
-      var posGroups = (posDropdown && posDropdown.value)
-        ? [posDropdown.value]
-        : Array.from(document.querySelectorAll('input[name="pos"]:checked')).map(function (c) { return c.value; });
+      var posChecked = Array.from(document.querySelectorAll('input[name="pos"]:checked')).map(function (c) { return c.value; });
+      var posGroups = posChecked.length > 0
+        ? posChecked
+        : (posDropdown && posDropdown.value ? [posDropdown.value] : []);
 
       function slider(id) {
         var el = document.getElementById(id);
@@ -560,7 +550,7 @@
         name: name,
         naz: naz,
         club: club,
-        soloSvincolati: soloSvincolati,
+        soloSvincolati: !!soloSvincolati,
         ageMin: ageMin,
         ageMax: ageMax,
         foot: foot,
@@ -573,20 +563,43 @@
       };
     }
 
-    function _isSvincolato(p) {
-      var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
-      return !squadNamesSet.has((p.squadra || '').trim().toUpperCase());
+    // Supabase: fetch svincolati quando si cerca "Solo svincolati"
+    async function _fetchSupabaseSvincolati(limit) {
+      if (typeof SUPABASE_URL === 'undefined' || !SUPABASE_URL ||
+          typeof SUPABASE_ANON_KEY === 'undefined' || !SUPABASE_ANON_KEY) {
+        return null;
+      }
+      var table = (typeof SVINCOLATI_TABLE !== 'undefined' && SVINCOLATI_TABLE) ? SVINCOLATI_TABLE : 'svincolati';
+      var url = SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/' + encodeURIComponent(table) + '?select=*';
+      if (limit && !isNaN(limit)) {
+        url += '&limit=' + encodeURIComponent(limit);
+      }
+      try {
+        var res = await fetch(url, {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: 'Bearer ' + SUPABASE_ANON_KEY
+          }
+        });
+        if (!res.ok) return null;
+        var data = await res.json();
+        return Array.isArray(data) ? data : null;
+      } catch (e) {
+        return null;
+      }
     }
 
     function _matchPlayer(p, f) {
-      if (f.soloSvincolati && !_isSvincolato(p)) return false;
       if (f.name && !p.nome.toLowerCase().includes(f.name)) return false;
       if (f.naz && !(p.naz || '').includes(f.naz)) return false;
-      if (f.club) {
+      var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
+      var isSvincolato = !squadNamesSet.has((p.squadra || '').trim().toUpperCase());
+      if (f.soloSvincolati && !isSvincolato) return false;
+      if (f.club && !f.soloSvincolati) {
         var c = (f.club || '').toLowerCase().trim();
         var wantSvincolati = c === 'svincolato' || c === 'svincolati' || c.indexOf('svincolat') !== -1;
         if (wantSvincolati) {
-          if (!_isSvincolato(p)) return false;
+          if (!isSvincolato) return false;
         } else if (!(p.squadra || '').toLowerCase().includes(f.club)) return false;
       }
 
@@ -643,63 +656,29 @@
       return true;
     }
 
-    function _renderResults(list) {
-      var tbody = document.querySelector('.scout-results-shell tbody');
-      if (!tbody) return;
-
-      if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="11" class="scout-empty-row">Nessun giocatore trovato con i criteri selezionati.</td></tr>';
-        return;
-      }
-
-      var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
-      var rows = list.map(function (p) {
-        var isSvincolato = !squadNamesSet.has((p.squadra || '').trim().toUpperCase());
-        var squad = isSvincolato ? '—' : (p.squadra || '—');
-        var role = displayRole(p.posizione);
-        var roleClass = getRoleClassFromPos(p.posizione);
-        var flag = getFlag(p.naz);
-        var ovrClass = getOvrClass(p.ca);
-        var stipDisplay = (typeof getStipendio === 'function' && typeof fmtStipendio === 'function') ? fmtStipendio(getStipendio(p)) : '—';
-        var inList = typeof inWL === 'function' && inWL(p.id);
-
-        var squadParam = isSvincolato ? 'SVINCOLATI' : (p.squadra || '');
-        var squadEnc = encodeURIComponent(squadParam);
-        var pidEnc = encodeURIComponent(String(p.id));
-        var href = 'squadre.html?sq=' + squadEnc + '&pid=' + pidEnc + '&from=scouting';
-
-        var nameCell = '<td style="font-weight:500">' + p.nome +
-          (isSvincolato ? ' <span style="font-size:.7rem;background:linear-gradient(135deg,#6b7280,#374151);color:#fff;padding:.15rem .4rem;border-radius:4px;margin-left:.35rem;font-weight:600">Svincolato</span>' : '') + '</td>';
-
-        return '<tr style="cursor:pointer" onclick="saveScoutState();location.href=\'' + href.replace(/'/g, '\\\'') + '\'">' +
-          nameCell +
-          '<td>' + squad + '</td>' +
-          '<td><span class="rb ' + roleClass + '">' + role + '</span></td>' +
-          '<td><span class="ov ' + ovrClass + '">' + p.ca + '</span></td>' +
-          '<td style="color:var(--t2)">' + (p.eta || '—') + '</td>' +
-          '<td title="' + (p.naz || '—') + '">' + flag + '</td>' +
-          '<td>' + (p.tecn != null ? ('<span class="ov ' + getOvrClass(p.tecn * 8 || 0) + '">' + p.tecn + '</span>') : '—') + '</td>' +
-          '<td style="color:var(--t2)">' + '—' + '</td>' +
-          '<td style="color:var(--t2)">' + (p.pa != null ? p.pa : '—') + '</td>' +
-          '<td class="val-tag">' + stipDisplay + '</td>' +
-          '<td style="text-align:right"><button class="wl-btn ' + (inList ? 'inw' : '') + '" data-pid="' + p.id +
-          '" onclick="toggleWLPlayer && toggleWLPlayer(\'' + String(p.id) + '\', \'' + String(isSvincolato ? 'SVINCOLATI' : (p.squadra || '')).replace(/'/g, '\\\'') + '\');event.stopPropagation()">' +
-          (inList ? '★' : '☆') + '</button></td>' +
-          '</tr>';
-      });
-
-      tbody.innerHTML = rows.join('');
-      if (typeof refreshWLButtons === 'function') {
-        refreshWLButtons();
-      }
-    }
-
-    function applyScoutingFilters() {
-      if (typeof ALL_PLAYERS === 'undefined') {
-        return;
-      }
+    async function applyScoutingFilters() {
       var filters = _collectFilters();
-      var pool = (ALL_PLAYERS || []).concat(typeof SVINCOLATI_EXTRA !== 'undefined' && Array.isArray(SVINCOLATI_EXTRA) ? SVINCOLATI_EXTRA : []);
+      var pool;
+      if (filters.soloSvincolati) {
+        // Prima prova a prendere i dati da Supabase (DB svincolati)
+        var fromSupabase = await _fetchSupabaseSvincolati(5000);
+        var localFallback = (typeof window.SVINCOLATI_SCOUTING !== 'undefined' && Array.isArray(window.SVINCOLATI_SCOUTING))
+          ? window.SVINCOLATI_SCOUTING
+          : (typeof PLAYERS_BY_TEAM !== 'undefined' && Array.isArray(PLAYERS_BY_TEAM['SVINCOLATI']) ? PLAYERS_BY_TEAM['SVINCOLATI'] : []);
+
+        if (fromSupabase && fromSupabase.length) {
+          pool = fromSupabase;
+        } else if (localFallback && localFallback.length) {
+          pool = localFallback;
+        } else {
+          alert('Non è stato possibile caricare i dati degli svincolati.\n\nVerifica la configurazione Supabase in config.js (SUPABASE_URL, SUPABASE_ANON_KEY, SVINCOLATI_TABLE).');
+          return;
+        }
+      } else {
+        var squadPlayers = typeof ALL_PLAYERS !== 'undefined' ? ALL_PLAYERS : [];
+        pool = squadPlayers;
+      }
+      if (!pool.length) return;
       var matches = pool.filter(function (p) {
         return _matchPlayer(p, filters);
       });
@@ -712,16 +691,20 @@
         if (ca1 !== ca2) return hasCaRange ? ca1 - ca2 : ca2 - ca1;
         return a.nome.localeCompare(b.nome);
       });
-      saveScoutState();
-      location.href = 'scouting-risultati.html';
+      var maxStored = 2000;
+      try {
+        sessionStorage.setItem('fmto_scout_results', JSON.stringify(matches.slice(0, maxStored)));
+        sessionStorage.setItem('fmto_scout_total', String(matches.length));
+      } catch (e) {}
+      window.open('scouting-risultati.html', '_blank');
     }
 
     function resetScoutingFilters() {
       document.getElementById('f-name').value = '';
       document.getElementById('f-naz').value = '';
       document.getElementById('f-club').value = '';
-      var soloEl = document.getElementById('f-solo-svincolati');
-      if (soloEl) soloEl.checked = false;
+      var cb = document.getElementById('f-solo-svincolati');
+      if (cb) cb.checked = false;
       document.getElementById('f-age-min').value = '';
       document.getElementById('f-age-max').value = '';
       document.getElementById('f-foot').value = '';
@@ -740,44 +723,20 @@
       });
     }
 
-    function saveScoutState() {
-      var state = { ids: {}, pos: [] };
-      document.querySelectorAll('.scout-layout input[id], .scout-layout select[id]').forEach(function (el) {
-        if (el.id) state.ids[el.id] = el.type === 'checkbox' ? el.checked : (el.value || '');
-      });
-      document.querySelectorAll('input[name="pos"]:checked').forEach(function (c) { state.pos.push(c.value); });
-      try { sessionStorage.setItem('scout_restore_state', JSON.stringify(state)); } catch (e) {}
-    }
-    function restoreScoutState() {
-      var raw = sessionStorage.getItem('scout_restore_state');
-      if (!raw) return;
-      try {
-        var state = JSON.parse(raw);
-        sessionStorage.removeItem('scout_restore_state');
-        if (state.ids) {
-          for (var id in state.ids) {
-            var el = document.getElementById(id);
-            if (el) {
-              if (el.type === 'checkbox') el.checked = !!state.ids[id];
-              else el.value = state.ids[id] || '';
-            }
-          }
-        }
-        if (state.pos && state.pos.length) {
-          document.querySelectorAll('input[name="pos"]').forEach(function (c) { c.checked = state.pos.indexOf(c.value) !== -1; });
-        }
-        applyScoutingFilters();
-      } catch (e) {}
-    }
-    var urlRestore = new URLSearchParams(location.search).get('restore') === '1';
-    var hasStoredState = !!sessionStorage.getItem('scout_restore_state');
-    if (hasStoredState && (urlRestore || (document.referrer || '').indexOf('squadre') !== -1)) {
-      location.href = 'scouting-risultati.html' + (urlRestore ? '?restore=1' : '');
-    }
-
     document.getElementById('btn-apply-filters')?.addEventListener('click', applyScoutingFilters);
     document.getElementById('btn-reset-filters')?.addEventListener('click', resetScoutingFilters);
+
+    var posDrop = document.getElementById('f-pos-dropdown');
+    document.querySelectorAll('input[name="pos"]').forEach(function (checkbox) {
+      checkbox.addEventListener('change', function () {
+        if (posDrop && checkbox.checked) posDrop.value = '';
+      });
     });
+    if (posDrop) {
+      posDrop.addEventListener('change', function () {
+        if (posDrop.value) document.querySelectorAll('input[name="pos"]').forEach(function (c) { c.checked = false; });
+      });
+    }
   </script>
 </body>
 </html>

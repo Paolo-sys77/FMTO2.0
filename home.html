@@ -88,6 +88,46 @@
 .ql-arrow { position:absolute; bottom:1.2rem; right:1.2rem; color:var(--v); font-size:.85rem; transition:transform .18s; }
 .ql-card:hover .ql-arrow { transform:translateX(3px); }
 
+/* Modal Under Construction (stile palmares) */
+.uc-overlay {
+  position: fixed; inset: 0; z-index: 999;
+  background: rgba(0,0,0,.7); backdrop-filter: blur(8px);
+  display: none; align-items: center; justify-content: center;
+  padding: 1.5rem;
+}
+.uc-overlay.open { display: flex; }
+.uc-overlay .uc-box {
+  text-align: center; padding: 2.5rem 2rem; border-radius: 16px;
+  background: radial-gradient(circle at top, rgba(139,92,246,.22), rgba(15,23,42,.95));
+  box-shadow: 0 18px 45px rgba(15,23,42,.9);
+  border: 1px solid rgba(148,163,184,.3);
+  max-width: 420px;
+}
+.uc-overlay .uc-logo {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 2.4rem; font-weight: 800;
+  letter-spacing: .08em; text-transform: uppercase; margin-bottom: .4rem;
+}
+.uc-overlay .uc-logo span {
+  background: linear-gradient(135deg, var(--vb), var(--g));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.uc-overlay .uc-sub { font-size: .8rem; color: var(--t3); margin-bottom: 1.6rem; text-transform: uppercase; letter-spacing: .18em; }
+.uc-overlay .uc-title { font-size: 1.4rem; font-weight: 700; color: var(--t1); margin-bottom: .5rem; }
+.uc-overlay .uc-text { font-size: .9rem; color: var(--t2); margin: 0 auto 1.2rem; line-height: 1.5; }
+.uc-overlay .uc-pill {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .35rem .8rem; border-radius: 999px;
+  background: rgba(34,197,94,.1); color: #bbf7d0; font-size: .75rem;
+}
+.uc-overlay .uc-dot { width: 8px; height: 8px; border-radius: 999px; background: radial-gradient(circle at 30% 30%, #bbf7d0, #22c55e); }
+.uc-overlay .uc-close {
+  margin-top: 1.25rem; padding: .5rem 1.2rem; border-radius: 8px;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
+  color: var(--t1); font-size: .85rem; cursor: pointer;
+}
+.uc-overlay .uc-close:hover { background: rgba(255,255,255,.12); }
+
 /* Mobile: logo poco sotto la striscia Live, pulsanti 2 per riga */
 @media (max-width: 768px) {
   .hero {
@@ -232,13 +272,13 @@
       <div class="ql-desc">Trofei e titoli del torneo FMTO, stagione per stagione.</div>
       <span class="ql-arrow">→</span>
     </a>
-    <a class="ql-card" href="serie-a-girone-a.html">
+    <a class="ql-card" href="#" onclick="showUnderConstruction('Campionati'); return false;">
       <span class="ql-icon">🏆</span>
       <div class="ql-title">Campionati</div>
       <div class="ql-desc">Classifiche Serie A, B, C e link ai fogli Google del torneo.</div>
       <span class="ql-arrow">→</span>
     </a>
-    <a class="ql-card" href="coppe.html">
+    <a class="ql-card" href="#" onclick="showUnderConstruction('Coppe'); return false;">
       <span class="ql-icon">🥇</span>
       <div class="ql-title">Coppe</div>
       <div class="ql-desc">Coppa FMTO, Champions League, Europa League e altre competizioni.</div>
@@ -255,9 +295,39 @@
   </div>
 </div>
 <p id="autorefresh-msg" style="text-align:center;font-size:.75rem;color:var(--t3);margin-top:1.5rem;margin-bottom:2rem"></p>
+
+<!-- Modal Under Construction (stile palmares) -->
+<div id="uc-overlay" class="uc-overlay" onclick="if(event.target===this)closeUnderConstruction()">
+  <div class="uc-box">
+    <div class="uc-logo">FMTO<span> 2.0</span></div>
+    <div class="uc-sub" id="uc-sub">—</div>
+    <div class="uc-title">Under Construction</div>
+    <p class="uc-text" id="uc-text">La sezione è in fase di allestimento. A breve sarà disponibile.</p>
+    <div class="uc-pill"><span class="uc-dot"></span>Work in progress</div>
+    <button type="button" class="uc-close" onclick="closeUnderConstruction()">Chiudi</button>
+  </div>
+</div>
+
 <script src="data.js"></script>
 <script src="shared.js"></script>
 <script>
+function showUnderConstruction(section) {
+  var sub = document.getElementById('uc-sub');
+  var text = document.getElementById('uc-text');
+  if (section === 'Campionati') {
+    sub.textContent = 'Campionati';
+    text.textContent = 'Classifiche Serie A, B, C e link ai fogli Google del torneo sono in fase di allestimento. A breve saranno disponibili.';
+  } else {
+    sub.textContent = 'Coppe';
+    text.textContent = 'Coppa FMTO, Champions League, Europa League e altre competizioni sono in fase di allestimento. A breve saranno disponibili.';
+  }
+  document.getElementById('uc-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeUnderConstruction() {
+  document.getElementById('uc-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
 (function(){
   var el=document.getElementById('autorefresh-msg');
   if(localStorage.getItem('fmto_no_autorefresh')==='1')

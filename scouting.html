@@ -563,6 +563,54 @@
       };
     }
 
+    // Mappa una riga Supabase nel formato giocatore usato da scouting/schede
+    function _mapSupabaseRowToPlayer(r, idx) {
+      var get = function(keys) {
+        for (var i = 0; i < keys.length; i++) {
+          var v = r[keys[i]];
+          if (v !== undefined && v !== null && v !== '') return v;
+        }
+        return null;
+      };
+      var toInt = function(v) {
+        if (v == null || v === '') return null;
+        var n = parseInt(String(v).replace(/\s/g, '').replace(/[^\d.-]/g, ''), 10);
+        return isNaN(n) ? null : n;
+      };
+      var id = get(['id', 'ID', 'Id']);
+      return {
+        id: id != null ? String(id) : ('sv_' + idx),
+        nome: get(['Nome completo', 'Nome', 'nome']) || '—',
+        eta: toInt(get(['Età', 'Eta', 'eta', 'Age'])) ?? 0,
+        dob: get(['Data di nascita', 'Data nascita', 'dob']) || '',
+        ca: toInt(get(['CA', 'ca'])) ?? 0,
+        pa: toInt(get(['PA', 'pa'])) ?? 0,
+        naz: get(['Nazionalità', 'Nazionalita', 'naz', 'Naz']) || '',
+        squadra: 'SVINCOLATI',
+        prezzo: 0,
+        posizione: get(['Posizione', 'posizione', 'Pos', 'Ruolo']) || '—',
+        vel: toInt(get(['Velocità', 'Velocita', 'vel'])) ?? 0,
+        acc: toInt(get(['Accelerazione', 'acc'])) ?? 0,
+        tecn: toInt(get(['Tecnica', 'tecn'])) ?? 0,
+        pass: toInt(get(['Passaggi', 'pass'])) ?? 0,
+        final: toInt(get(['Finalizzazione', 'final'])) ?? 0,
+        drib: toInt(get(['Dribbling', 'drib'])) ?? 0,
+        marc: toInt(get(['Marcatura', 'marc'])) ?? 0,
+        cont: toInt(get(['Contrasti', 'cont'])) ?? 0,
+        dec: toInt(get(['Decisioni', 'dec'])) ?? 0,
+        fred: toInt(get(['Freddezza', 'fred'])) ?? 0,
+        conc: toInt(get(['Concentrazione', 'conc'])) ?? 0,
+        det: toInt(get(['Determinazione', 'det'])) ?? 0,
+        res: toInt(get(['Resistenza', 'res'])) ?? 0,
+        forza: toInt(get(['Forza', 'forza'])) ?? 0,
+        crea: toInt(get(['Creatività', 'Creativita', 'crea'])) ?? 0,
+        int_ment: toInt(get(['Intuito', 'int_ment', 'pos_ment'])) ?? 0,
+        rifl: toInt(get(['Riflessi', 'rifl'])) ?? 0,
+        uno_v_uno: toInt(get(['Uno contro Uno', 'uno_v_uno'])) ?? 0,
+        usc: toInt(get(['Uscite', 'usc'])) ?? 0
+      };
+    }
+
     // Supabase: fetch svincolati quando si cerca "Solo svincolati"
     async function _fetchSupabaseSvincolati(limit) {
       if (typeof SUPABASE_URL === 'undefined' || !SUPABASE_URL ||
@@ -583,7 +631,8 @@
         });
         if (!res.ok) return null;
         var data = await res.json();
-        return Array.isArray(data) ? data : null;
+        if (!Array.isArray(data)) return null;
+        return data.map(function(r, i) { return _mapSupabaseRowToPlayer(r, i); });
       } catch (e) {
         return null;
       }
@@ -696,7 +745,7 @@
         sessionStorage.setItem('fmto_scout_results', JSON.stringify(matches.slice(0, maxStored)));
         sessionStorage.setItem('fmto_scout_total', String(matches.length));
       } catch (e) {}
-      window.open('scouting-risultati.html', '_blank');
+      window.location.replace('scouting-risultati.html');
     }
 
     function resetScoutingFilters() {

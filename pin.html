@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FMTO 2.0 — Accesso</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+  /* pagina "gateway" PIN (stesso stile area riservata) */
+  .lock-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem}
+  .lock-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:2.5rem;width:min(420px,100%);text-align:center}
+  .lock-icon{font-size:2.8rem;margin-bottom:1rem;display:block}
+  .lock-title{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;margin-bottom:.3rem}
+  .lock-sub{font-size:.82rem;color:var(--t2);margin-bottom:1.6rem;line-height:1.5}
+  .pin-select{width:100%;background:var(--sf);border:1px solid var(--border);color:var(--t1);font-family:'Outfit',sans-serif;font-size:.85rem;padding:.6rem .9rem;border-radius:8px;outline:none;margin-bottom:1rem;cursor:pointer}
+  .pin-select option{background:var(--card)}
+  .pin-dots{display:flex;gap:.6rem;justify-content:center;margin-bottom:1.1rem}
+  .pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:all .18s}
+  .pin-dot.filled{background:var(--v);border-color:var(--v);box-shadow:0 0 8px var(--vg)}
+  .pin-numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.75rem}
+  .pin-key{background:var(--sf);border:1px solid var(--border);color:var(--t1);font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:700;padding:.7rem;border-radius:8px;cursor:pointer;transition:all .14s;user-select:none}
+  .pin-key:hover{border-color:var(--v);background:rgba(139,92,246,.1);color:var(--vb)}
+  .pin-key:active{transform:scale(.91)}
+  .pin-error{color:#f87171;font-size:.78rem;min-height:1.2em;margin-top:.3rem}
+  .pin-actions{display:flex;gap:.5rem;justify-content:center;margin-top:.9rem;flex-wrap:wrap}
+  .pin-link{font-size:.78rem;color:var(--t3);text-decoration:none;border:1px solid var(--border);padding:.45rem .85rem;border-radius:8px;background:transparent;cursor:pointer}
+  .pin-link:hover{border-color:var(--v);color:var(--vb)}
+  </style>
+</head>
+<body class="gbg">
+
+<div id="lock-screen" class="lock-screen">
+  <div class="lock-card glass fade-in">
+    <span class="lock-icon">🔐</span>
+    <div class="lock-title">Accesso</div>
+    <p class="lock-sub">Seleziona la tua squadra e inserisci il PIN a 4 cifre. I PIN sono gli stessi dell’Area Riservata.</p>
+
+    <select class="pin-select" id="pin-squad-select" onchange="resetPin()">
+      <option value="">— Scegli la tua squadra —</option>
+    </select>
+
+    <div class="pin-dots">
+      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
+      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
+    </div>
+
+    <div class="pin-numpad">
+      <button type="button" class="pin-key" onclick="pk('1')">1</button>
+      <button type="button" class="pin-key" onclick="pk('2')">2</button>
+      <button type="button" class="pin-key" onclick="pk('3')">3</button>
+      <button type="button" class="pin-key" onclick="pk('4')">4</button>
+      <button type="button" class="pin-key" onclick="pk('5')">5</button>
+      <button type="button" class="pin-key" onclick="pk('6')">6</button>
+      <button type="button" class="pin-key" onclick="pk('7')">7</button>
+      <button type="button" class="pin-key" onclick="pk('8')">8</button>
+      <button type="button" class="pin-key" onclick="pk('9')">9</button>
+      <button type="button" class="pin-key" onclick="pk('del')" style="font-size:.88rem;color:var(--t2)">⌫</button>
+      <button type="button" class="pin-key" onclick="pk('0')">0</button>
+      <button type="button" class="pin-key" style="visibility:hidden"></button>
+    </div>
+
+    <div class="pin-error" id="pin-error"></div>
+
+    <div class="pin-actions">
+      <a class="pin-link" href="index.html">← Torna indietro</a>
+      <a class="pin-link" href="area.html">Vai all’Area Riservata</a>
+      <a class="pin-link" href="home.html">Entra senza PIN</a>
+    </div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script src="shared.js"></script>
+<script>
+// Se sessione già attiva, vai direttamente in home
+(function(){
+  if (typeof getSession === 'function' && getSession()) {
+    location.replace('home.html');
+  }
+})();
+
+let pinEntry = '';
+
+function populateSelect() {
+  const sel = document.getElementById('pin-squad-select');
+  if (!sel || typeof SQUADS === 'undefined') return;
+  sel.innerHTML = '<option value="">— Scegli la tua squadra —</option>' +
+    SQUADS.map(sq => `<option value="${sq.id}">${sq.name}</option>`).join('');
+}
+
+function resetPin() {
+  pinEntry = '';
+  updateDots();
+  document.getElementById('pin-error').textContent = '';
+}
+
+function updateDots() {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('pd' + i).classList.toggle('filled', i < pinEntry.length);
+  }
+}
+
+function pk(k) {
+  if (!document.getElementById('pin-squad-select').value && k !== 'del') {
+    document.getElementById('pin-error').textContent = 'Seleziona prima la tua squadra';
+    return;
+  }
+  if (k === 'del') pinEntry = pinEntry.slice(0, -1);
+  else if (pinEntry.length < 4) pinEntry += k;
+  updateDots();
+  document.getElementById('pin-error').textContent = '';
+  if (pinEntry.length === 4) checkPin();
+}
+
+function checkPin() {
+  const sq = SQUADS.find(s => s.id === document.getElementById('pin-squad-select').value);
+  if (!sq) return;
+  if (pinEntry === sq.pin) {
+    if (typeof startSession === 'function') startSession(sq.id, sq.name);
+    location.replace('home.html');
+  } else {
+    document.getElementById('pin-error').textContent = '❌ PIN errato. Riprova.';
+    setTimeout(() => { pinEntry = ''; updateDots(); }, 600);
+  }
+}
+
+populateSelect();
+</script>
+</body>
+</html>
+

@@ -11,7 +11,9 @@
     display:flex;
     align-items:center;
     justify-content:center;
+    cursor: pointer;
   }
+  .uc-wrap .uc-box { cursor: default; }
   .uc-box {
     text-align:center;
     padding:2.5rem 2rem;
@@ -84,8 +86,8 @@
 </div>
 
 <section class="sec">
-  <div class="uc-wrap">
-    <div class="uc-box">
+  <div class="uc-wrap" onclick="location.href='home.html'" title="Clicca per tornare alla Home">
+    <div class="uc-box" onclick="event.stopPropagation()">
       <div class="uc-logo">FMTO<span> 2.0</span></div>
       <div class="uc-sub">Palmares</div>
       <div class="uc-title">Under Construction</div>

@@ -6,23 +6,6 @@
 <title>FMTO 2.0 — Area Riservata</title>
 <link rel="stylesheet" href="style.css">
 <style>
-/* ── LOCK ── */
-.lock-screen{min-height:calc(100vh - 91px);display:flex;align-items:center;justify-content:center;padding:2rem}
-.lock-card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:2.5rem;width:min(400px,100%);text-align:center}
-.lock-icon{font-size:2.8rem;margin-bottom:1rem;display:block}
-.lock-title{font-family:'Barlow Condensed',sans-serif;font-size:2rem;font-weight:800;margin-bottom:.3rem}
-.lock-sub{font-size:.82rem;color:var(--t2);margin-bottom:1.6rem;line-height:1.5}
-.pin-select{width:100%;background:var(--sf);border:1px solid var(--border);color:var(--t1);font-family:'Outfit',sans-serif;font-size:.85rem;padding:.6rem .9rem;border-radius:8px;outline:none;margin-bottom:1rem;cursor:pointer}
-.pin-select option{background:var(--card)}
-.pin-dots{display:flex;gap:.6rem;justify-content:center;margin-bottom:1.1rem}
-.pin-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);background:transparent;transition:all .18s}
-.pin-dot.filled{background:var(--v);border-color:var(--v);box-shadow:0 0 8px var(--vg)}
-.pin-numpad{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:.75rem}
-.pin-key{background:var(--sf);border:1px solid var(--border);color:var(--t1);font-family:'Barlow Condensed',sans-serif;font-size:1.4rem;font-weight:700;padding:.7rem;border-radius:8px;cursor:pointer;transition:all .14s;user-select:none}
-.pin-key:hover{border-color:var(--v);background:rgba(139,92,246,.1);color:var(--vb)}
-.pin-key:active{transform:scale(.91)}
-.pin-error{color:#f87171;font-size:.78rem;min-height:1.2em;margin-top:.3rem}
-
 /* ── DASHBOARD ── */
 .dashboard{display:none}
 .dashboard.active{display:block}
@@ -114,37 +97,6 @@
   </div></div>
 </div>
 
-<!-- LOCK SCREEN -->
-<div id="lock-screen" class="lock-screen">
-  <div class="lock-card glass fade-in">
-    <span class="lock-icon">🔐</span>
-    <div class="lock-title">Area Riservata</div>
-    <p class="lock-sub">Seleziona la tua squadra e inserisci il PIN a 4 cifre per accedere alla dashboard personale.</p>
-    <select class="pin-select" id="pin-squad-select" onchange="resetPin()">
-      <option value="">— Scegli la tua squadra —</option>
-    </select>
-    <div class="pin-dots">
-      <div class="pin-dot" id="pd0"></div><div class="pin-dot" id="pd1"></div>
-      <div class="pin-dot" id="pd2"></div><div class="pin-dot" id="pd3"></div>
-    </div>
-    <div class="pin-numpad">
-      <button class="pin-key" onclick="pk('1')">1</button>
-      <button class="pin-key" onclick="pk('2')">2</button>
-      <button class="pin-key" onclick="pk('3')">3</button>
-      <button class="pin-key" onclick="pk('4')">4</button>
-      <button class="pin-key" onclick="pk('5')">5</button>
-      <button class="pin-key" onclick="pk('6')">6</button>
-      <button class="pin-key" onclick="pk('7')">7</button>
-      <button class="pin-key" onclick="pk('8')">8</button>
-      <button class="pin-key" onclick="pk('9')">9</button>
-      <button class="pin-key" onclick="pk('del')" style="font-size:.88rem;color:var(--t2)">⌫</button>
-      <button class="pin-key" onclick="pk('0')">0</button>
-      <button class="pin-key" style="visibility:hidden"></button>
-    </div>
-    <div class="pin-error" id="pin-error"></div>
-  </div>
-</div>
-
 <!-- DASHBOARD -->
 <div id="dashboard" class="dashboard sec">
   <div class="dash-header">
@@ -164,6 +116,10 @@
 
   <!-- WATCHLIST -->
   <div id="tab-wl">
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:flex-end;margin-top:.2rem;margin-bottom:.9rem">
+      <button class="btn-ghost" type="button" onclick="exportWatchlist()">⬇︎ Esporta</button>
+      <button class="btn-ghost" type="button" onclick="importWatchlist()">⬆︎ Importa</button>
+    </div>
     <div class="wl-stats" id="wl-stats"></div>
     <div id="wl-content"></div>
   </div>
@@ -229,40 +185,11 @@
 <script src="data.js"></script>
 <script src="players.js"></script>
 <script src="stipendi.js"></script>
+<script src="misters-data.js"></script>
+<script src="config.js"></script>
 <script src="shared.js"></script>
 <script>
-/* ═══ PIN / AUTH ═══ */
-let pinEntry = '', loggedSq = null;
-
-function populateSelect() {
-  const sel = document.getElementById('pin-squad-select');
-  sel.innerHTML = '<option value="">— Scegli la tua squadra —</option>' +
-    SQUADS.map(sq => `<option value="${sq.id}">${sq.name}</option>`).join('');
-}
-function resetPin() { pinEntry=''; updateDots(); document.getElementById('pin-error').textContent=''; }
-function updateDots() { for(let i=0;i<4;i++) document.getElementById('pd'+i).classList.toggle('filled', i<pinEntry.length); }
-function pk(k) {
-  if (!document.getElementById('pin-squad-select').value && k!=='del') {
-    document.getElementById('pin-error').textContent='Seleziona prima la tua squadra'; return;
-  }
-  if (k==='del') pinEntry=pinEntry.slice(0,-1);
-  else if (pinEntry.length<4) pinEntry+=k;
-  updateDots();
-  document.getElementById('pin-error').textContent='';
-  if (pinEntry.length===4) checkPin();
-}
-function checkPin() {
-  const sq = SQUADS.find(s => s.id===document.getElementById('pin-squad-select').value);
-  if (!sq) return;
-  if (pinEntry===sq.pin) { loggedSq=sq; showDashboard(sq); }
-  else {
-    document.getElementById('pin-error').textContent='❌ PIN errato. Riprova.';
-    setTimeout(()=>{ pinEntry=''; updateDots(); }, 600);
-  }
-}
 function showDashboard(sq) {
-  startSession(sq.id, sq.name);   // ← avvia sessione autenticata
-  document.getElementById('lock-screen').style.display='none';
   document.getElementById('dashboard').classList.add('active');
   const dl = document.getElementById('dash-logo');
   if (sq.logo) {
@@ -272,23 +199,15 @@ function showDashboard(sq) {
     dl.innerHTML=`<div style="width:100%;height:100%;background:linear-gradient(135deg,${sq.color1},${sq.color2});display:flex;align-items:center;justify-content:center;border-radius:50%;font-family:'Barlow Condensed',sans-serif;font-weight:800;color:#fff">${abbr}</div>`;
   }
   document.getElementById('dash-name').textContent=sq.name;
-  document.getElementById('dash-manager').textContent=`Mister: ${sq.manager} · 🔒 Sessione attiva — watchlist privata`;
+  var mName = (typeof getMisterInfo === 'function') ? (getMisterInfo(sq.name).nome || '') : '';
+  var showManager = mName || sq.manager || '—';
+  document.getElementById('dash-manager').textContent=`Mister: ${showManager} · 🔒 Sessione attiva — watchlist privata`;
   tactSqName = sq.name;
   renderWatchlist(); renderMySquad(sq);
 }
 function logout() {
-  endSession();                    // ← termina sessione
-  loggedSq=null; pinEntry=''; updateDots();
-  document.getElementById('pin-squad-select').value='';
-  document.getElementById('pin-error').textContent='';
-  document.getElementById('dashboard').classList.remove('active');
-  document.getElementById('lock-screen').style.display='';
-  // reset tabs
-  document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
-  document.querySelector('.tabs .tab').classList.add('active');
-  document.getElementById('tab-wl').style.display='';
-  document.getElementById('tab-squad').style.display='none';
-  document.getElementById('tab-tattica').style.display='none';
+  endSession();
+  location.replace('home.html');
 }
 function switchTab(tab, el) {
   document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
@@ -336,6 +255,63 @@ function renderWatchlist() {
     </div>`).join('');
 }
 function removeFromWL(pid,e){if(e)e.stopPropagation();saveWL(getWL().filter(p=>String(p.id)!==String(pid)));renderWatchlist();}
+
+async function exportWatchlist() {
+  const s = getSession && getSession();
+  if (!s) { alert('Devi essere autenticato per esportare la watchlist.'); return; }
+  const payload = { v: 1, sqId: s.sqId, sqName: s.sqName, wl: getWL() };
+  const text = JSON.stringify(payload);
+  try {
+    await navigator.clipboard.writeText(text);
+    alert('Watchlist copiata negli appunti.\n\nApri l\'Area Riservata sull\'altro dispositivo e usa "Importa".');
+  } catch (e) {
+    prompt('Copia questo testo e incollalo su "Importa":', text);
+  }
+}
+
+function importWatchlist() {
+  const s = getSession && getSession();
+  if (!s) { alert('Devi essere autenticato per importare la watchlist.'); return; }
+  const raw = prompt('Incolla qui il testo esportato della watchlist:');
+  if (!raw) return;
+  try {
+    const data = JSON.parse(raw);
+    const wl = Array.isArray(data) ? data : (Array.isArray(data.wl) ? data.wl : []);
+    // Dedup per id
+    const merged = [];
+    const seen = new Set();
+    wl.forEach(p => {
+      const id = p && p.id != null ? String(p.id) : null;
+      if (!id || seen.has(id)) return;
+      seen.add(id);
+      merged.push(p);
+    });
+    saveWL(merged);
+    renderWatchlist();
+    alert('Import completato.');
+  } catch (e) {
+    alert('Testo non valido. Assicurati di incollare il contenuto esportato.');
+  }
+}
+
+function initAreaReserved() {
+  const s = (typeof getSession === 'function') ? getSession() : null;
+  if (!s || !s.sqId) {
+    location.replace('pin.html');
+    return;
+  }
+  const sq = (typeof SQUADS !== 'undefined' && Array.isArray(SQUADS))
+    ? SQUADS.find(x => String(x.id) === String(s.sqId))
+    : null;
+  if (!sq) {
+    endSession();
+    location.replace('pin.html');
+    return;
+  }
+  showDashboard(sq);
+}
+
+initAreaReserved();
 
 /* ═══ MIA SQUADRA ═══ */
 function renderMySquad(sq) {

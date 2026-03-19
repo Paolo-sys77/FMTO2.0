@@ -80,6 +80,10 @@ function getStipendio(p){ return (typeof STIPENDI_BY_ID!=='undefined'&&STIPENDI_
 
 const WL_SESSION_KEY = 'fmto_session';
 const WL_KEY_PREFIX  = 'fmto_wl_';
+const WL_SYNC_META_PREFIX = 'fmto_wlmeta_'; // meta per sync (per-squad): { updatedAt }
+let _wlSyncTimer = null;
+let _wlSyncInFlight = false;
+let _wlRemoteAppliedForSq = null;
 
 /* Restituisce la sessione attiva o null */
 function getSession() {
@@ -89,6 +93,8 @@ function getSession() {
 /* Avvia sessione (chiamato da area.html dopo PIN corretto) */
 function startSession(sqId, sqName) {
   sessionStorage.setItem(WL_SESSION_KEY, JSON.stringify({ sqId, sqName }));
+  // appena loggato, prova a caricare dal server (se configurato)
+  try { syncWLFromServer(); } catch(e) {}
 }
 /* Termina sessione (logout) */
 function endSession() {
@@ -111,9 +117,142 @@ function saveWL(wl) {
   const k = _wlKey();
   if (!k) return;
   localStorage.setItem(k, JSON.stringify(wl));
+  _touchWLMeta();
+  scheduleWLSyncToServer();
 }
 function inWL(pid) {
   return getWL().some(p => String(p.id) === String(pid));
+}
+
+function _wlMetaKey() {
+  const s = getSession();
+  return s ? WL_SYNC_META_PREFIX + s.sqId : null;
+}
+
+function _getWLUpdatedAt() {
+  const mk = _wlMetaKey();
+  if (!mk) return 0;
+  try {
+    const meta = JSON.parse(localStorage.getItem(mk) || '{}');
+    const t = meta && meta.updatedAt ? Number(meta.updatedAt) : 0;
+    return isNaN(t) ? 0 : t;
+  } catch { return 0; }
+}
+
+function _touchWLMeta(ts) {
+  const mk = _wlMetaKey();
+  if (!mk) return;
+  const updatedAt = ts ? Number(ts) : Date.now();
+  try { localStorage.setItem(mk, JSON.stringify({ updatedAt })); } catch(e) {}
+}
+
+function _supabaseEnabled() {
+  return (typeof SUPABASE_URL !== 'undefined' && SUPABASE_URL &&
+          typeof SUPABASE_ANON_KEY !== 'undefined' && SUPABASE_ANON_KEY &&
+          typeof WATCHLIST_TABLE !== 'undefined' && WATCHLIST_TABLE);
+}
+
+function _supabaseHeaders(extra) {
+  const h = Object.assign({
+    apikey: SUPABASE_ANON_KEY,
+    Authorization: 'Bearer ' + SUPABASE_ANON_KEY,
+    'Content-Type': 'application/json'
+  }, extra || {});
+  return h;
+}
+
+async function _fetchWLRemote(sqId) {
+  if (!_supabaseEnabled()) return null;
+  const table = WATCHLIST_TABLE;
+  const base = SUPABASE_URL.replace(/\/+$/, '');
+  const url = base + '/rest/v1/' + encodeURIComponent(table) +
+    '?select=wl,updated_at,updated_ms&sq_id=eq.' + encodeURIComponent(String(sqId)) + '&limit=1';
+  try {
+    const res = await fetch(url, { headers: _supabaseHeaders() });
+    if (!res.ok) return null;
+    const rows = await res.json();
+    if (!Array.isArray(rows) || !rows.length) return { wl: null, updatedMs: 0 };
+    const r = rows[0] || {};
+    const wl = Array.isArray(r.wl) ? r.wl : (r.wl && Array.isArray(r.wl.wl) ? r.wl.wl : r.wl);
+    const updatedMs = (r.updated_ms != null) ? Number(r.updated_ms) :
+      (r.updated_at ? Date.parse(r.updated_at) : 0);
+    return { wl: Array.isArray(wl) ? wl : null, updatedMs: isNaN(updatedMs) ? 0 : updatedMs };
+  } catch (e) {
+    return null;
+  }
+}
+
+async function _pushWLRemote(sqId, wl, updatedMs) {
+  if (!_supabaseEnabled()) return false;
+  const table = WATCHLIST_TABLE;
+  const base = SUPABASE_URL.replace(/\/+$/, '');
+  const url = base + '/rest/v1/' + encodeURIComponent(table);
+  const payload = [{ sq_id: String(sqId), wl: wl, updated_ms: Number(updatedMs) || Date.now() }];
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: _supabaseHeaders({
+        Prefer: 'resolution=merge-duplicates,return=minimal'
+      }),
+      body: JSON.stringify(payload)
+    });
+    return res.ok;
+  } catch (e) {
+    return false;
+  }
+}
+
+function scheduleWLSyncToServer() {
+  if (!_supabaseEnabled()) return;
+  if (_wlSyncTimer) clearTimeout(_wlSyncTimer);
+  _wlSyncTimer = setTimeout(function() {
+    _wlSyncTimer = null;
+    syncWLToServer();
+  }, 700);
+}
+
+async function syncWLFromServer() {
+  const s = getSession();
+  if (!s || !_supabaseEnabled()) return;
+  // evita doppio apply nello stesso caricamento per la stessa squadra
+  if (_wlRemoteAppliedForSq === String(s.sqId)) return;
+  const remote = await _fetchWLRemote(s.sqId);
+  if (!remote) return;
+  const localUpdated = _getWLUpdatedAt();
+  const remoteUpdated = Number(remote.updatedMs) || 0;
+  if (remote.wl && remoteUpdated > localUpdated) {
+    // applica remoto al localStorage e aggiorna meta
+    localStorage.setItem(WL_KEY_PREFIX + s.sqId, JSON.stringify(remote.wl));
+    _touchWLMeta(remoteUpdated);
+    try { refreshWLButtons(); } catch(e) {}
+  }
+  _wlRemoteAppliedForSq = String(s.sqId);
+}
+
+async function syncWLToServer() {
+  const s = getSession();
+  if (!s || !_supabaseEnabled()) return;
+  if (_wlSyncInFlight) return;
+  _wlSyncInFlight = true;
+  try {
+    // prima: se il remoto è più nuovo, lo tiriamo giù (evita sovrascritture incrociate)
+    const remote = await _fetchWLRemote(s.sqId);
+    const localUpdated = _getWLUpdatedAt();
+    const remoteUpdated = remote ? (Number(remote.updatedMs) || 0) : 0;
+    if (remote && remote.wl && remoteUpdated > localUpdated) {
+      localStorage.setItem(WL_KEY_PREFIX + s.sqId, JSON.stringify(remote.wl));
+      _touchWLMeta(remoteUpdated);
+      try { refreshWLButtons(); } catch(e) {}
+      return;
+    }
+    const wl = getWL();
+    const ok = await _pushWLRemote(s.sqId, wl, localUpdated || Date.now());
+    if (ok) {
+      // nulla, local resta fonte
+    }
+  } finally {
+    _wlSyncInFlight = false;
+  }
 }
 
 function toggleWLPlayer(pid, squadName) {

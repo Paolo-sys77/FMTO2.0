@@ -489,6 +489,7 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
 <script src="players.js"></script>
 <script src="under.js"></script>
 <script src="stipendi.js"></script>
+<script src="misters-data.js"></script>
 <script src="config.js"></script>
 <script src="svincolati-data.js"></script>
 <script src="svincolati-scouting.js"></script>
@@ -617,7 +618,11 @@ function openSquad(sqName){
   }
   document.getElementById('squad-hero-bg').style.backgroundImage=sq.logo?`url(${sq.logo})`:'';
   document.getElementById('squad-name').textContent=sq.name==='SVINCOLATI'?'Svincolati':sq.name;
-  document.getElementById('squad-meta').textContent=sq.name==='SVINCOLATI'?'220.309 giocatori senza squadra FMTO':`Mister: ${sq.manager} · ${players.length} giocatori`;
+  var mName = (typeof getMisterInfo === 'function') ? (getMisterInfo(sq.name).nome || '') : '';
+  var showManager = mName || sq.manager || '—';
+  document.getElementById('squad-meta').textContent=sq.name==='SVINCOLATI'
+    ?'220.309 giocatori senza squadra FMTO'
+    :`Mister: ${showManager} · ${players.length} giocatori`;
   if(players.length){
     const avgCA=Math.round(players.reduce((s,p)=>s+p.ca,0)/players.length);
     const avgPA=Math.round(players.reduce((s,p)=>s+p.pa,0)/players.length);

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FMTO 2.0 — Recupero Watchlist</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .rec-wrap{max-width:980px;margin:0 auto;padding:2.2rem 1.2rem}
+    .rec-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.2rem;margin:.9rem 0}
+    .rec-row{display:flex;gap:.8rem;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .rec-k{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;font-size:.78rem;color:var(--t2)}
+    .rec-pill{font-size:.68rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--t3);border:1px solid var(--border);padding:.25rem .55rem;border-radius:999px}
+    .rec-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+    .rec-btn{background:var(--sf);border:1px solid var(--border);color:var(--t1);padding:.45rem .8rem;border-radius:10px;cursor:pointer;font-size:.8rem}
+    .rec-btn:hover{border-color:var(--v);color:var(--vb)}
+    .rec-text{font-size:.85rem;color:var(--t2);line-height:1.65}
+    textarea{width:100%;min-height:160px;background:var(--sf);border:1px solid var(--border);border-radius:12px;color:var(--t1);padding:.8rem;font-size:.8rem}
+    select{background:var(--sf);border:1px solid var(--border);border-radius:10px;color:var(--t1);padding:.45rem .7rem;font-size:.8rem}
+  </style>
+</head>
+<body class="gbg">
+  <nav>
+    <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+    <ul class="nav-links">
+      <li><a href="home.html" id="nav-home">Home</a></li>
+      <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+      <li><a href="scouting.html" id="nav-scouting">Scouting</a></li>
+      <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+    </ul>
+  </nav>
+
+  <div class="rec-wrap">
+    <div class="sec-tag">Utility</div>
+    <h1 class="sec-title">Recupero <span>watchlist</span></h1>
+    <p class="rec-text">
+      Questa pagina legge le watchlist presenti nel <strong>tuo browser</strong> (localStorage) per <strong>questa origine</strong>.
+      Se avevi salvato i giocatori aprendo il sito in <code>file://</code> e ora sei su <code>http://localhost</code> (o viceversa),
+      dovrai aprire questa pagina nello stesso modo in cui avevi salvato la watchlist.
+    </p>
+
+    <div class="rec-card">
+      <div class="rec-row">
+        <div>
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:800">Import rapido (incolla JSON)</div>
+          <div class="rec-text" style="margin-top:.25rem">Incolla un export JSON e ripristinalo in una squadra.</div>
+        </div>
+        <div class="rec-actions">
+          <select id="target-squad"></select>
+          <button class="rec-btn" type="button" onclick="applyImport()">Ripristina</button>
+        </div>
+      </div>
+      <div style="margin-top:.7rem">
+        <textarea id="import-json" placeholder="Incolla qui il JSON della watchlist..."></textarea>
+      </div>
+    </div>
+
+    <div class="rec-card">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.15rem;font-weight:800">Watchlist trovate in questo browser</div>
+      <div class="rec-text" style="margin-top:.25rem">Chiavi riconosciute: <code>fmto_wl_&lt;sqId&gt;</code>.</div>
+      <div id="found-list" style="margin-top:.75rem"></div>
+      <div id="empty" class="rec-text" style="display:none;margin-top:.75rem">Nessuna watchlist trovata su questa origine.</div>
+    </div>
+  </div>
+
+  <script src="data.js"></script>
+  <script src="shared.js"></script>
+  <script>
+    const WL_PREFIX = 'fmto_wl_';
+
+    function _safeParse(raw, fallback) {
+      try { return JSON.parse(raw); } catch (e) { return fallback; }
+    }
+
+    function _getFoundKeys() {
+      const keys = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.startsWith(WL_PREFIX)) keys.push(k);
+      }
+      keys.sort();
+      return keys;
+    }
+
+    function _squadLabelById(id) {
+      if (typeof SQUADS === 'undefined') return id;
+      const sq = SQUADS.find(s => String(s.id) === String(id));
+      return sq ? sq.name : id;
+    }
+
+    function renderFound() {
+      const keys = _getFoundKeys();
+      const box = document.getElementById('found-list');
+      const empty = document.getElementById('empty');
+      box.innerHTML = '';
+      empty.style.display = keys.length ? 'none' : '';
+      keys.forEach(k => {
+        const sqId = k.slice(WL_PREFIX.length);
+        const wl = _safeParse(localStorage.getItem(k) || '[]', []);
+        const count = Array.isArray(wl) ? wl.length : 0;
+        const name = _squadLabelById(sqId);
+        const el = document.createElement('div');
+        el.className = 'rec-card';
+        el.innerHTML = `
+          <div class="rec-row">
+            <div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:800">${name}</div>
+              <div class="rec-k">${k}</div>
+            </div>
+            <div class="rec-actions">
+              <span class="rec-pill">${count} giocatori</span>
+              <button class="rec-btn" type="button" data-k="${k}">Copia JSON</button>
+              <button class="rec-btn" type="button" data-restore="${sqId}">Apri Area</button>
+            </div>
+          </div>
+        `;
+        el.querySelector('[data-k]').addEventListener('click', async function() {
+          const key = this.getAttribute('data-k');
+          const raw = localStorage.getItem(key) || '[]';
+          try {
+            await navigator.clipboard.writeText(raw);
+            alert('JSON copiato negli appunti.');
+          } catch (e) {
+            prompt('Copia questo JSON:', raw);
+          }
+        });
+        el.querySelector('[data-restore]').addEventListener('click', function() {
+          // non possiamo bypassare il PIN: apriamo l'Area Riservata, e lì si accede normalmente.
+          location.href = 'area.html';
+        });
+        box.appendChild(el);
+      });
+    }
+
+    function initTargets() {
+      const sel = document.getElementById('target-squad');
+      if (!sel || typeof SQUADS === 'undefined') return;
+      sel.innerHTML = SQUADS.map(sq => `<option value="${sq.id}">${sq.name}</option>`).join('');
+    }
+
+    function applyImport() {
+      const sel = document.getElementById('target-squad');
+      const raw = (document.getElementById('import-json').value || '').trim();
+      if (!sel || !raw) { alert('Seleziona una squadra e incolla un JSON.'); return; }
+      let data;
+      try { data = JSON.parse(raw); } catch (e) { alert('JSON non valido.'); return; }
+      const wl = Array.isArray(data) ? data : (Array.isArray(data.wl) ? data.wl : []);
+      if (!Array.isArray(wl)) { alert('JSON non valido: manca una lista giocatori.'); return; }
+      localStorage.setItem(WL_PREFIX + String(sel.value), JSON.stringify(wl));
+      alert('Ripristino completato in localStorage. Ora entra in Area Riservata e fai login con il PIN.');
+      renderFound();
+    }
+
+    initTargets();
+    renderFound();
+  </script>
+</body>
+</html>
+

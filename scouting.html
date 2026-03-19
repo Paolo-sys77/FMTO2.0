@@ -234,7 +234,7 @@
               </div>
 
               <div class="scout-field">
-                <label class="scout-label" for="t-intercettamenti-min">Intercettamenti</label>
+                <label class="scout-label" for="t-intercettamenti-min">Intuito</label>
                 <input id="t-intercettamenti-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
               </div>
 
@@ -254,7 +254,7 @@
               </div>
 
               <div class="scout-field">
-                <label class="scout-label" for="t-calci-piazzati-min">Calci piazzati</label>
+                <label class="scout-label" for="t-calci-piazzati-min">Calci piazzati (rigori)</label>
                 <input id="t-calci-piazzati-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
               </div>
 
@@ -338,8 +338,8 @@
                 <input id="m-professionalita-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
               </div>
               <div class="scout-field">
-                <label class="scout-label" for="m-sportivita-min">Sportività</label>
-                <input id="m-sportivita-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+                <label class="scout-label" for="m-senza-palla-min">Senza palla</label>
+                <input id="m-senza-palla-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
               </div>
             </div>
 
@@ -389,7 +389,7 @@
                 <input id="gk-presa-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
               </div>
               <div class="scout-field">
-                <label class="scout-label" for="gk-tuffo-min">Tuffo</label>
+                <label class="scout-label" for="gk-tuffo-min">Palle alte</label>
                 <input id="gk-tuffo-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
               </div>
               <div class="scout-field">
@@ -494,8 +494,8 @@
         int_ment: slider('t-intercettamenti-min'),
         testa: slider('t-colpo-testa-min'),
         gioc_prima: slider('t-primo-tocco-min'),
-        crea: slider('t-visione-min'),
-        angoli: slider('t-calci-piazzati-min'),
+        fan: slider('t-visione-min'),
+        pun: slider('t-calci-piazzati-min'),
         pun: slider('t-rigori-min')
       };
 
@@ -507,13 +507,13 @@
         fan: slider('m-fantasia-min'),
         pos_ment: slider('m-posizionamento-min'),
         dec: slider('m-decisione-min'),
-        // leadership, lavoro di squadra, aggressività, anticipazione, freddezza, professionalità, sportività
+        // leadership, lavoro di squadra, aggressività, anticipazione, freddezza, professionalità, senza palla
         gioc_squa: slider('m-lavoro-squadra-min'),
         agr: slider('m-aggressivita-min'),
-        int_ment_extra: slider('m-anticipazione-min'),
+        pos_ment: slider('m-anticipazione-min'),
         fred: slider('m-freddezza-min'),
         imp: slider('m-professionalita-min'),
-        // sportività non mappato direttamente nei dati: slider presente ma ignorato a livello logico
+        senza_palla: slider('m-senza-palla-min')
       };
 
       var phys = {
@@ -530,7 +530,7 @@
       var gk = {
         rifl: slider('gk-riflessi-min'),
         bloc_tir: slider('gk-presa-min'),
-        // "tuffo" non esiste come campo separato → usiamo riflessi/bloc_tir
+        pal_alt: slider('gk-tuffo-min'),
         uno_v_uno: slider('gk-uno-contro-uno-min'),
         usc: slider('gk-uscita-alta-min'),
         rinv: slider('gk-rinvio-min'),
@@ -679,10 +679,7 @@
 
       if (!checkBlock(f.tech, function (key) { return p[key]; })) return false;
 
-      if (!checkBlock(f.ment, function (key) {
-        if (key === 'int_ment_extra') return p.int_ment;
-        return p[key];
-      })) return false;
+      if (!checkBlock(f.ment, function (key) { return p[key]; })) return false;
 
       if (!checkBlock(f.phys, function (key) { return p[key]; })) return false;
 

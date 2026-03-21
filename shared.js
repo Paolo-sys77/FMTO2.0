@@ -74,7 +74,7 @@ function fmtStipendio(v){
 function getStipendio(p){ return (typeof STIPENDI_BY_ID!=='undefined'&&STIPENDI_BY_ID[p.id])?STIPENDI_BY_ID[p.id]:null; }
 
 // ── WATCHLIST — per-squad, richiede autenticazione
-// La sessione attiva viene salvata in sessionStorage (dura finché la scheda è aperta)
+// Sessione in localStorage: resta dopo chiusura browser; si azzera solo con logout (endSession)
 // chiave: fmto_session → { sqId, sqName }
 // watchlist: fmto_wl_<sqId> → array giocatori
 
@@ -85,26 +85,93 @@ let _wlSyncTimer = null;
 let _wlSyncInFlight = false;
 let _wlRemoteAppliedForSq = null;
 
+function _sessionRawFromStorage() {
+  try {
+    let raw = localStorage.getItem(WL_SESSION_KEY);
+    if (raw) return raw;
+    raw = sessionStorage.getItem(WL_SESSION_KEY);
+    if (raw) {
+      try { localStorage.setItem(WL_SESSION_KEY, raw); } catch (e) {}
+      try { sessionStorage.removeItem(WL_SESSION_KEY); } catch (e) {}
+      return raw;
+    }
+  } catch (e) {}
+  return null;
+}
+
 /* Restituisce la sessione attiva o null */
 function getSession() {
-  try { return JSON.parse(sessionStorage.getItem(WL_SESSION_KEY)); }
-  catch { return null; }
+  try {
+    const raw = _sessionRawFromStorage();
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
 }
-/* Avvia sessione (chiamato da area.html dopo PIN corretto) */
+/* Avvia sessione (chiamato da pin.html dopo PIN corretto) */
 function startSession(sqId, sqName) {
-  sessionStorage.setItem(WL_SESSION_KEY, JSON.stringify({ sqId, sqName }));
+  try { sessionStorage.removeItem(WL_SESSION_KEY); } catch (e) {}
+  try { localStorage.setItem(WL_SESSION_KEY, JSON.stringify({ sqId, sqName })); } catch (e) {}
   // appena loggato, prova a caricare dal server (se configurato)
   try { syncWLFromServer(); } catch(e) {}
 }
 /* Termina sessione (logout) */
 function endSession() {
-  sessionStorage.removeItem(WL_SESSION_KEY);
+  try { localStorage.removeItem(WL_SESSION_KEY); } catch (e) {}
+  try { sessionStorage.removeItem(WL_SESSION_KEY); } catch (e) {}
+}
+
+/** Normalizza nome squadra per confronti (stesso criterio utile tra data.js e players.js). */
+function normalizeSquadRosterKey(name) {
+  return String(name || '').trim().toUpperCase().replace(/\s+/g, ' ');
+}
+
+/**
+ * Rosa per uno o più nomi squadra (es. nome da SQUADS + eventuale sqName in sessione).
+ * 1) PLAYERS_BY_TEAM chiave esatta, 2) chiave case-insensitive, 3) ALL_PLAYERS filtrato per squadra.
+ * Allineato al comportamento di squadre.html quando la chiave oggetto non coincide al millimetro.
+ */
+function getRosterPlayersBySquadNames(/* name1, name2, ... */) {
+  const raw = Array.prototype.slice.call(arguments).filter(function (n) { return n != null && String(n).trim() !== ''; });
+  const seen = {};
+  const names = [];
+  for (let i = 0; i < raw.length; i++) {
+    const k = normalizeSquadRosterKey(raw[i]);
+    if (!k || seen[k]) continue;
+    seen[k] = true;
+    names.push(raw[i]);
+  }
+  for (let j = 0; j < names.length; j++) {
+    const list = rosterPlayersFromSingleSquadName(names[j]);
+    if (list.length) return list;
+  }
+  return [];
+}
+
+function rosterPlayersFromSingleSquadName(sqName) {
+  if (!sqName || typeof PLAYERS_BY_TEAM === 'undefined') return [];
+  const direct = PLAYERS_BY_TEAM[sqName];
+  if (Array.isArray(direct) && direct.length) return direct;
+  const t = normalizeSquadRosterKey(sqName);
+  const keys = Object.keys(PLAYERS_BY_TEAM);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    if (normalizeSquadRosterKey(key) === t) {
+      const arr = PLAYERS_BY_TEAM[key];
+      if (Array.isArray(arr) && arr.length) return arr;
+    }
+  }
+  if (typeof ALL_PLAYERS !== 'undefined' && Array.isArray(ALL_PLAYERS)) {
+    return ALL_PLAYERS.filter(function (p) {
+      return p && normalizeSquadRosterKey(p.squadra) === t;
+    });
+  }
+  return [];
 }
 
 /* Chiave localStorage per la WL dell'utente corrente (null se non loggato) */
 function _wlKey() {
   const s = getSession();
-  return s ? WL_KEY_PREFIX + s.sqId : null;
+  if (!s || s.sqId == null || String(s.sqId).trim() === '') return null;
+  return WL_KEY_PREFIX + s.sqId;
 }
 
 function getWL() {
@@ -116,7 +183,13 @@ function getWL() {
 function saveWL(wl) {
   const k = _wlKey();
   if (!k) return;
-  localStorage.setItem(k, JSON.stringify(wl));
+  try {
+    localStorage.setItem(k, JSON.stringify(wl));
+  } catch (err) {
+    console.error('FMTO saveWL:', err);
+    try { alert('Impossibile salvare la watchlist (memoria del browser piena o bloccata).'); } catch (e) {}
+    return;
+  }
   _touchWLMeta();
   scheduleWLSyncToServer();
 }
@@ -126,7 +199,8 @@ function inWL(pid) {
 
 function _wlMetaKey() {
   const s = getSession();
-  return s ? WL_SYNC_META_PREFIX + s.sqId : null;
+  if (!s || s.sqId == null || String(s.sqId).trim() === '') return null;
+  return WL_SYNC_META_PREFIX + s.sqId;
 }
 
 function _getWLUpdatedAt() {
@@ -211,21 +285,27 @@ function scheduleWLSyncToServer() {
   }, 700);
 }
 
+/** Applica la WL remota solo se è davvero più nuova; [] remoto non cancella mai una WL locale già popolata (bug: [] è truthy in JS). */
+function _maybeApplyRemoteWatchlist(sqId, remote) {
+  if (!remote || remote.wl == null || !Array.isArray(remote.wl)) return false;
+  const localUpdated = _getWLUpdatedAt();
+  const remoteUpdated = Number(remote.updatedMs) || 0;
+  if (remoteUpdated <= localUpdated) return false;
+  const localWl = getWL();
+  if (remote.wl.length === 0 && localWl.length > 0) return false;
+  localStorage.setItem(WL_KEY_PREFIX + sqId, JSON.stringify(remote.wl));
+  _touchWLMeta(remoteUpdated);
+  try { refreshWLButtons(); } catch (e) {}
+  return true;
+}
+
 async function syncWLFromServer() {
   const s = getSession();
   if (!s || !_supabaseEnabled()) return;
   // evita doppio apply nello stesso caricamento per la stessa squadra
   if (_wlRemoteAppliedForSq === String(s.sqId)) return;
   const remote = await _fetchWLRemote(s.sqId);
-  if (!remote) return;
-  const localUpdated = _getWLUpdatedAt();
-  const remoteUpdated = Number(remote.updatedMs) || 0;
-  if (remote.wl && remoteUpdated > localUpdated) {
-    // applica remoto al localStorage e aggiorna meta
-    localStorage.setItem(WL_KEY_PREFIX + s.sqId, JSON.stringify(remote.wl));
-    _touchWLMeta(remoteUpdated);
-    try { refreshWLButtons(); } catch(e) {}
-  }
+  if (remote) _maybeApplyRemoteWatchlist(s.sqId, remote);
   _wlRemoteAppliedForSq = String(s.sqId);
 }
 
@@ -235,38 +315,54 @@ async function syncWLToServer() {
   if (_wlSyncInFlight) return;
   _wlSyncInFlight = true;
   try {
-    // prima: se il remoto è più nuovo, lo tiriamo giù (evita sovrascritture incrociate)
-    const remote = await _fetchWLRemote(s.sqId);
-    const localUpdated = _getWLUpdatedAt();
-    const remoteUpdated = remote ? (Number(remote.updatedMs) || 0) : 0;
-    if (remote && remote.wl && remoteUpdated > localUpdated) {
-      localStorage.setItem(WL_KEY_PREFIX + s.sqId, JSON.stringify(remote.wl));
-      _touchWLMeta(remoteUpdated);
-      try { refreshWLButtons(); } catch(e) {}
-      return;
-    }
+    // Solo push: un fetch+merge qui poteva sovrascrivere la WL locale appena salvata
+    // se il server aveva updated_ms più alto (dati vecchi o riga placeholder).
     const wl = getWL();
-    const ok = await _pushWLRemote(s.sqId, wl, localUpdated || Date.now());
-    if (ok) {
-      // nulla, local resta fonte
-    }
+    const localUpdated = _getWLUpdatedAt();
+    await _pushWLRemote(s.sqId, wl, localUpdated || Date.now());
   } finally {
     _wlSyncInFlight = false;
   }
 }
 
-function toggleWLPlayer(pid, squadName) {
+function toggleWLPlayer(pid, squadName, knownPlayer) {
   if (!getSession()) {
     // Non autenticato → reindirizza all'area riservata
     location.href = 'area.html';
     return;
   }
-  const players = (typeof PLAYERS_BY_TEAM !== 'undefined') ? (PLAYERS_BY_TEAM[squadName] || []) : [];
-  const p = players.find(pl => String(pl.id) === String(pid));
-  if (!p) return;
+  let p = null;
+  let squadLabel = squadName;
+  if (knownPlayer != null && String(knownPlayer.id) === String(pid)) {
+    p = knownPlayer;
+  }
+  const cache = (typeof window !== 'undefined' && window.__fmtoWlPlayerCache) ? window.__fmtoWlPlayerCache : null;
+  if (!p && cache && cache[String(pid)]) {
+    p = cache[String(pid)];
+  } else if (!p && typeof PLAYERS_BY_TEAM !== 'undefined') {
+    const arr = PLAYERS_BY_TEAM[squadName] || [];
+    p = arr.find(pl => String(pl.id) === String(pid));
+    if (!p) {
+      for (const k of Object.keys(PLAYERS_BY_TEAM)) {
+        const list = PLAYERS_BY_TEAM[k];
+        if (!Array.isArray(list)) continue;
+        const found = list.find(pl => String(pl.id) === String(pid));
+        if (found) {
+          p = found;
+          if (!squadLabel) squadLabel = k;
+          break;
+        }
+      }
+    }
+  }
+  if (!p) {
+    try { alert('Impossibile aggiungere alla watchlist: dati giocatore non trovati. Apri il profilo dalla pagina Squadre o aggiorna la pagina.'); } catch (e) {}
+    return;
+  }
   let wl = getWL();
+  const label = squadLabel || squadName || p.squadra || '';
   if (inWL(pid)) { wl = wl.filter(w => String(w.id) !== String(pid)); }
-  else { wl.push({ ...p, squadName }); }
+  else { wl.push({ ...p, squadName: label }); }
   saveWL(wl);
   refreshWLButtons();
 }
@@ -389,3 +485,80 @@ function enableAutoRefresh() {
   location.reload();
 }
 document.addEventListener('DOMContentLoaded', initAutoRefresh);
+
+// ── SCOUTING: risultati in IndexedDB (sessionStorage ~5MB non basta per elenchi grandi)
+var FMTO_SCOUT_DB = 'fmto_scouting_v1';
+var FMTO_SCOUT_STORE = 'bundle';
+var FMTO_SCOUT_KEY = 'last';
+
+function openScoutDb() {
+  return new Promise(function (resolve, reject) {
+    var req = indexedDB.open(FMTO_SCOUT_DB, 1);
+    req.onupgradeneeded = function (ev) {
+      var db = ev.target.result;
+      if (!db.objectStoreNames.contains(FMTO_SCOUT_STORE)) {
+        db.createObjectStore(FMTO_SCOUT_STORE);
+      }
+    };
+    req.onsuccess = function () { resolve(req.result); };
+    req.onerror = function () { reject(req.error); };
+  });
+}
+
+/** Salva tutti i giocatori trovati; resolve(true) se ok, false se IndexedDB non disponibile / errore */
+function saveScoutingResultsBundle(players, total) {
+  var n = total != null ? total : (players && players.length) || 0;
+  var payload = { players: players || [], total: n, savedAt: Date.now() };
+  return openScoutDb()
+    .then(function (db) {
+      return new Promise(function (resolve) {
+        try {
+          var tx = db.transaction(FMTO_SCOUT_STORE, 'readwrite');
+          tx.objectStore(FMTO_SCOUT_STORE).put(payload, FMTO_SCOUT_KEY);
+          tx.oncomplete = function () {
+            try {
+              db.close();
+              sessionStorage.removeItem('fmto_scout_results');
+              sessionStorage.removeItem('fmto_scout_total');
+              sessionStorage.setItem('fmto_scout_storage', 'idb');
+            } catch (e) {}
+            resolve(true);
+          };
+          tx.onerror = function () {
+            try { db.close(); } catch (e) {}
+            resolve(false);
+          };
+        } catch (e) {
+          try { db.close(); } catch (e2) {}
+          resolve(false);
+        }
+      });
+    })
+    .catch(function () { return false; });
+}
+
+/** Carica l’ultimo bundle salvato (o null) */
+function loadScoutingResultsBundle() {
+  return openScoutDb()
+    .then(function (db) {
+      return new Promise(function (resolve) {
+        try {
+          var tx = db.transaction(FMTO_SCOUT_STORE, 'readonly');
+          var r = tx.objectStore(FMTO_SCOUT_STORE).get(FMTO_SCOUT_KEY);
+          r.onsuccess = function () {
+            var v = r.result || null;
+            try { db.close(); } catch (e) {}
+            resolve(v);
+          };
+          r.onerror = function () {
+            try { db.close(); } catch (e) {}
+            resolve(null);
+          };
+        } catch (e) {
+          try { db.close(); } catch (e2) {}
+          resolve(null);
+        }
+      });
+    })
+    .catch(function () { return null; });
+}

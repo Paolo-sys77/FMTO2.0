@@ -180,7 +180,7 @@ body.welcome-page { padding: 0; min-height: 100vh; display: flex; flex-direction
   <h1 class="welcome-title">Football Manager<br><span>Tournament Online</span></h1>
   <p class="welcome-sub">La lega più avvincente · Stagione 26_1</p>
 
-  <a href="pin.html" class="welcome-cta">Entra nel torneo →</a>
+  <a href="pin.html" class="welcome-cta" id="welcome-cta">Entra nel torneo →</a>
 
   <div class="welcome-stats">
     <div class="welcome-stat">
@@ -210,5 +210,27 @@ body.welcome-page { padding: 0; min-height: 100vh; display: flex; flex-direction
   </footer>
 </div>
 
+<script>
+(function () {
+  try {
+    var raw = localStorage.getItem('fmto_session');
+    if (!raw) {
+      raw = sessionStorage.getItem('fmto_session');
+      if (raw) {
+        try { localStorage.setItem('fmto_session', raw); } catch (e) {}
+        try { sessionStorage.removeItem('fmto_session'); } catch (e) {}
+      }
+    }
+    if (!raw) return;
+    var o = JSON.parse(raw);
+    if (!o || !o.sqId) return;
+    var a = document.getElementById('welcome-cta');
+    if (a) {
+      a.href = 'home.html';
+      a.textContent = 'Torna al torneo →';
+    }
+  } catch (e) {}
+})();
+</script>
 </body>
 </html>

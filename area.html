@@ -108,9 +108,9 @@
   </div>
 
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('wl',this)">★ Watchlist</div>
-    <div class="tab" onclick="switchTab('squad',this)">📋 Mia Squadra</div>
-    <div class="tab" onclick="switchTab('tattica',this)">⚽ Tattiche</div>
+    <div class="tab active" data-tab="wl">★ Watchlist</div>
+    <div class="tab" data-tab="squad">📋 Mia Squadra</div>
+    <div class="tab" data-tab="tattica">⚽ Tattiche</div>
   </div>
 
   <!-- WATCHLIST -->
@@ -188,6 +188,14 @@
 <script src="config.js"></script>
 <script src="shared.js"></script>
 <script>
+function areaRosterPlayers(squadName) {
+  var s = typeof getSession === 'function' ? getSession() : null;
+  if (typeof getRosterPlayersBySquadNames === 'function') {
+    return getRosterPlayersBySquadNames(squadName, s && s.sqName);
+  }
+  return [];
+}
+
 function showDashboard(sq) {
   document.getElementById('dashboard').classList.add('active');
   const dl = document.getElementById('dash-logo');
@@ -198,17 +206,23 @@ function showDashboard(sq) {
     dl.innerHTML=`<div style="width:100%;height:100%;background:linear-gradient(135deg,${sq.color1},${sq.color2});display:flex;align-items:center;justify-content:center;border-radius:50%;font-family:'Barlow Condensed',sans-serif;font-weight:800;color:#fff">${abbr}</div>`;
   }
   document.getElementById('dash-name').textContent=sq.name;
-  var mName = (typeof getMisterInfo === 'function') ? (getMisterInfo(sq.name).nome || '') : '';
+  var mInfo = (typeof getMisterInfo === 'function') ? getMisterInfo(sq.name) : null;
+  var mName = (mInfo && mInfo.nome) ? mInfo.nome : '';
   var showManager = mName || sq.manager || '—';
   document.getElementById('dash-manager').textContent=`Mister: ${showManager} · 🔒 Sessione attiva — watchlist privata`;
   tactSqName = sq.name;
-  renderWatchlist(); renderMySquad(sq);
+  try { renderWatchlist(); } catch (e) { console.error('renderWatchlist', e); }
+  try { renderMySquad(sq); } catch (e) { console.error('renderMySquad', e); }
 }
 function logout() {
   endSession();
   location.replace('home.html');
 }
 function switchTab(tab, el) {
+  if (!el) {
+    el = document.querySelector('.tabs .tab[data-tab="' + tab + '"]');
+  }
+  if (!el) return;
   document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-wl').style.display      = tab==='wl'      ? '' : 'none';
@@ -235,12 +249,12 @@ function renderWatchlist() {
   contentEl.innerHTML=ROLE_ORDER.filter(k=>groups[k].length>0).map(k=>`
     <div style="margin-bottom:1.5rem">
       <div class="role-group-title">${ROLE_LABELS[k]} (${groups[k].length})</div>
-      ${groups[k].map(p=>`<div class="wl-card" onclick="location.href='squadre.html?sq=${encodeURIComponent(p.squadName)}&pid=${p.id}'">
+      ${groups[k].map(p=>`<div class="wl-card" onclick="location.href='squadre.html?sq=${encodeURIComponent(p.squadName||p.squadra||'SVINCOLATI')}&pid=${p.id}'">
         <div style="flex:1;min-width:0">
           <div style="font-weight:600;font-size:.9rem">${p.nome}</div>
           <div style="font-size:.73rem;color:var(--t2);margin-top:.12rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
-            <span>${getFlag(p.naz)} ${p.naz.split(',')[0]}</span>
-            <span style="color:var(--t4)">·</span><span>${p.squadName}</span>
+            <span>${getFlag(p.naz)} ${String(p.naz||'').split(',')[0].trim()||'—'}</span>
+            <span style="color:var(--t4)">·</span><span>${p.squadName||p.squadra||'—'}</span>
             <span style="color:var(--t4)">·</span><span>${p.eta} anni</span>
             <span style="color:var(--t4)">·</span>
             <span class="rb r-white" style="font-size:.58rem">${displayRole(p.posizione)}</span>
@@ -307,15 +321,22 @@ function initAreaReserved() {
     location.replace('pin.html');
     return;
   }
+  if (String(s.sqName || '') !== String(sq.name || '') && typeof startSession === 'function') {
+    startSession(sq.id, sq.name);
+  }
   showDashboard(sq);
 }
 
-initAreaReserved();
-
 /* ═══ MIA SQUADRA ═══ */
 function renderMySquad(sq) {
-  const players=PLAYERS_BY_TEAM[sq.name]||[];
-  document.getElementById('squad-tbody').innerHTML=sortByRole(players).map(p=>`
+  const tbody = document.getElementById('squad-tbody');
+  if (!tbody) return;
+  const players = areaRosterPlayers(sq.name);
+  if (!players.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:1.5rem;color:var(--t2);line-height:1.5">Nessun giocatore trovato per questa squadra. Controlla che il file <code style="color:var(--vb)">players.js</code> sia presente sul server (stessa cartella di <code>area.html</code>) e che il nome squadra nei dati coincida.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=sortByRole(players).map(p=>`
     <tr onclick="location.href='squadre.html?sq=${encodeURIComponent(sq.name)}&pid=${p.id}'" style="cursor:pointer">
       <td style="font-weight:500">${p.nome}</td>
       <td><span class="rb r-white">${displayRole(p.posizione)}</span></td>
@@ -362,6 +383,7 @@ function initTactics(){
   if(!tactInited){
     // build formation selector once
     const bar=document.getElementById('tact-formation-bar');
+    if (!bar) return;
     bar.innerHTML=`<label style="font-size:.68rem;color:#6b7280;font-weight:600;letter-spacing:.1em;text-transform:uppercase">Schema</label>
       <select id="tact-formation-sel" class="tact-select" style="max-width:120px;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:800" onchange="setFormation(this.value)">
         ${Object.keys(FORMATIONS).map(k=>`<option value="${k}">${FORMATIONS[k].label}</option>`).join('')}
@@ -369,8 +391,9 @@ function initTactics(){
     tactInited=true;
   }
   loadTactState();
-  document.getElementById('tact-formation-sel').value=curFormation;
-  renderTactics();
+  const fs = document.getElementById('tact-formation-sel');
+  if (fs) fs.value = curFormation;
+  try { renderTactics(); } catch (e) { console.error('renderTactics', e); }
 }
 
 function setTactPhase(phase,btn){
@@ -391,10 +414,23 @@ function setFormation(val){
 }
 
 function renderTactics(){
-  const players=PLAYERS_BY_TEAM[tactSqName]||[];
-  const sq=SQUADS.find(s=>s.name===tactSqName);
+  const players = areaRosterPlayers(tactSqName);
+  const sq = (typeof SQUADS !== 'undefined' && Array.isArray(SQUADS))
+    ? SQUADS.find(s => s.name === tactSqName || String(s.name).toUpperCase() === String(tactSqName || '').toUpperCase())
+    : null;
   const state=curPhaseState(), color1=sq?sq.color1:'#8b5cf6', slots=curSlots();
-  if(document.getElementById('tact-formation-sel'))document.getElementById('tact-formation-sel').value=curFormation;
+  const fs = document.getElementById('tact-formation-sel');
+  if (fs) fs.value = curFormation;
+
+  if (!players.length) {
+    document.getElementById('tact-slots').innerHTML = '';
+    document.getElementById('tact-bench-list').innerHTML = '';
+    var bcEl = document.getElementById('tact-bench-count');
+    if (bcEl) bcEl.textContent = '0 di 15';
+    document.getElementById('tact-rows').innerHTML =
+      '<div class="tact-row" style="grid-column:1/-1;padding:1.2rem;color:var(--t2);line-height:1.55">Per compilare la formazione servono i dati rosa da <code style="color:var(--vb)">players.js</code>. Senza quel file (o se la squadra non coincide) non puoi assegnare i giocatori alle posizioni.</div>';
+    return;
+  }
 
   // Pitch
   document.getElementById('tact-slots').innerHTML=slots.map(pos=>{
@@ -433,18 +469,21 @@ function renderTactics(){
       <div class="tact-row-num">${idx+1}</div>
       <div class="tact-row-pos">${pos.label}</div>
       <div><span class="tact-role-badge" style="background:${pos.c}22;border:1px solid ${pos.c}55;color:${pos.c}">${pos.label}</span></div>
-      <select class="tact-select" data-slot="${pos.id}" onchange="onTactSelect(this)">${pOpts(pid)}</select>
+      <select class="tact-select" data-slot="${pos.id}">${pOpts(pid)}</select>
     </div>`;
   }).join('');
   const benchRows=Array.from({length:BENCH_COUNT},(_,i)=>{
     const key='s'+(i+1), pid=state[key]||'';
     return`<div class="tact-s-row"><div class="tact-s-num">S${i+1}</div>
-      <select class="tact-select" data-slot="${key}" onchange="onTactSelect(this)">${pOpts(pid)}</select>
+      <select class="tact-select" data-slot="${key}">${pOpts(pid)}</select>
     </div>`;
   }).join('');
   document.getElementById('tact-rows').innerHTML=posRows+
     `<div style="background:#111318;padding:.4rem .6rem;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#4b5563;border-bottom:1px solid rgba(255,255,255,.04)">A disposizione</div>`+
     benchRows;
+  document.querySelectorAll('#tact-rows .tact-select[data-slot]').forEach(function(sel){
+    sel.addEventListener('change', function(){ onTactSelect(sel); });
+  });
 }
 
 function onTactSelect(sel){
@@ -452,7 +491,16 @@ function onTactSelect(sel){
   saveTactState(); renderTactics();
 }
 
-populateSelect();
+function bindAreaEvents() {
+  document.querySelectorAll('.tabs .tab[data-tab]').forEach(function(tabEl){
+    tabEl.addEventListener('click', function(){
+      switchTab(tabEl.getAttribute('data-tab'), tabEl);
+    });
+  });
+}
+
+bindAreaEvents();
+initAreaReserved();
 </script>
 </body>
 </html>

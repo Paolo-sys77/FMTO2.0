@@ -1,5 +1,5 @@
-/** URL dati svincolati legacy (non più usato con Supabase, lasciato per compatibilità eventuale)
- *  Puoi lasciarlo così o rimuoverlo se non usi più i file locali.
+/** File JSON degli svincolati (stesso dominio del sito). Usato dallo scouting se Supabase non è disponibile.
+ *  Su GitHub Pages: committa svincolati.json nella root del repo oppure imposta qui un URL assoluto.
  */
 var SVINCOLATI_DATA_URL = 'svincolati.json';
 

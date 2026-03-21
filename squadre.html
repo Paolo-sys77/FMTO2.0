@@ -1352,7 +1352,7 @@ function toggleFMWL(){
     return;
   }
   const{p,sq}=curPlayerData;
-  toggleWLPlayer(p.id,sq.name);
+  toggleWLPlayer(p.id,sq.name,p);
   const btn=document.getElementById('fm-star');
   const nowIn=inWL(p.id);
   btn.textContent=nowIn?'★':'☆';

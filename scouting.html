@@ -611,39 +611,102 @@
       };
     }
 
-    // Supabase: fetch svincolati quando si cerca "Solo svincolati"
-    async function _fetchSupabaseSvincolati(limit) {
+    // Supabase: una pagina di svincolati (header Range obbligatorio per paginare tutto il dataset)
+    /** @returns {Promise<{rows:Array|null,tableTotal:number|null}>} rows null = errore fatale */
+    async function _fetchSupabaseSvincolatiRange(rangeStart, rangeEnd, orderOpts) {
       if (typeof SUPABASE_URL === 'undefined' || !SUPABASE_URL ||
           typeof SUPABASE_ANON_KEY === 'undefined' || !SUPABASE_ANON_KEY) {
-        return null;
+        return { rows: null, tableTotal: null };
       }
+      orderOpts = orderOpts || {};
       var table = (typeof SVINCOLATI_TABLE !== 'undefined' && SVINCOLATI_TABLE) ? SVINCOLATI_TABLE : 'svincolati';
-      var url = SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/' + encodeURIComponent(table) + '?select=*';
-      if (limit && !isNaN(limit)) {
-        url += '&limit=' + encodeURIComponent(limit);
+      var orderCol = 'CA';
+      var orderDir = orderOpts.caDesc !== false ? 'desc' : 'asc';
+      if (orderOpts.orderByPa) {
+        orderCol = 'PA';
+        orderDir = 'desc';
       }
+      var q = ['select=*', 'order=' + orderCol + '.' + orderDir];
+      var url = SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/' + encodeURIComponent(table) + '?' + q.join('&');
       try {
         var res = await fetch(url, {
           headers: {
             apikey: SUPABASE_ANON_KEY,
-            Authorization: 'Bearer ' + SUPABASE_ANON_KEY
+            Authorization: 'Bearer ' + SUPABASE_ANON_KEY,
+            Range: String(rangeStart) + '-' + String(rangeEnd),
+            Prefer: 'count=exact'
           }
         });
+        if (res.status === 416) return { rows: [], tableTotal: null };
+        if (!res.ok) return { rows: null, tableTotal: null };
+        var cr = res.headers.get('Content-Range');
+        var tableTotal = null;
+        if (cr) {
+          var m = cr.match(/\/(\d+)\s*$/);
+          if (m) tableTotal = parseInt(m[1], 10);
+        }
+        var data = await res.json();
+        if (!Array.isArray(data)) return { rows: null, tableTotal: null };
+        var mapped = data.map(function (r, i) { return _mapSupabaseRowToPlayer(r, rangeStart + i); });
+        return { rows: mapped, tableTotal: isNaN(tableTotal) ? null : tableTotal };
+      } catch (e) {
+        return { rows: null, tableTotal: null };
+      }
+    }
+
+    // Tutte le righe svincolati (Range + Content-Range / count=exact per sapere quando fermarsi)
+    async function _fetchAllSupabaseSvincolati(orderOpts) {
+      var page = 1000;
+      var all = [];
+      var start = 0;
+      var tableTotal = null;
+      var safetyMaxPages = 10000;
+      var iter = 0;
+      while (true) {
+        if (++iter > safetyMaxPages) {
+          console.warn('FMTO scouting: fetch svincolati interrotto dopo ' + safetyMaxPages + ' pagine (limite di sicurezza).');
+          break;
+        }
+        var end = start + page - 1;
+        var pack = await _fetchSupabaseSvincolatiRange(start, end, orderOpts);
+        if (!pack || pack.rows === null) return null;
+        if (tableTotal == null && pack.tableTotal != null) tableTotal = pack.tableTotal;
+        var batch = pack.rows;
+        if (!batch.length) break;
+        for (var j = 0; j < batch.length; j++) all.push(batch[j]);
+        if (tableTotal != null && all.length >= tableTotal) break;
+        if (batch.length < page) break;
+        start += page;
+      }
+      return all;
+    }
+
+    /** Fallback senza Supabase: stesso formato di load-svincolati.js (svincolati.json in root del sito). */
+    async function _fetchSvincolatiFromJsonFile() {
+      var url = (typeof SVINCOLATI_DATA_URL !== 'undefined' && SVINCOLATI_DATA_URL)
+        ? SVINCOLATI_DATA_URL
+        : 'svincolati.json';
+      try {
+        var res = await fetch(url, { cache: 'no-store' });
         if (!res.ok) return null;
         var data = await res.json();
-        if (!Array.isArray(data)) return null;
-        return data.map(function(r, i) { return _mapSupabaseRowToPlayer(r, i); });
+        var list = Array.isArray(data) ? data : (data && (data.players || data.data));
+        if (!Array.isArray(list) || !list.length) return null;
+        return list.map(function (row) {
+          var p = row && typeof row === 'object' ? row : {};
+          return Object.assign({}, p, { squadra: p.squadra || 'SVINCOLATI' });
+        });
       } catch (e) {
         return null;
       }
     }
 
     function _matchPlayer(p, f) {
-      if (f.name && !p.nome.toLowerCase().includes(f.name)) return false;
+      if (f.name && !String(p.nome || '').toLowerCase().includes(f.name)) return false;
       if (f.naz && !(p.naz || '').includes(f.naz)) return false;
       var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
       var isSvincolato = !squadNamesSet.has((p.squadra || '').trim().toUpperCase());
-      if (f.soloSvincolati && !isSvincolato) return false;
+      // Con "solo svincolati" il pool è già dedicato: non riapplicare isSvincolato (spesso squadra = club FM nel dato).
       if (f.club && !f.soloSvincolati) {
         var c = (f.club || '').toLowerCase().trim();
         var wantSvincolati = c === 'svincolato' || c === 'svincolati' || c.indexOf('svincolat') !== -1;
@@ -703,46 +766,87 @@
     }
 
     async function applyScoutingFilters() {
-      var filters = _collectFilters();
-      var pool;
-      if (filters.soloSvincolati) {
-        // Prima prova a prendere i dati da Supabase (DB svincolati)
-        var fromSupabase = await _fetchSupabaseSvincolati(5000);
-        var localFallback = (typeof window.SVINCOLATI_SCOUTING !== 'undefined' && Array.isArray(window.SVINCOLATI_SCOUTING))
-          ? window.SVINCOLATI_SCOUTING
-          : (typeof PLAYERS_BY_TEAM !== 'undefined' && Array.isArray(PLAYERS_BY_TEAM['SVINCOLATI']) ? PLAYERS_BY_TEAM['SVINCOLATI'] : []);
-
-        if (fromSupabase && fromSupabase.length) {
-          pool = fromSupabase;
-        } else if (localFallback && localFallback.length) {
-          pool = localFallback;
-        } else {
-          alert('Non è stato possibile caricare i dati degli svincolati.\n\nVerifica la configurazione Supabase in config.js (SUPABASE_URL, SUPABASE_ANON_KEY, SVINCOLATI_TABLE).');
-          return;
-        }
-      } else {
-        var squadPlayers = typeof ALL_PLAYERS !== 'undefined' ? ALL_PLAYERS : [];
-        pool = squadPlayers;
-      }
-      if (!pool.length) return;
-      var matches = pool.filter(function (p) {
-        return _matchPlayer(p, filters);
-      });
-      var caA = parseInt(filters.caPa.caMin, 10);
-      var caB = parseInt(filters.caPa.caMax, 10);
-      var hasCaRange = !isNaN(caA) || !isNaN(caB);
-      matches.sort(function (a, b) {
-        var ca1 = parseInt(a.ca, 10) || 0;
-        var ca2 = parseInt(b.ca, 10) || 0;
-        if (ca1 !== ca2) return hasCaRange ? ca1 - ca2 : ca2 - ca1;
-        return a.nome.localeCompare(b.nome);
-      });
-      var maxStored = 2000;
+      var btn = document.getElementById('btn-apply-filters');
+      var btnLabel = btn ? btn.textContent : '';
       try {
-        sessionStorage.setItem('fmto_scout_results', JSON.stringify(matches.slice(0, maxStored)));
-        sessionStorage.setItem('fmto_scout_total', String(matches.length));
-      } catch (e) {}
-      window.location.replace('scouting-risultati.html');
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = 'Ricerca in corso…';
+        }
+        var filters = _collectFilters();
+        var pool;
+        if (filters.soloSvincolati) {
+          var caMinF = filters.caPa && filters.caPa.caMin != null ? parseInt(filters.caPa.caMin, 10) : null;
+          var caMaxF = filters.caPa && filters.caPa.caMax != null ? parseInt(filters.caPa.caMax, 10) : null;
+          var paMinF = filters.caPa && filters.caPa.paMin != null ? parseInt(filters.caPa.paMin, 10) : null;
+          var fetchOpts = { caDesc: true, orderByPa: false };
+          if (!isNaN(caMaxF) && caMaxF <= 95 && (caMinF == null || isNaN(caMinF) || caMinF < 85)) {
+            fetchOpts.caDesc = false;
+          }
+          if (!isNaN(paMinF) && paMinF >= 150 && (caMinF == null || isNaN(caMinF))) {
+            fetchOpts.orderByPa = true;
+          }
+          var fromSupabase = await _fetchAllSupabaseSvincolati(fetchOpts);
+          var fromJson = null;
+          if (!fromSupabase || !fromSupabase.length) {
+            fromJson = await _fetchSvincolatiFromJsonFile();
+          }
+          var localFallback = (typeof window.SVINCOLATI_SCOUTING !== 'undefined' && Array.isArray(window.SVINCOLATI_SCOUTING))
+            ? window.SVINCOLATI_SCOUTING
+            : (typeof PLAYERS_BY_TEAM !== 'undefined' && Array.isArray(PLAYERS_BY_TEAM['SVINCOLATI']) ? PLAYERS_BY_TEAM['SVINCOLATI'] : []);
+
+          if (fromSupabase && fromSupabase.length) {
+            pool = fromSupabase;
+          } else if (fromJson && fromJson.length) {
+            pool = fromJson;
+          } else if (localFallback && localFallback.length) {
+            pool = localFallback;
+          } else {
+            alert('Non è stato possibile caricare gli svincolati.\n\n' +
+              '1) Supabase: controlla in config.js SUPABASE_URL, SUPABASE_ANON_KEY e SVINCOLATI_TABLE (tabella e permessi RLS per lettura anonima).\n\n' +
+              '2) File locale: pubblica nella root del sito il file svincolati.json (stesso percorso di index.html) oppure esegui node build-svincolati-inline.js per generare svincolati-scouting.js e includilo nella pagina.');
+            return;
+          }
+        } else {
+          var squadPlayers = typeof ALL_PLAYERS !== 'undefined' ? ALL_PLAYERS : [];
+          pool = squadPlayers;
+        }
+        if (!pool.length) return;
+
+        var matches = pool.filter(function (p) {
+          return _matchPlayer(p, filters);
+        });
+        var caA = parseInt(filters.caPa.caMin, 10);
+        var caB = parseInt(filters.caPa.caMax, 10);
+        var hasCaRange = !isNaN(caA) || !isNaN(caB);
+        matches.sort(function (a, b) {
+          var ca1 = parseInt(a.ca, 10) || 0;
+          var ca2 = parseInt(b.ca, 10) || 0;
+          if (ca1 !== ca2) return hasCaRange ? ca1 - ca2 : ca2 - ca1;
+          return a.nome.localeCompare(b.nome);
+        });
+
+        var savedIdb = false;
+        if (typeof saveScoutingResultsBundle === 'function') {
+          savedIdb = await saveScoutingResultsBundle(matches, matches.length);
+        }
+        if (!savedIdb) {
+          try {
+            sessionStorage.setItem('fmto_scout_results', JSON.stringify(matches));
+            sessionStorage.setItem('fmto_scout_total', String(matches.length));
+            sessionStorage.setItem('fmto_scout_storage', 'session');
+          } catch (e) {
+            alert('Impossibile salvare tutti i risultati: memoria del browser insufficiente. Prova filtri più selettivi o abilita lo spazio per questo sito.');
+            return;
+          }
+        }
+        window.location.replace('scouting-risultati.html');
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = btnLabel;
+        }
+      }
     }
 
     function resetScoutingFilters() {

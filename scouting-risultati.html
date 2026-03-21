@@ -10,6 +10,15 @@
     .scout-results-count { font-size:.9rem; color:var(--t2); }
     .scout-back-link { display:inline-flex; align-items:center; gap:.4rem; font-family:'Barlow Condensed',sans-serif; font-weight:700; letter-spacing:.06em; color:var(--vb); text-decoration:none; }
     .scout-back-link:hover { color:var(--g); }
+    .scout-pager { display:none; align-items:center; justify-content:center; flex-wrap:wrap; gap:.75rem 1.25rem; margin:1rem 0 1.25rem; }
+    .scout-pager.open { display:flex; }
+    .scout-pager button {
+      font-family:'Barlow Condensed',sans-serif; font-weight:700; letter-spacing:.06em;
+      padding:.45rem 1rem; border-radius:8px; border:1px solid var(--border); background:var(--sf); color:var(--t1); cursor:pointer;
+    }
+    .scout-pager button:disabled { opacity:.45; cursor:not-allowed; }
+    .scout-pager button:not(:disabled):hover { border-color:var(--v); color:var(--vb); }
+    .scout-page-info { font-size:.85rem; color:var(--t2); min-width:10rem; text-align:center; }
   </style>
 </head>
 <body class="gbg">
@@ -48,6 +57,12 @@
       <a href="scouting.html" class="scout-back-link">← Modifica ricerca</a>
     </div>
 
+    <div id="scout-pager" class="scout-pager" aria-label="Paginazione risultati">
+      <button type="button" id="scout-prev">← Precedente</button>
+      <span class="scout-page-info" id="scout-page-info"></span>
+      <button type="button" id="scout-next">Successiva →</button>
+    </div>
+
     <div style="overflow-x:auto">
       <table class="player-tbl">
         <thead>
@@ -73,51 +88,28 @@
   </section>
 
   <script src="data.js"></script>
+  <script src="players.js"></script>
   <script src="stipendi.js"></script>
   <script src="shared.js"></script>
   <script>
     (function() {
+      var SCOUT_PAGE_SIZE = 250;
       var tbody = document.getElementById('scout-risultati-tbody');
       var countEl = document.getElementById('scout-results-count');
-      var raw = sessionStorage.getItem('fmto_scout_results');
-      var total = parseInt(sessionStorage.getItem('fmto_scout_total'), 10) || 0;
-
-      if (!raw || !raw.length) {
-        tbody.innerHTML = '<tr><td colspan="11" class="scout-empty-row">Nessuna ricerca effettuata. <a href="scouting.html" style="color:var(--vb)">Vai alla ricerca scouting</a> e clicca Cerca.</td></tr>';
-        if (countEl) countEl.textContent = '';
-        return;
-      }
-
+      var pagerEl = document.getElementById('scout-pager');
+      var pageInfoEl = document.getElementById('scout-page-info');
+      var btnPrev = document.getElementById('scout-prev');
+      var btnNext = document.getElementById('scout-next');
+      var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
       var list = [];
-      try { list = JSON.parse(raw); } catch (e) {}
+      var reportedTotal = 0;
+      var currentPage = 1;
 
-      var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function(s) { return s.name; }));
-
-      if (countEl) {
-        if (total > list.length)
-          countEl.textContent = 'Mostrati ' + list.length + ' di ' + total + ' risultati.';
-        else
-          countEl.textContent = total + ' risultato' + (total !== 1 ? 'i' : '') + '.';
+      function escAttr(s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
       }
 
-      if (!list.length) {
-        tbody.innerHTML = '<tr><td colspan="11" class="scout-empty-row">Nessun giocatore trovato con i criteri selezionati.</td></tr>';
-        return;
-      }
-
-      window._scoutResultsList = list;
-      window._scoutSquadNamesSet = squadNamesSet;
-      window._openScoutPlayer = function(idx) {
-        var p = window._scoutResultsList[idx];
-        if (!p) return;
-        var set = window._scoutSquadNamesSet;
-        var isSvincolato = !set.has((p.squadra || '').trim().toUpperCase());
-        var squadParam = isSvincolato ? 'SVINCOLATI' : (p.squadra || '');
-        if (isSvincolato) { try { sessionStorage.setItem('fmto_card_player', JSON.stringify(p)); } catch (e) {} }
-        location.href = 'squadre.html?sq=' + encodeURIComponent(squadParam) + '&pid=' + encodeURIComponent(String(p.id)) + (isSvincolato ? '&from=scouting' : '');
-      };
-
-      var rows = list.map(function(p, idx) {
+      function rowHtml(p, globalIdx) {
         var isSvincolato = !squadNamesSet.has((p.squadra || '').trim().toUpperCase());
         var squad = isSvincolato ? '—' : (p.squadra || '—');
         var role = typeof displayRole === 'function' ? displayRole(p.posizione) : (p.posizione || '—');
@@ -128,23 +120,108 @@
         var inList = typeof inWL === 'function' && inWL(p.id);
         var nameCell = '<td style="font-weight:500">' + (p.nome || '—') +
           (isSvincolato ? ' <span style="font-size:.7rem;background:linear-gradient(135deg,#6b7280,#374151);color:#fff;padding:.15rem .4rem;border-radius:4px;margin-left:.35rem;font-weight:600">Svincolato</span>' : '') + '</td>';
-        return '<tr style="cursor:pointer" onclick="window._openScoutPlayer(' + idx + ')">' +
+        return '<tr style="cursor:pointer" onclick="window._openScoutPlayer(' + globalIdx + ')">' +
           nameCell +
-          '<td>' + squad + '</td>' +
+          '<td>' + escAttr(squad) + '</td>' +
           '<td><span class="rb ' + roleClass + '">' + role + '</span></td>' +
           '<td><span class="ov ' + ovrClass + '">' + (p.ca != null ? p.ca : '—') + '</span></td>' +
           '<td style="color:var(--t2)">' + (p.eta != null ? p.eta : '—') + '</td>' +
-          '<td title="' + (p.naz || '—') + '">' + flag + '</td>' +
+          '<td title="' + escAttr(p.naz || '—') + '">' + flag + '</td>' +
           '<td>' + (p.tecn != null ? ('<span class="ov ' + (typeof getOvrClass === 'function' ? getOvrClass(p.tecn * 8 || 0) : '') + '">' + p.tecn + '</span>') : '—') + '</td>' +
           '<td style="color:var(--t2)">—</td>' +
           '<td style="color:var(--t2)">' + (p.pa != null ? p.pa : '—') + '</td>' +
           '<td class="val-tag">' + stipDisplay + '</td>' +
-          '<td style="text-align:right"><button class="wl-btn ' + (inList ? 'inw' : '') + '" data-pid="' + p.id + '" onclick="toggleWLPlayer && toggleWLPlayer(\'' + String(p.id).replace(/'/g, '\\\'') + '\', \'' + String(isSvincolato ? 'SVINCOLATI' : (p.squadra || '')).replace(/'/g, '\\\'') + '\');event.stopPropagation()">' + (inList ? '★' : '☆') + '</button></td>' +
+          '<td style="text-align:right"><button class="wl-btn ' + (inList ? 'inw' : '') + '" data-pid="' + escAttr(p.id) + '" onclick="toggleWLPlayer && toggleWLPlayer(\'' + String(p.id).replace(/'/g, '\\\'') + '\', \'' + String(isSvincolato ? 'SVINCOLATI' : (p.squadra || '')).replace(/'/g, '\\\'') + '\');event.stopPropagation()">' + (inList ? '★' : '☆') + '</button></td>' +
           '</tr>';
+      }
+
+      function renderPage() {
+        var n = list.length;
+        var pages = Math.max(1, Math.ceil(n / SCOUT_PAGE_SIZE));
+        if (currentPage > pages) currentPage = pages;
+        if (currentPage < 1) currentPage = 1;
+        var start = (currentPage - 1) * SCOUT_PAGE_SIZE;
+        var slice = list.slice(start, start + SCOUT_PAGE_SIZE);
+        window.__fmtoWlPlayerCache = window.__fmtoWlPlayerCache || {};
+        slice.forEach(function (pl) { window.__fmtoWlPlayerCache[String(pl.id)] = pl; });
+        var rows = slice.map(function (p, i) { return rowHtml(p, start + i); });
+        tbody.innerHTML = rows.join('');
+        if (countEl) {
+          if (reportedTotal > n) {
+            countEl.textContent = n + ' risultato' + (n !== 1 ? 'i' : '') + ' (elenco completo salvato).';
+          } else {
+            countEl.textContent = n + ' risultato' + (n !== 1 ? 'i' : '') + '.';
+          }
+        }
+        if (pagerEl && pageInfoEl && btnPrev && btnNext) {
+          if (n > SCOUT_PAGE_SIZE) {
+            pagerEl.classList.add('open');
+            pageInfoEl.textContent = 'Pagina ' + currentPage + ' di ' + pages + ' · ' + n + ' giocatori';
+            btnPrev.disabled = currentPage <= 1;
+            btnNext.disabled = currentPage >= pages;
+          } else {
+            pagerEl.classList.remove('open');
+            pageInfoEl.textContent = '';
+          }
+        }
+        if (typeof refreshWLButtons === 'function') refreshWLButtons();
+      }
+
+      window._openScoutPlayer = function (idx) {
+        var p = window._scoutResultsList[idx];
+        if (!p) return;
+        var set = window._scoutSquadNamesSet;
+        var isSvincolato = !set.has((p.squadra || '').trim().toUpperCase());
+        var squadParam = isSvincolato ? 'SVINCOLATI' : (p.squadra || '');
+        if (isSvincolato) { try { sessionStorage.setItem('fmto_card_player', JSON.stringify(p)); } catch (e) {} }
+        location.href = 'squadre.html?sq=' + encodeURIComponent(squadParam) + '&pid=' + encodeURIComponent(String(p.id)) + '&from=scouting';
+      };
+
+      function initWithData(players, totalMeta) {
+        list = players || [];
+        reportedTotal = totalMeta != null ? totalMeta : list.length;
+        window._scoutResultsList = list;
+        window._scoutSquadNamesSet = squadNamesSet;
+        if (!list.length) {
+          tbody.innerHTML = '<tr><td colspan="11" class="scout-empty-row">Nessun giocatore trovato con i criteri selezionati.</td></tr>';
+          if (countEl) countEl.textContent = '';
+          if (pagerEl) pagerEl.classList.remove('open');
+          return;
+        }
+        currentPage = 1;
+        renderPage();
+      }
+
+      function loadSessionFallback() {
+        var raw = sessionStorage.getItem('fmto_scout_results');
+        var total = parseInt(sessionStorage.getItem('fmto_scout_total'), 10) || 0;
+        if (!raw || !raw.length) {
+          tbody.innerHTML = '<tr><td colspan="11" class="scout-empty-row">Nessuna ricerca effettuata. <a href="scouting.html" style="color:var(--vb)">Vai alla ricerca scouting</a> e clicca Cerca.</td></tr>';
+          if (countEl) countEl.textContent = '';
+          return;
+        }
+        var parsed = [];
+        try { parsed = JSON.parse(raw); } catch (e) {}
+        initWithData(parsed, total);
+      }
+
+      if (btnPrev) btnPrev.addEventListener('click', function () { if (currentPage > 1) { currentPage--; renderPage(); window.scrollTo(0, 0); } });
+      if (btnNext) btnNext.addEventListener('click', function () {
+        var pages = Math.max(1, Math.ceil(list.length / SCOUT_PAGE_SIZE));
+        if (currentPage < pages) { currentPage++; renderPage(); window.scrollTo(0, 0); }
       });
 
-      tbody.innerHTML = rows.join('');
-      if (typeof refreshWLButtons === 'function') refreshWLButtons();
+      if (typeof loadScoutingResultsBundle === 'function') {
+        loadScoutingResultsBundle().then(function (bundle) {
+          if (bundle && Array.isArray(bundle.players)) {
+            initWithData(bundle.players, bundle.total != null ? bundle.total : bundle.players.length);
+            return;
+          }
+          loadSessionFallback();
+        });
+      } else {
+        loadSessionFallback();
+      }
     })();
   </script>
 </body>

@@ -134,6 +134,7 @@ for (let i = 2; i < lines.length; i++) {
     naz: get('naz') || '',
     squadra: 'SVINCOLATI',
     prezzo: parseEuro(get('prezzo')) || 0,
+    stipendio: parseEuro(get('stipendio')) || 0,
     posizione: get('posizione') || '—',
     acc: toInt(get('acc')) ?? 0,
     agi: toInt(get('agi')) ?? 0,

@@ -164,13 +164,30 @@
   width: 140px; height: 140px; margin-bottom: 1.5rem; position: relative; z-index: 1;
   border-radius: 50%; overflow: hidden; clip-path: circle(50%);
   box-shadow: 0 8px 32px rgba(0,0,0,.35);
-  background: var(--sf) url("assets/logo-fmto.png") center/cover no-repeat;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(34,211,160,.45), rgba(139,92,246,.45) 55%, rgba(15,23,42,.95) 100%),
+    var(--sf) url("assets/logo-fmto.png") center/cover no-repeat;
+  border: 1px solid rgba(148,163,184,.22);
 }
 .hero-logo img {
   display: block; width: 100%; height: 100%; object-fit: cover;
   animation: hero-logo-spin 12s linear infinite;
   font-size: 0; color: transparent;
 }
+.hero-logo .hero-logo-fallback {
+  position:absolute; inset:0;
+  display:none; align-items:center; justify-content:center;
+  font-family:'Barlow Condensed',sans-serif;
+  font-weight:800;
+  font-size:2.35rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:#fff;
+  text-shadow:0 10px 28px rgba(0,0,0,.55);
+  user-select:none;
+}
+.hero-logo.logo-fallback .hero-logo-fallback { display:flex; }
+.hero-logo.logo-fallback img { display:none; }
 @keyframes hero-logo-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 </style>
 </head>
@@ -217,7 +234,9 @@
   <div class="orb orb-2"></div>
 
   <div class="hero-logo fade-in">
-    <img src="assets/logo-fmto.png" alt="FMTO 2.0" width="140" height="140">
+    <img src="assets/logo-fmto.png" alt="FMTO 2.0" width="140" height="140"
+         onerror="this.parentElement.classList.add('logo-fallback')">
+    <span class="hero-logo-fallback" aria-hidden="true">FMTO</span>
   </div>
   <div class="eyebrow fade-in">Football Manager Tournament Online</div>
 

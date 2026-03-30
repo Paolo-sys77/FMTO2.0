@@ -18,7 +18,8 @@
 .ss-val{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
 .ss-lbl{font-size:.58rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--t3)}
 .view{display:none}.view.active{display:block;animation:fadeUp .3s ease both}
-body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad{display:none!important}
+body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad,
+body.card-only-from-area #view-grid,body.card-only-from-area #view-squad{display:none!important}
 .player-tbl th.sortable{cursor:pointer;user-select:none}
 .player-tbl th.sortable:hover{color:var(--vb)}
 
@@ -35,7 +36,7 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
 .fm-card{
   background:var(--card-surface,#161b22);border:1px solid var(--card-border,#2a3245);border-radius:4px;
   width:min(1020px,100%);box-shadow:0 20px 60px rgba(0,0,0,.6);
-  overflow:hidden;flex-shrink:0;margin:auto 0;
+  overflow:hidden;flex-shrink:0;margin:auto 0;position:relative;
 }
 
 /* HEADER — compatta, bordo rosso lato destro come mockup */
@@ -61,6 +62,8 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
 .fm-pitch svg{width:100%;height:100%;display:block;}
 .fm-pitch-dot{fill:#3adb76;stroke:#0d1117;stroke-width:2;}
 .player-info{min-width:0;}
+.player-name-row{display:flex;align-items:center;gap:.5rem;min-width:0;flex-wrap:nowrap}
+.player-name-row .player-name{flex:1;min-width:0}
 .player-name{font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:800;letter-spacing:.4px;line-height:1.05;color:#fff;}
 .player-meta{display:flex;gap:8px;margin-top:4px;align-items:center;flex-wrap:wrap;}
 .meta-tag{font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:#8892a4;}
@@ -68,6 +71,20 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
 .meta-tag.nation{color:#fff;display:flex;align-items:center;gap:3px;}
 .meta-tag .flag{font-size:12px;}
 .club-block{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.fmto-card-logo{
+  display:flex;align-items:center;gap:.35rem;flex-shrink:0;
+  user-select:none;pointer-events:none;
+}
+.fmto-card-logo-text{display:flex;align-items:baseline;gap:3px}
+.fmto-card-logo .fmto-lg{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.1em;text-transform:uppercase;
+  background:linear-gradient(135deg,#a78bfa,#22d3a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.fmto-card-logo .fmto-lg-sub{
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;
+  background:linear-gradient(135deg,#a78bfa,#22d3a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  opacity:.95;
+}
 .club-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--card-accent,#c0392b);letter-spacing:.8px;}
 .club-capa{display:flex;gap:6px;align-items:center;margin-top:4px;}
 .capa-box{display:flex;flex-direction:column;align-items:center;gap:1px;}
@@ -192,14 +209,21 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
 .vs-player-name{font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;color:#e8eaf0}
 .vs-player-name.right{text-align:right}
 .vs-vs-badge{text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:800;color:#6b7280}
-.vs-row{display:grid;grid-template-columns:1fr 80px 60px 80px 1fr;align-items:center;gap:.2rem;padding:.22rem .4rem;border-bottom:1px solid rgba(255,255,255,.025)}
+.vs-row{display:grid;grid-template-columns:1fr 80px 60px 80px 1fr;align-items:center;gap:.25rem .35rem;padding:.22rem .4rem;border-bottom:1px solid rgba(255,255,255,.025)}
 .vs-row:last-child{border-bottom:none}
-.vs-attr-name{font-size:.7rem;color:#6b7280;text-align:center;grid-column:3}
+/* Tre celle logiche: sinistra (col 1–2), nome attributo (col 3), destra (col 4–5) */
+.vs-row>div:first-child{grid-column:1/3;justify-self:end;width:100%;min-width:0}
+.vs-attr-name{font-size:.7rem;color:#6b7280;text-align:center;grid-column:3;padding:0 .2rem}
+.vs-row>div:last-child{grid-column:4/6;justify-self:start;width:100%;min-width:0;padding-left:.2rem}
 .vs-val{font-family:'Barlow Condensed',sans-serif;font-size:.88rem;font-weight:800;text-align:center;padding:.04rem .3rem;border-radius:3px}
 .vs-bar-left,.vs-bar-right{height:5px;border-radius:3px;background:rgba(255,255,255,.06)}
 .vs-bar-fill-l{height:100%;border-radius:3px;background:#22d3a0;transition:width .5s ease;float:right}
 .vs-bar-fill-r{height:100%;border-radius:3px;background:#a78bfa;transition:width .5s ease}
-.vs-win-l{color:#22d3a0}.vs-win-r{color:#a78bfa}.vs-draw{color:#9ca3af}
+.vs-val.vs-win-l{color:#22d3a0;background:rgba(34,211,160,.2);border:1px solid rgba(34,211,160,.5);box-shadow:0 0 12px rgba(34,211,160,.15);font-weight:800}
+.vs-val.vs-win-r{color:#c4b5fd;background:rgba(167,139,250,.22);border:1px solid rgba(167,139,250,.5);box-shadow:0 0 12px rgba(167,139,250,.12);font-weight:800}
+.vs-val.vs-lose{color:#6b7280;font-weight:600;opacity:.88}
+.vs-val.vs-draw{color:#9ca3af;font-weight:700}
+.vs-val.vs-missing{color:#6b7280;font-weight:600;background:transparent;border:none;box-shadow:none;opacity:.92}
 .vs-sec-hdr{font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#4b5563;padding:.5rem .4rem .2rem;grid-column:1/-1}
 
 /* ── PANEL: SIMILI ── */
@@ -224,6 +248,50 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
 @media(max-width:768px){
   .card-header{grid-template-columns:1fr;text-align:left;}
   .club-block{align-items:flex-start;}
+  .player-name-row{flex-wrap:wrap;align-items:flex-start}
+  .fmto-card-logo .fmto-lg{font-size:12px}
+  /* Confronto: colonne esplicite + più aria tra centro e giocatore destro */
+  .vs-header-row{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.5rem .65rem;padding:.55rem .55rem}
+  .vs-vs-badge{font-size:.95rem;flex-shrink:0}
+  .vs-player-name{font-size:.88rem;line-height:1.15}
+  /* Riga attributo sopra (100%), valori sotto a metà — evita sovrapposizioni con nomi lunghi */
+  .vs-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    row-gap:.4rem;
+    column-gap:.45rem;
+    padding:.42rem .35rem;
+  }
+  .vs-attr-name{
+    order:-1;
+    flex:0 0 100%;
+    width:100%;
+    max-width:100%;
+    grid-column:auto;
+    padding:.1rem .2rem .15rem;
+    font-size:.62rem;
+    line-height:1.3;
+    word-wrap:break-word;
+    overflow-wrap:break-word;
+    hyphens:auto;
+  }
+  .vs-row>div:first-child{
+    grid-column:auto;
+    flex:1 1 44%;
+    min-width:0;
+    max-width:50%;
+    justify-content:flex-end;
+  }
+  .vs-row>div:last-child{
+    grid-column:auto;
+    flex:1 1 44%;
+    min-width:0;
+    max-width:50%;
+    padding-left:.35rem;
+    justify-content:flex-start;
+  }
 }
 @media(max-width:480px){
   .value-strip{
@@ -235,13 +303,12 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
   .value-strip .divider-v{display:none;}
   .value-strip .vitem{min-width:0;}
   .card-footer{flex-direction:column;align-items:flex-start;}
-  .vs-row{grid-template-columns:1fr 52px 50px 52px 1fr}
 }
 </style>
 </head>
 <body class="gbg">
 <script>
-(function(){var p=new URLSearchParams(location.search);if(p.get('from')==='scouting'&&p.get('sq')&&p.get('pid'))document.body.classList.add('card-only-from-scouting');})();
+(function(){var p=new URLSearchParams(location.search);if(p.get('from')==='scouting'&&p.get('sq')&&p.get('pid'))document.body.classList.add('card-only-from-scouting');if(p.get('from')==='area'&&p.get('sq')&&p.get('pid'))document.body.classList.add('card-only-from-area');})();
 </script>
 <nav>
   <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
@@ -288,6 +355,7 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
         <input type="text" class="search-input" id="grid-player-search" placeholder="Cerca giocatore (nome o ID)..." oninput="filterSquads();updateGridPlayerResults();" autocomplete="off">
       </div>
       <a class="nav-cta" href="scouting.html" style="padding:.5rem 1.05rem">Scouting</a>
+      <a class="nav-cta" href="mercato.html" style="padding:.5rem 1.05rem">Mercato</a>
     </div>
     <div id="grid-player-results" class="grid-player-results" style="display:none;margin-bottom:1.25rem">
       <div class="grid-player-results-title" id="grid-player-results-title"></div>
@@ -350,7 +418,12 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
   <!-- HEADER (stile template) -->
   <div class="card-header">
     <div class="player-info">
-      <div class="player-name" id="fm-hdr-name">—</div>
+      <div class="player-name-row">
+        <div class="fmto-card-logo" aria-label="FMTO 2.0">
+          <span class="fmto-card-logo-text"><span class="fmto-lg">FMTO</span><span class="fmto-lg-sub">2.0</span></span>
+        </div>
+        <div class="player-name" id="fm-hdr-name">—</div>
+      </div>
       <div class="player-meta">
         <span class="meta-tag role" id="fm-hdr-role">—</span>
         <span class="meta-tag nation" id="fm-hdr-nat">—</span>
@@ -507,6 +580,8 @@ var SVINCOLATI_SQUAD = { id:'svincolati', name:'SVINCOLATI', color1:'#6b7280', c
 let curSqName = null, sortCol = 'role', sortDir = 1;
 let curPlayerData = null;
 let openedFMCardFromGrid = false;
+/** Storia dedicata alla scheda: il gesto “indietro” chiude la scheda invece di uscire dalla pagina (es. verso Home). */
+window._fmtoCardPushed = false;
 var curSvincolatiList = [];
 function getCurrentSquadPlayers(){
   if(curSqName==='SVINCOLATI')return curSvincolatiList;
@@ -627,7 +702,7 @@ function openSquad(sqName){
     const avgCA=Math.round(players.reduce((s,p)=>s+p.ca,0)/players.length);
     const avgPA=Math.round(players.reduce((s,p)=>s+p.pa,0)/players.length);
     const topCA=players.reduce(function(m,p){ return p.ca>m?p.ca:m; },0);
-    const totStip=players.reduce((s,p)=>s+((typeof getStipendio==='function'?getStipendio(p):null)||p.prezzo||0),0);
+    const totStip=players.reduce((s,p)=>s+((typeof getStipendio==='function'?getStipendio(p):null)||0),0);
     if(sq.name!=='SVINCOLATI'){
       document.getElementById('squad-summary').innerHTML=`
       <div class="ss-item"><div class="ss-val">${avgCA}</div><div class="ss-lbl">CA medio</div></div>
@@ -669,7 +744,7 @@ function renderSquadTable(players){
       <td><span class="ov ${getOvrClass(p.ca)}">${p.ca}</span></td>
       <td style="color:var(--t2)">${p.pa}</td>
       <td style="color:var(--t2)">${p.vel}</td>
-      <td class="val-tag">${typeof fmtStipendio==='function'?fmtStipendio((typeof getStipendio==='function'?getStipendio(p):null)||p.prezzo):'—'}</td>
+      <td class="val-tag">${typeof fmtStipendio==='function'?fmtStipendio((typeof getStipendio==='function'?getStipendio(p):null)):'—'}</td>
       <td style="color:var(--t3);font-size:.74rem;white-space:nowrap">${p.posizione||'—'}</td>
       <td><button class="wl-btn ${inWL(p.id)?'inw':''}" data-pid="${p.id}"
         onclick="toggleWLPlayer('${p.id}','${curSqName.replace(/'/g,"\\'")}');event.stopPropagation()">${inWL(p.id)?'★':'☆'}</button></td>
@@ -720,7 +795,7 @@ function renderSquadUnder(sqName){
     const ruolo = displayRole(p.posizione);
     const flag = getFlag(p.naz);
     const safeSq = String(p.squadra || sqName || '').replace(/'/g, "\\'");
-    const rawStip = p.stipendio != null ? p.stipendio : p.prezzo || 0;
+    const rawStip = typeof getStipendio === 'function' ? getStipendio(p) : (p.stipendio != null ? p.stipendio : null);
     const stipendio = typeof fmtStipendio==='function'
       ? fmtStipendio(rawStip)
       : rawStip;
@@ -921,7 +996,7 @@ function openFMCard(pid, sqName, playerFromStorage){
   }
 
   // VALUE STRIP (stipendio da CSV)
-  document.getElementById('fm-stipendio').textContent=typeof fmtStipendio==='function'?(fmtStipendio((typeof getStipendio==='function'?getStipendio(p):null)||p.prezzo)||'—'):'—';
+  document.getElementById('fm-stipendio').textContent=typeof fmtStipendio==='function'?(fmtStipendio((typeof getStipendio==='function'?getStipendio(p):null))||'—'):'—';
   document.getElementById('fm-contratto').textContent='—';
   document.getElementById('fm-presenze').textContent='0';
   document.getElementById('fm-personalita').textContent='—';
@@ -950,6 +1025,31 @@ function openFMCard(pid, sqName, playerFromStorage){
   };
   if(typeof requestAnimationFrame!=='undefined') requestAnimationFrame(fillCard);
   else fillCard();
+  try {
+    history.pushState({ fmtoCard: true }, '', location.href);
+    window._fmtoCardPushed = true;
+  } catch (e2) {}
+}
+
+function _applyAfterCardCloseFromPopstate(){
+  var overlay = document.getElementById('fm-overlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  window._fmtoCardPushed = false;
+  if (new URLSearchParams(location.search).get('from') === 'area') {
+    location.href = 'area.html#wl';
+    return;
+  }
+  if (new URLSearchParams(location.search).get('from') === 'scouting') {
+    location.href = 'scouting-risultati.html';
+    return;
+  }
+  if (openedFMCardFromGrid) {
+    openedFMCardFromGrid = false;
+    showView('grid');
+  } else if (curSqName) {
+    showView('squad');
+  }
 }
 
 /* ═══ ATTR COLUMNS (3 sezioni con barre) ═══ */
@@ -1182,6 +1282,58 @@ function vsSelect(pid, sqName){
   buildComparison(p1,p2);
 }
 
+/** Come attrRowBarHTML: numero solo se presente, altrimenti null (scheda mostra —). */
+function vsAttrNum(p,key){
+  if(!p||key==null)return null;
+  const x=p[key];
+  if(x==null||x==='')return null;
+  const n=Number(x);
+  return isNaN(n)?null:n;
+}
+function vsCompareAttrRow(v1,v2){
+  const d1=v1!=null?String(v1):'—';
+  const d2=v2!=null?String(v2):'—';
+  const pct1=v1!=null?Math.min(100,Math.max(0,(v1/20)*100)):0;
+  const pct2=v2!=null?Math.min(100,Math.max(0,(v2/20)*100)):0;
+  let cls1,cls2;
+  if(v1==null&&v2==null){cls1=cls2='vs-missing';}
+  else if(v1==null){cls1='vs-missing';cls2='vs-win-r';}
+  else if(v2==null){cls1='vs-win-l';cls2='vs-missing';}
+  else if(v1>v2){cls1='vs-win-l';cls2='vs-lose';}
+  else if(v2>v1){cls1='vs-lose';cls2='vs-win-r';}
+  else{cls1=cls2='vs-draw';}
+  return{d1,d2,cls1,cls2,pct1,pct2};
+}
+
+/** Stessi attributi e ordine di buildFMColumns (schede giocatore) */
+const VS_ATTRS_GK_TECH=[
+  ['Autorità in area','aut_area'],['Comunicazione','comm'],['Controllo di palla','gioc_prima'],['Eccentricità','ecc'],
+  ['Palle alte','pal_alt'],['Passaggi','pass'],['Presa','bloc_tir'],['Respinte di pugno','risp_pug'],
+  ['Riflessi','rifl'],['Rimesse','ril'],['Rinvii','rinv'],['Uno contro uno','uno_v_uno'],['Uscite','usc'],
+];
+const VS_ATTRS_GK_PSYCH=[
+  ['Aggressività','agr'],['Carisma','car'],['Concentrazione','conc'],['Coraggio','cor'],['Decisioni','dec'],['Determinazione','det'],
+  ['Fantasia','fan'],['Freddezza','fred'],['Gioco di squadra','gioc_squa'],['Impegno','imp'],['Intuito','int_ment'],
+  ['Posizione','pos_ment'],['Senza palla','senza_palla'],['Visione di gioco','fan'],
+];
+const VS_ATTRS_GK_PHYS=[
+  ['Accelerazione','acc'],['Agilità','agi'],['Equilibrio','equ'],['Forza','forza'],['Integrità fisica','int_fis'],
+  ['Mass. elevazione','ele'],['Resistenza','res'],['Velocità','vel'],['Calci piazzati','pun'],['Tecnica','tecn'],
+];
+const VS_ATTRS_OUT_TECH=[
+  ['Colpi di testa','testa'],['Contrasti','cont'],['Controllo palla','gioc_prima'],['Cross','cross'],['Dribbling','drib'],
+  ['Finalizzazione','final'],['Marcatura','marc'],['Passaggi','pass'],['Tecnica','tecn'],['Tiri da lontano','tir_lont'],
+];
+const VS_ATTRS_OUT_PSYCH=[
+  ['Aggressività','agr'],['Carisma','car'],['Concentrazione','conc'],['Coraggio','cor'],['Decisioni','dec'],['Determinazione','det'],
+  ['Fantasia','fan'],['Freddezza','fred'],['Gioco di squadra','gioc_squa'],['Impegno','imp'],['Intuito','int_ment'],
+  ['Posizione','pos_ment'],['Visione di gioco','fan'],
+];
+const VS_ATTRS_OUT_PHYS=[
+  ['Accelerazione','acc'],['Agilità','agi'],['Equilibrio','equ'],['Forza','forza'],['Integrità fisica','int_fis'],
+  ['Mass. elevazione','ele'],['Resistenza','res'],['Velocità','vel'],
+];
+
 function buildComparison(p1,p2){
   const compEl=document.getElementById('vs-comparison');
   compEl.style.display='block';
@@ -1191,31 +1343,13 @@ function buildComparison(p1,p2){
   const bothGK=isGK1&&isGK2;
 
   const GROUPS=bothGK ? [
-    {title:'Portiere',attrs:[
-      ['Riflessi','rifl'],['Uno contro uno','uno_v_uno'],['Uscite','usc'],['Presa','bloc_tir'],
-      ['Rinvii','rinv'],['Respinte di pugno','risp_pug'],['Rilanci','ril'],['Palle alte','pal_alt'],
-      ['Comunicazione','comm'],
-    ]},
-    {title:'Psicologia',attrs:[
-      ['Coraggio','cor'],['Decisioni','dec'],['Determinazione','det'],
-      ['Freddezza','fred'],['Concentrazione','conc'],['Intuito','int_ment'],
-    ]},
-    {title:'Fisico',attrs:[
-      ['Accelerazione','acc'],['Agilità','agi'],['Forza','forza'],['Resistenza','res'],['Velocità','vel'],
-    ]},
+    {title:'Portiere',attrs:VS_ATTRS_GK_TECH},
+    {title:'Psicologia',attrs:VS_ATTRS_GK_PSYCH},
+    {title:'Fisico',attrs:VS_ATTRS_GK_PHYS},
   ] : [
-    {title:'Tecnica',attrs:[
-      ['Colpi di testa','testa'],['Contrasti','cont'],['Controllo di palla','gioc_prima'],
-      ['Cross','cross'],['Dribbling','drib'],['Finalizzazione','final'],
-      ['Marcatura','marc'],['Passaggi','pass'],['Tecnica','tecn'],['Tiri da lontano','tir_lont'],
-    ]},
-    {title:'Psicologia',attrs:[
-      ['Coraggio','cor'],['Creatività','crea'],['Decisioni','dec'],['Determinazione','det'],
-      ['Fantasia','fan'],['Freddezza','fred'],['Impegno','imp'],['Intuito','int_ment'],
-    ]},
-    {title:'Fisico',attrs:[
-      ['Accelerazione','acc'],['Agilità','agi'],['Forza','forza'],['Resistenza','res'],['Velocità','vel'],
-    ]},
+    {title:'Tecnica',attrs:VS_ATTRS_OUT_TECH},
+    {title:'Psicologia',attrs:VS_ATTRS_OUT_PSYCH},
+    {title:'Fisico',attrs:VS_ATTRS_OUT_PHYS},
   ];
 
   const c1='#22d3a0', c2='#a78bfa';
@@ -1237,17 +1371,17 @@ function buildComparison(p1,p2){
     html+=`<div style="background:#1c1e2a;border:1px solid rgba(255,255,255,.06);border-radius:6px;margin-bottom:.6rem;overflow:hidden">
       <div style="background:#13151f;padding:.35rem .75rem;font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#6b7280">${g.title}</div>`;
     g.attrs.forEach(([name,key])=>{
-      const v1=p1[key]??0, v2=p2[key]??0;
-      const win1=v1>v2, win2=v2>v1;
+      const n1=vsAttrNum(p1,key), n2=vsAttrNum(p2,key);
+      const row=vsCompareAttrRow(n1,n2);
       html+=`<div class="vs-row">
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:.4rem">
-          <div class="vs-bar-left" style="width:70px"><div class="vs-bar-fill-l" style="width:${(v1/20)*100}%;background:${c1}"></div></div>
-          <div class="vs-val ${win1?'vs-win-l':win2?'vs-win-r':'vs-draw'} ${fvClass(v1)}">${v1}</div>
+          <div class="vs-bar-left" style="width:70px"><div class="vs-bar-fill-l" style="width:${row.pct1}%;background:${c1}"></div></div>
+          <div class="vs-val ${row.cls1}">${row.d1}</div>
         </div>
         <div class="vs-attr-name">${name}</div>
         <div style="display:flex;align-items:center;gap:.4rem">
-          <div class="vs-val ${win2?'vs-win-r':win1?'vs-win-l':'vs-draw'} ${fvClass(v2)}">${v2}</div>
-          <div class="vs-bar-right" style="width:70px"><div class="vs-bar-fill-r" style="width:${(v2/20)*100}%;background:${c2}"></div></div>
+          <div class="vs-val ${row.cls2}">${row.d2}</div>
+          <div class="vs-bar-right" style="width:70px"><div class="vs-bar-fill-r" style="width:${row.pct2}%;background:${c2}"></div></div>
         </div>
       </div>`;
     });
@@ -1257,7 +1391,10 @@ function buildComparison(p1,p2){
   // Summary
   let p1wins=0, p2wins=0;
   GROUPS.forEach(g=>g.attrs.forEach(([,key])=>{
-    const v1=p1[key]??0,v2=p2[key]??0;
+    const v1=vsAttrNum(p1,key), v2=vsAttrNum(p2,key);
+    if(v1==null&&v2==null)return;
+    if(v1==null){p2wins++;return;}
+    if(v2==null){p1wins++;return;}
     if(v1>v2)p1wins++;else if(v2>v1)p2wins++;
   }));
   html+=`<div style="background:#1c1e2a;border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:.65rem 1rem;display:flex;justify-content:space-around;align-items:center;margin-top:.4rem">
@@ -1332,14 +1469,11 @@ function buildSimili(p){
 /* ═══ CLOSE / WL / ESC ═══ */
 function closeFMCard(e){
   if(e&&e.target!==document.getElementById('fm-overlay'))return;
-  document.getElementById('fm-overlay').classList.remove('open');
-  document.body.style.overflow='';
-  if(new URLSearchParams(location.search).get('from')==='scouting'){
-    location.href='scouting-risultati.html';
-  } else if(openedFMCardFromGrid){
-    openedFMCardFromGrid = false;
-    showView('grid');
+  if (window._fmtoCardPushed) {
+    history.back();
+    return;
   }
+  _applyAfterCardCloseFromPopstate();
 }
 function toggleFMWL(){
   if(!curPlayerData)return;
@@ -1361,17 +1495,23 @@ function toggleFMWL(){
 }
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
-    document.getElementById('fm-overlay').classList.remove('open');
-    document.body.style.overflow='';
-    if(new URLSearchParams(location.search).get('from')==='scouting')location.href='scouting-risultati.html';
-    else if(openedFMCardFromGrid){ openedFMCardFromGrid=false; showView('grid'); }
+    var ov=document.getElementById('fm-overlay');
+    if(!ov||!ov.classList.contains('open'))return;
+    if(window._fmtoCardPushed){ history.back(); return; }
+    _applyAfterCardCloseFromPopstate();
   }
+});
+
+window.addEventListener('popstate',function(){
+  var ov=document.getElementById('fm-overlay');
+  if(!ov||!ov.classList.contains('open'))return;
+  _applyAfterCardCloseFromPopstate();
 });
 
 
 (function init(){
   var params=new URLSearchParams(location.search);
-  var sqParam=params.get('sq'),pidParam=params.get('pid'),fromScouting=params.get('from')==='scouting';
+  var sqParam=params.get('sq'),pidParam=params.get('pid'),fromScouting=params.get('from')==='scouting',fromArea=params.get('from')==='area';
   if(sqParam && pidParam && fromScouting){
     var stored=null;
     try{ var raw=sessionStorage.getItem('fmto_card_player'); if(raw)stored=JSON.parse(raw); }catch(e){}
@@ -1379,6 +1519,20 @@ document.addEventListener('keydown',e=>{
     if(stored){ openFMCard(pidParam,sqParam,stored); try{ sessionStorage.removeItem('fmto_card_player'); }catch(e){} }
     else { (window.SVINCOLATI_READY||Promise.resolve()).then(function(){ openFMCard(pidParam,sqParam,null); }); }
     (window.SVINCOLATI_READY||Promise.resolve()).then(function(){ buildSquadGrid(); refreshWLButtons(); });
+    return;
+  }
+  if(sqParam && pidParam && fromArea){
+    curSqName=sqParam;
+    var storedWl=null;
+    try{ var rawWl=sessionStorage.getItem('fmto_card_player'); if(rawWl)storedWl=JSON.parse(rawWl); }catch(e){}
+    var wlPlayer=storedWl&&String(storedWl.id)===String(pidParam)?storedWl:null;
+    (window.SVINCOLATI_READY||Promise.resolve()).then(function(){
+      buildSquadGrid(); refreshWLButtons();
+      setTimeout(function(){
+        openFMCard(pidParam,sqParam,wlPlayer);
+        if(wlPlayer) try{ sessionStorage.removeItem('fmto_card_player'); }catch(e){}
+      },80);
+    });
     return;
   }
   (window.SVINCOLATI_READY||Promise.resolve()).then(function(){

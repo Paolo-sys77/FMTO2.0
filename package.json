@@ -1,5 +1,11 @@
 {
+  "scripts": {
+    "build:svincolati-parquet": "node build-svincolati-from-parquet.mjs"
+  },
   "dependencies": {
+    "@duckdb/duckdb-wasm": "^1.33.1-dev20.0",
+    "hyparquet": "^1.25.1",
+    "hyparquet-compressors": "^1.1.1",
     "xlsx": "^0.18.5"
   }
 }

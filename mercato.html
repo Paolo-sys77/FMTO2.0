@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMTO 2.0 — Mercato</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.mercato-meta{font-size:.76rem;color:var(--t3);margin:.5rem 0 1.1rem;line-height:1.5}
+.mercato-meta code{color:var(--vb);font-size:.72rem}
+.mercato-empty{padding:1.5rem 1rem;color:var(--t2);font-size:.88rem;line-height:1.55;border:1px dashed var(--border);border-radius:10px;margin-top:.5rem}
+#mercato-wrap{overflow-x:auto;margin-top:1rem}
+#mercato-thead th{font-size:.72rem;vertical-align:bottom}
+#mercato-thead th.mercato-subth{font-size:.62rem;font-weight:600;color:var(--t3);letter-spacing:.04em}
+.proto-warn{display:none;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:var(--t1);padding:.85rem 1.1rem;margin:0 1.5rem 0;max-width:1100px;border-radius:10px;font-size:.8rem;line-height:1.55;position:relative;z-index:5}
+.proto-warn code{color:var(--vb);font-size:.74rem}
+.proto-warn .proto-warn-x{float:right;background:transparent;border:1px solid var(--border);color:var(--t2);padding:.2rem .55rem;border-radius:6px;cursor:pointer;font-size:.72rem;margin-left:.75rem}
+.proto-warn .proto-warn-x:hover{border-color:var(--vb);color:var(--vb)}
+</style>
+</head>
+<body class="gbg">
+<div id="proto-warn" class="proto-warn" role="status">
+  <button type="button" class="proto-warn-x" onclick="this.parentElement.style.display='none'" aria-label="Chiudi">Chiudi</button>
+  <strong>Stai usando file://</strong> (file aperto dal disco). Il browser può mostrare errori di sicurezza e bloccare script. Apri il sito con un server locale, ad esempio nel terminale, dalla cartella del progetto:
+  <code>npx --yes serve . -l 3000</code>
+  poi vai su <code>http://localhost:3000/mercato.html</code> (in alternativa: estensione &quot;Live Server&quot; in VS Code / Cursor).
+</div>
+<script>if (location.protocol === 'file:') { var w = document.getElementById('proto-warn'); if (w) w.style.display = 'block'; }</script>
+<nav>
+  <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+  <ul class="nav-links">
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
+    <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="scouting.html" id="nav-scouting">Scouting</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
+    <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
+    <li><a href="calendario.html" id="nav-calendario">Calendario</a></li>
+    <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+  </ul>
+</nav>
+<div class="ticker">
+  <div class="ticker-lbl">Live</div>
+  <div class="ticker-inner"><div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Mercato e rose aggiornate su FMTO 2.0</span>
+  </div></div>
+</div>
+<div class="sec" style="padding-top:2rem;max-width:1100px">
+  <div class="sec-tag">Calciomercato</div>
+  <h2 class="sec-title">Mercato</h2>
+  <p style="margin-top:.75rem;font-size:.88rem;color:var(--t2);line-height:1.6">
+    Elenco movimenti aggiornato alla stagione 26_2.
+  </p>
+  <p style="margin-top:1rem">
+    <a class="nav-cta" href="squadre.html" style="display:inline-block;padding:.55rem 1.15rem;text-decoration:none">← Torna alle squadre</a>
+  </p>
+  <div class="mercato-meta" id="mercato-meta"></div>
+  <div id="mercato-empty" class="mercato-empty" style="display:none"></div>
+  <div id="mercato-wrap">
+    <table class="player-tbl" id="mercato-tbl" style="display:none">
+      <thead id="mercato-thead"></thead>
+      <tbody id="mercato-tbody"></tbody>
+    </table>
+  </div>
+</div>
+<script src="mercato-movimenti.js"></script>
+<script>
+(function () {
+  var d = window.MERCATO_MOVIMENTI || { righe: [] };
+  var meta = document.getElementById('mercato-meta');
+  var empty = document.getElementById('mercato-empty');
+  var tbl = document.getElementById('mercato-tbl');
+  var thead = document.getElementById('mercato-thead');
+  var tbody = document.getElementById('mercato-tbody');
+  var righe = d.righe || [];
+  var intest = d.intestazioni || { tipo: ['Tipo scambio'], costo: 'Costo (CR)', note: ['Note'] };
+  var nt = (intest.tipo && intest.tipo.length) ? intest.tipo.length : 1;
+  var nn = (intest.note && intest.note.length) ? intest.note.length : 1;
+  var twoRowHead = nt > 1 || nn > 1;
+
+  function padParts(arr, n, fallbackStr) {
+    var out = (arr && arr.slice) ? arr.slice(0, n) : [];
+    if (out.length < n) {
+      if (fallbackStr && out.length === 0) {
+        var sp = String(fallbackStr).split('\n');
+        for (var s = 0; s < sp.length && out.length < n; s++) out.push(sp[s].trim());
+      }
+      while (out.length < n) out.push('');
+    }
+    return out.slice(0, n);
+  }
+
+  function th(txt, opts) {
+    opts = opts || {};
+    var h = document.createElement('th');
+    h.textContent = txt;
+    if (opts.rowspan) h.rowSpan = opts.rowspan;
+    if (opts.colspan) h.colSpan = opts.colspan;
+    if (opts.cls) h.className = opts.cls;
+    if (opts.width) h.style.width = opts.width;
+    return h;
+  }
+
+  function buildThead() {
+    thead.textContent = '';
+    var rs = twoRowHead ? 2 : 1;
+    var tr1 = document.createElement('tr');
+    tr1.appendChild(th('#', { rowspan: rs, width: '52px' }));
+    tr1.appendChild(th('Giocatore', { rowspan: rs }));
+    tr1.appendChild(th('Squadra cedente', { rowspan: rs }));
+    tr1.appendChild(th('Squadra cessionaria', { rowspan: rs }));
+    if (nt <= 1) {
+      tr1.appendChild(th(intest.tipo[0] || 'Tipo scambio', { rowspan: rs }));
+    } else {
+      tr1.appendChild(th('Tipo scambio', { colspan: nt }));
+    }
+    tr1.appendChild(th(intest.costo || 'Costo (CR)', { rowspan: rs, width: '88px' }));
+    if (nn <= 1) {
+      tr1.appendChild(th(intest.note[0] || 'Note', { rowspan: rs }));
+    } else {
+      tr1.appendChild(th('Note', { colspan: nn }));
+    }
+    thead.appendChild(tr1);
+    if (twoRowHead) {
+      var tr2 = document.createElement('tr');
+      if (nt > 1) {
+        for (var i = 0; i < nt; i++) {
+          tr2.appendChild(th(intest.tipo[i] || 'Campo', { cls: 'mercato-subth' }));
+        }
+      }
+      if (nn > 1) {
+        for (var j = 0; j < nn; j++) {
+          tr2.appendChild(th(intest.note[j] || 'Campo', { cls: 'mercato-subth' }));
+        }
+      }
+      thead.appendChild(tr2);
+    }
+  }
+
+  if (d.fonte) {
+    var when = d.generatoIso
+      ? new Date(d.generatoIso).toLocaleString('it-IT', { dateStyle: 'short', timeStyle: 'short' })
+      : '—';
+    meta.textContent = 'Fonte: ' + d.fonte + ' · Aggiornato: ' + when;
+  } else {
+    meta.textContent = '';
+  }
+
+  if (!righe.length) {
+    tbl.style.display = 'none';
+    empty.style.display = 'block';
+    empty.textContent = d.nota || 'Nessun movimento caricato. Aggiungi il file Excel nella cartella del sito e lancia node apply-mercato.js oppure node export-mercato-movimenti.js.';
+    return;
+  }
+
+  empty.style.display = 'none';
+  tbl.style.display = 'table';
+  buildThead();
+  tbody.textContent = '';
+
+  righe.forEach(function (r) {
+    var tr = document.createElement('tr');
+    var tipoVals = padParts(r.tipoRighe, nt, r.tipo || '');
+    var noteVals = padParts(r.noteRighe, nn, r.note || '');
+
+    function addTextTd(text, idx) {
+      var td = document.createElement('td');
+      td.textContent = text != null ? String(text) : '';
+      if (idx === 0) td.style.color = 'var(--t3)';
+      if (idx === 1) td.style.fontWeight = '500';
+      tr.appendChild(td);
+    }
+
+    addTextTd(r.n, 0);
+    addTextTd(r.giocatore, 1);
+    addTextTd(r.cedente, 2);
+    addTextTd(r.cessionaria, 3);
+
+    if (nt <= 1) {
+      addTextTd(tipoVals[0] || r.tipo || '', 4);
+    } else {
+      for (var ti = 0; ti < nt; ti++) {
+        var tdT = document.createElement('td');
+        tdT.textContent = tipoVals[ti] != null && String(tipoVals[ti]).trim() !== '' ? String(tipoVals[ti]) : '—';
+        tr.appendChild(tdT);
+      }
+    }
+
+    var tdCosto = document.createElement('td');
+    tdCosto.textContent = r.costoCr != null ? String(r.costoCr) : '';
+    tr.appendChild(tdCosto);
+
+    if (nn <= 1) {
+      var tdN = document.createElement('td');
+      tdN.style.fontSize = '.82rem';
+      tdN.style.color = 'var(--t2)';
+      tdN.textContent = noteVals[0] || r.note || '';
+      tr.appendChild(tdN);
+    } else {
+      for (var ni = 0; ni < nn; ni++) {
+        var tdNi = document.createElement('td');
+        tdNi.style.fontSize = '.82rem';
+        tdNi.style.color = 'var(--t2)';
+        tdNi.textContent =
+          noteVals[ni] != null && String(noteVals[ni]).trim() !== '' ? String(noteVals[ni]) : '—';
+        tr.appendChild(tdNi);
+      }
+    }
+
+    tbody.appendChild(tr);
+  });
+})();
+</script>
+<script src="shared.js"></script>
+</body>
+</html>

@@ -292,15 +292,27 @@ nav {
 .wl-card {
   background:var(--card); border:1px solid var(--border); border-radius:9px;
   padding:.9rem 1.1rem; display:flex; align-items:center; gap:.9rem;
-  margin-bottom:.55rem; transition:all .18s; cursor:pointer;
+  margin-bottom:.55rem; transition:all .18s;
 }
 .wl-card:hover { border-color:var(--v); }
+/* Link nativo: su mobile gli onclick su div non sono affidabili per la navigazione */
+.wl-card-hit {
+  flex:1; display:flex; align-items:center; gap:.9rem; min-width:0;
+  text-decoration:none; color:inherit; cursor:pointer;
+  -webkit-tap-highlight-color:rgba(139,92,246,.2); touch-action:manipulation;
+}
+.wl-card-hit:focus-visible { outline:2px solid var(--vb); outline-offset:2px; border-radius:6px; }
 .wl-remove {
   margin-left:auto; background:none; border:1px solid rgba(239,68,68,.18); color:#f87171;
   padding:.22rem .55rem; border-radius:5px; cursor:pointer; font-size:.7rem;
   font-family:'Outfit',sans-serif; transition:all .14s;
+  touch-action:manipulation; -webkit-tap-highlight-color:rgba(139,92,246,.15);
 }
 .wl-remove:hover { background:rgba(239,68,68,.1); border-color:#f87171; }
+@media (max-width:640px) {
+  .wl-card { min-height:48px; padding:.75rem .9rem; }
+  .wl-remove { min-width:44px; min-height:44px; padding:.35rem .85rem; display:inline-flex; align-items:center; justify-content:center; }
+}
 .wl-empty { text-align:center; padding:2.5rem 1rem; color:var(--t2); }
 
 /* ── UNDER LIST ── */
@@ -845,13 +857,90 @@ body.scout-page-fm26 .scout-panel-adv .scout-adv-title:first-child { margin-top:
   .player-tbl th:nth-child(n+7), .player-tbl td:nth-child(n+7) { display:none; }
   .stat-grid { grid-template-columns:1fr 1fr; }
   .mister-grid { grid-template-columns:1fr 1fr; }
-  .scout-layout { grid-template-columns:1fr; }
+  .scout-layout { margin-top:1.1rem; gap:0.95rem; }
+  .scout-grid-2 {
+    grid-template-columns:1fr;
+    gap:0.7rem;
+  }
+  .scout-grid-2 > .scout-field { grid-column:1 / -1 !important; }
   .scout-adv-body { grid-template-columns:1fr; }
   .scout-panel-adv .scout-adv-body { grid-template-columns:1fr; }
-  .scout-actions { flex-wrap:wrap; }
+  .scout-actions {
+    flex-direction:column;
+    align-items:stretch;
+    gap:0.55rem;
+    margin-top:1rem;
+  }
+  .scout-actions .btn-primary,
+  .scout-actions .btn-ghost {
+    width:100%;
+    justify-content:center;
+    min-height:44px;
+    box-sizing:border-box;
+  }
+  .scout-actions .scout-select-pos {
+    width:100%;
+    min-width:0;
+    max-width:none;
+  }
+  .scout-positions {
+    display:grid;
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:0.35rem;
+  }
+  .scout-positions .scout-pos-pill .scout-pos-label {
+    width:100%;
+    justify-content:flex-start;
+    text-align:left;
+    padding:0.42rem 0.55rem;
+    border-radius:8px;
+    font-size:0.68rem;
+  }
+  .scout-results-shell {
+    max-height:min(52vh,420px);
+    -webkit-overflow-scrolling:touch;
+  }
+  .scout-panel { padding:1rem 0.95rem 1.15rem; }
+  .scout-panel-adv { padding:0.8rem 0.85rem 0.95rem; }
 }
 @media(max-width:900px){
   .scout-panel-adv .scout-adv-body { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+
+/* Scouting — tablet / mobile: sezione e titoli pannello */
+@media (max-width:768px) {
+  body.scout-page-fm26 .sec {
+    padding:2.35rem max(1rem,env(safe-area-inset-left)) 2.5rem max(1rem,env(safe-area-inset-right));
+  }
+  body.scout-page-fm26 .scout-panel-title {
+    flex-direction:column;
+    align-items:flex-start;
+    gap:0.35rem;
+  }
+  body.scout-page-fm26 .scout-panel-meta {
+    line-height:1.45;
+    max-width:100%;
+  }
+  body.scout-page-fm26 .scout-select-pos {
+    min-width:0;
+    width:100%;
+  }
+}
+
+/* Scouting FM26 — filtri avanzati: etichetta sopra il campo su schermi stretti */
+@media (max-width:480px) {
+  body.scout-page-fm26 .scout-panel-adv .scout-field {
+    flex-direction:column;
+    align-items:stretch;
+    gap:0.22rem;
+  }
+  body.scout-page-fm26 .scout-panel-adv .scout-label::after { content:none; }
+  body.scout-page-fm26 .scout-panel-adv .scout-input-num {
+    max-width:none;
+    width:100%;
+    text-align:left;
+    padding:0.45rem 0.6rem;
+  }
 }
 @media(max-width:400px) {
   .sq-name { display:none; }

@@ -95,6 +95,43 @@
     }
     .serie-a-card:hover .serie-a-card-cta { color: var(--g); gap: .65rem; }
     .serie-a-card-cta::after { content: '→'; }
+
+    /* ── Under Construction banner (Campionati) ── */
+    .uc-inline-banner{
+      margin: 1rem auto 0;
+      max-width: 640px;
+      padding: 1rem 1.1rem;
+      border-radius: 14px;
+      border: 1px solid rgba(148,163,184,.28);
+      background: radial-gradient(circle at top, rgba(139,92,246,.18), rgba(15,23,42,.85));
+      box-shadow: 0 12px 34px rgba(15,23,42,.45);
+      text-align: center;
+    }
+    .uc-inline-title{
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--t1);
+      margin-bottom: .25rem;
+    }
+    .uc-inline-text{
+      font-size: .9rem;
+      line-height: 1.55;
+      color: var(--t2);
+    }
+    .uc-inline-title span{
+      background: linear-gradient(135deg, var(--vb), var(--g));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    @media(max-width:768px){
+      .uc-inline-banner{
+        margin: .85rem 1rem 0;
+        max-width: none;
+        padding: .9rem .95rem;
+      }
+    }
   </style>
 </head>
 <body class="gbg">
@@ -126,6 +163,11 @@
   <section class="sec">
     <div class="sec-tag">Campionati</div>
     <h1 class="sec-title">Serie A <span>Girone A</span></h1>
+
+    <div class="uc-inline-banner" role="status" aria-live="polite">
+      <div class="uc-inline-title"><span>Under Construction</span></div>
+      <div class="uc-inline-text">Questa sezione è in fase di allestimento. A breve sarà disponibile.</div>
+    </div>
 
     <div class="serie-a-hero">
       <div class="serie-a-icon">📊</div>

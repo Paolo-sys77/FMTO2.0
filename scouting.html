@@ -4,9 +4,49 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FMTO 2.0 — Scouting</title>
+  <!-- Dipendenze di DuckDB-WASM / apache-arrow (bare specifier → URL jsdelivr) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "apache-arrow": "https://cdn.jsdelivr.net/npm/apache-arrow@17.0.0/Arrow.dom.mjs",
+      "tslib": "https://cdn.jsdelivr.net/npm/tslib@2.8.1/tslib.es6.mjs",
+      "flatbuffers": "https://cdn.jsdelivr.net/npm/flatbuffers@24.3.25/mjs/flatbuffers.js"
+    }
+  }
+  </script>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .proto-warn{display:none;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:var(--t1);padding:.85rem 1.1rem;margin:0 auto;max-width:1100px;border-radius:10px;font-size:.8rem;line-height:1.55;position:relative;z-index:5}
+    .proto-warn code{color:var(--vb);font-size:.74rem}
+    .proto-warn .proto-warn-x{float:right;background:transparent;border:1px solid var(--border);color:var(--t2);padding:.2rem .55rem;border-radius:6px;cursor:pointer;font-size:.72rem;margin-left:.75rem}
+    .proto-warn .proto-warn-x:hover{border-color:var(--vb);color:var(--vb)}
+    .scout-page-tip{margin-top:.85rem;max-width:640px;padding:.75rem 1rem;border-radius:10px;border:1px solid rgba(167,139,250,.38);background:rgba(167,139,250,.1);font-size:.82rem;color:var(--t2);line-height:1.55}
+    .scout-page-tip strong{color:var(--vb)}
+    body.scout-page-fm26 .scout-page-tip{border-color:rgba(88,166,255,.45);background:var(--fm26-accent-dim);color:var(--fm26-text)}
+    body.scout-page-fm26 .scout-page-tip strong{color:var(--fm26-accent)}
+    .scout-page-alert-econ{margin-top:.55rem;max-width:640px;padding:.65rem 1rem;border-radius:10px;border:1px solid rgba(248,113,113,.48);background:rgba(248,113,113,.12);font-size:.8rem;color:var(--t1);line-height:1.5}
+    body.scout-page-fm26 .scout-page-alert-econ{border-color:rgba(248,113,113,.55);background:rgba(248,113,113,.14);color:var(--fm26-text)}
+    .scout-page-alert-econ strong{color:#fca5a5}
+    body.scout-page-fm26 .scout-page-alert-econ strong{color:#f87171}
+    .scout-solo-svincolati-box{padding:.6rem .7rem;border-radius:10px;border:2px solid rgba(167,139,250,.6);background:linear-gradient(135deg,rgba(167,139,250,.14),rgba(34,211,160,.09));box-shadow:0 4px 22px rgba(139,92,246,.18)}
+    body.scout-page-fm26 .scout-solo-svincolati-box{border:2px solid var(--fm26-accent);background:linear-gradient(135deg,var(--fm26-accent-dim),rgba(34,211,160,.1));box-shadow:0 0 0 1px rgba(88,166,255,.25),0 6px 26px rgba(0,0,0,.4)}
+    .scout-solo-svincolati-box .scout-pos-label{font-weight:700}
+    .scout-solo-svincolati-box small{color:var(--t2)!important}
+    body.scout-page-fm26 .scout-solo-svincolati-box small{color:var(--fm26-muted)!important}
+    @media (max-width:640px){
+      .scout-page-tip,.scout-page-alert-econ{max-width:none;padding:.7rem .85rem;font-size:.8rem}
+      .scout-intro{max-width:none!important;font-size:.8rem!important}
+    }
+  </style>
 </head>
 <body class="gbg scout-page-fm26">
+  <div id="proto-warn" class="proto-warn" role="status">
+    <button type="button" class="proto-warn-x" onclick="this.parentElement.style.display='none'" aria-label="Chiudi">Chiudi</button>
+    <strong>Stai usando file://</strong> (pagina aperta dal disco). Con questo protocollo il browser <strong>blocca</strong> moduli JavaScript (<code>duckdb-svincolati.mjs</code>), <code>fetch</code> su Parquet/JSON e DuckDB-WASM. Apri il sito con un server locale, dalla cartella del progetto:
+    <code>npx --yes serve . -l 3000</code>
+    poi <code>http://localhost:3000/scouting.html</code> (oppure estensione Live Server in Cursor/VS Code).
+  </div>
+  <script>if (location.protocol === 'file:') { var w = document.getElementById('proto-warn'); if (w) w.style.display = 'block'; }</script>
 
   <!-- NAV -->
   <nav>
@@ -48,10 +88,17 @@
     <div class="sec-tag">Area Scouting</div>
     <h1 class="sec-title">Ricerca giocatori <span>avanzata</span></h1>
 
-    <p style="margin-top:.6rem;font-size:.84rem;color:var(--t2);max-width:640px">
+    <p class="scout-intro" style="margin-top:.6rem;font-size:.84rem;color:var(--t2);max-width:640px">
       Combina <strong>dati biografici</strong>, <strong>ruolo in campo</strong>, parametri
       <strong>tecnici</strong> e <strong>metriche di rendimento</strong> per costruire la tua short‑list ideale.
     </p>
+
+    <p class="scout-page-tip" role="note">
+      Per cercare giocatori <strong>fuori dal torneo FMTO</strong>, nei filtri di base spunta <strong>Solo svincolati</strong> e avvia la ricerca.
+    </p>
+    <div class="scout-page-alert-econ" role="alert">
+      <strong>Attenzione:</strong> fa fede sempre la <strong>Gestione economica</strong>.
+    </div>
 
     <div class="scout-layout">
 
@@ -93,7 +140,7 @@
               </label>
               <input id="f-club" class="scout-input" type="text" placeholder="Es. &quot;Milan&quot;, &quot;Real Madrid&quot;…">
             </div>
-            <div class="scout-field">
+            <div class="scout-field scout-solo-svincolati-box">
               <label class="scout-pos-pill" style="display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;margin:0">
                 <input type="checkbox" id="f-solo-svincolati" name="f-solo-svincolati" value="1">
                 <span class="scout-pos-label">Solo svincolati</span>
@@ -425,6 +472,7 @@
 
   <script src="data.js"></script>
   <script src="players.js"></script>
+  <script src="under.js"></script>
   <script src="stipendi.js"></script>
   <script src="config.js"></script>
   <script src="shared.js"></script>
@@ -620,10 +668,11 @@
       }
       orderOpts = orderOpts || {};
       var table = (typeof SVINCOLATI_TABLE !== 'undefined' && SVINCOLATI_TABLE) ? SVINCOLATI_TABLE : 'svincolati';
-      var orderCol = 'CA';
+      // PostgreSQL/PostgREST: colonne senza virgolette sono minuscolo (ca/pa), non CA/PA — order errato → 500
+      var orderCol = 'ca';
       var orderDir = orderOpts.caDesc !== false ? 'desc' : 'asc';
       if (orderOpts.orderByPa) {
-        orderCol = 'PA';
+        orderCol = 'pa';
         orderDir = 'desc';
       }
       var q = ['select=*', 'order=' + orderCol + '.' + orderDir];
@@ -786,16 +835,35 @@
           if (!isNaN(paMinF) && paMinF >= 150 && (caMinF == null || isNaN(caMinF))) {
             fetchOpts.orderByPa = true;
           }
-          var fromSupabase = await _fetchAllSupabaseSvincolati(fetchOpts);
+          var fromParquet = null;
+          if (typeof SVINCOLATI_PARQUET_URL !== 'undefined' && SVINCOLATI_PARQUET_URL) {
+            try {
+              var _duckMod = await import('./duckdb-svincolati.mjs');
+              fromParquet = await _duckMod.loadSvincolatiPlayersFromParquet(SVINCOLATI_PARQUET_URL);
+            } catch (e) {
+              console.warn('FMTO scouting: DuckDB Parquet', e);
+            }
+          }
+          /** Supabase solo se esplicitamente attivo o se non usi Parquet come sorgente (evita richieste 400/404 inutili). */
+          var preferParquet = typeof SVINCOLATI_PARQUET_URL !== 'undefined' && String(SVINCOLATI_PARQUET_URL).trim() !== '';
+          var useSupabaseSvincolati = typeof SVINCOLATI_USE_SUPABASE !== 'undefined'
+            ? !!SVINCOLATI_USE_SUPABASE
+            : !preferParquet;
+          var fromSupabase = null;
+          if (useSupabaseSvincolati) {
+            fromSupabase = await _fetchAllSupabaseSvincolati(fetchOpts);
+          }
           var fromJson = null;
-          if (!fromSupabase || !fromSupabase.length) {
+          if ((!fromParquet || !fromParquet.length) && (!fromSupabase || !fromSupabase.length)) {
             fromJson = await _fetchSvincolatiFromJsonFile();
           }
           var localFallback = (typeof window.SVINCOLATI_SCOUTING !== 'undefined' && Array.isArray(window.SVINCOLATI_SCOUTING))
             ? window.SVINCOLATI_SCOUTING
             : (typeof PLAYERS_BY_TEAM !== 'undefined' && Array.isArray(PLAYERS_BY_TEAM['SVINCOLATI']) ? PLAYERS_BY_TEAM['SVINCOLATI'] : []);
 
-          if (fromSupabase && fromSupabase.length) {
+          if (fromParquet && fromParquet.length) {
+            pool = fromParquet;
+          } else if (fromSupabase && fromSupabase.length) {
             pool = fromSupabase;
           } else if (fromJson && fromJson.length) {
             pool = fromJson;
@@ -803,8 +871,9 @@
             pool = localFallback;
           } else {
             alert('Non è stato possibile caricare gli svincolati.\n\n' +
-              '1) Supabase: controlla in config.js SUPABASE_URL, SUPABASE_ANON_KEY e SVINCOLATI_TABLE (tabella e permessi RLS per lettura anonima).\n\n' +
-              '2) File locale: pubblica nella root del sito il file svincolati.json (stesso percorso di index.html) oppure esegui node build-svincolati-inline.js per generare svincolati-scouting.js e includilo nella pagina.');
+              '1) Parquet: in config.js imposta SVINCOLATI_PARQUET_URL (es. data/svincolati.parquet) e pubblica il file; serve DuckDB-WASM nel browser (prima ricerca può richiedere tempo).\n\n' +
+              '2) Supabase: controlla SUPABASE_URL, SUPABASE_ANON_KEY e SVINCOLATI_TABLE (RLS lettura anonima).\n\n' +
+              '3) Fallback: svincolati.json in root o svincolati-scouting.js incluso nella pagina.');
             return;
           }
         } else {
@@ -840,6 +909,7 @@
             return;
           }
         }
+        saveScoutingFiltersToSession();
         window.location.replace('scouting-risultati.html');
       } finally {
         if (btn) {
@@ -849,7 +919,68 @@
       }
     }
 
+    var FMTO_SCOUT_FILTERS_KEY = 'fmto_scout_filters';
+
+    function saveScoutingFiltersToSession() {
+      var nums = {};
+      document.querySelectorAll('.scout-input-num').forEach(function (el) {
+        if (el.id) nums[el.id] = el.value;
+      });
+      var pos = Array.from(document.querySelectorAll('input[name="pos"]:checked')).map(function (c) { return c.value; });
+      var solo = document.getElementById('f-solo-svincolati');
+      var state = {
+        v: 1,
+        fName: document.getElementById('f-name').value,
+        fNaz: document.getElementById('f-naz').value,
+        fClub: document.getElementById('f-club').value,
+        soloSvincolati: solo ? !!solo.checked : false,
+        ageMin: document.getElementById('f-age-min').value,
+        ageMax: document.getElementById('f-age-max').value,
+        foot: document.getElementById('f-foot').value,
+        posDropdown: document.getElementById('f-pos-dropdown') ? document.getElementById('f-pos-dropdown').value : '',
+        pos: pos,
+        nums: nums
+      };
+      try {
+        sessionStorage.setItem(FMTO_SCOUT_FILTERS_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function restoreScoutingFiltersFromSession() {
+      try {
+        var raw = sessionStorage.getItem(FMTO_SCOUT_FILTERS_KEY);
+        if (!raw) return;
+        var s = JSON.parse(raw);
+        if (!s || s.v !== 1) return;
+        var el;
+        if (s.fName != null && (el = document.getElementById('f-name'))) el.value = s.fName;
+        if (s.fNaz != null && (el = document.getElementById('f-naz'))) el.value = s.fNaz;
+        if (s.fClub != null && (el = document.getElementById('f-club'))) el.value = s.fClub;
+        el = document.getElementById('f-solo-svincolati');
+        if (el && typeof s.soloSvincolati === 'boolean') el.checked = s.soloSvincolati;
+        if (s.ageMin != null && (el = document.getElementById('f-age-min'))) el.value = s.ageMin;
+        if (s.ageMax != null && (el = document.getElementById('f-age-max'))) el.value = s.ageMax;
+        if (s.foot != null && (el = document.getElementById('f-foot'))) el.value = s.foot;
+        if (s.posDropdown != null && (el = document.getElementById('f-pos-dropdown'))) el.value = s.posDropdown;
+        if (Array.isArray(s.pos)) {
+          document.querySelectorAll('input[name="pos"]').forEach(function (c) {
+            c.checked = s.pos.indexOf(c.value) !== -1;
+          });
+        }
+        if (s.nums && typeof s.nums === 'object') {
+          for (var id in s.nums) {
+            if (!Object.prototype.hasOwnProperty.call(s.nums, id)) continue;
+            el = document.getElementById(id);
+            if (el) el.value = s.nums[id];
+          }
+        }
+      } catch (e) {}
+    }
+
     function resetScoutingFilters() {
+      try {
+        sessionStorage.removeItem(FMTO_SCOUT_FILTERS_KEY);
+      } catch (e) {}
       document.getElementById('f-name').value = '';
       document.getElementById('f-naz').value = '';
       document.getElementById('f-club').value = '';
@@ -887,6 +1018,8 @@
         if (posDrop.value) document.querySelectorAll('input[name="pos"]').forEach(function (c) { c.checked = false; });
       });
     }
+
+    restoreScoutingFiltersFromSession();
   </script>
 </body>
 </html>

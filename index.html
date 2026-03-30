@@ -166,10 +166,164 @@ body.welcome-page { padding: 0; min-height: 100vh; display: flex; flex-direction
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* Accesso PIN: visibile di default (anche se data.js non carica con file://). JS lo nasconde solo con sessione valida. */
+#index-pin-gate {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg, #0f1117);
+}
+#index-pin-gate.index-pin-dismissed {
+  display: none !important;
+  pointer-events: none;
+}
+.index-lock-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 2.5rem;
+  width: min(420px, 100%);
+  text-align: center;
+}
+.index-lock-icon { font-size: 2.8rem; margin-bottom: 1rem; display: block; }
+.index-lock-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: .3rem;
+}
+.index-lock-sub {
+  font-size: .82rem;
+  color: var(--t2);
+  margin-bottom: 1.6rem;
+  line-height: 1.5;
+}
+.index-pin-select {
+  width: 100%;
+  background: var(--sf);
+  border: 1px solid var(--border);
+  color: var(--t1);
+  font-family: 'Outfit', sans-serif;
+  font-size: .85rem;
+  padding: .6rem .9rem;
+  border-radius: 8px;
+  outline: none;
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+.index-pin-select option { background: var(--card); }
+.index-pin-dots { display: flex; gap: .6rem; justify-content: center; margin-bottom: 1.1rem; }
+.index-pin-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: transparent;
+  transition: all .18s;
+}
+.index-pin-dot.filled {
+  background: var(--v);
+  border-color: var(--v);
+  box-shadow: 0 0 8px var(--vg);
+}
+.index-pin-numpad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: .5rem;
+  margin-bottom: .75rem;
+}
+.index-pin-key {
+  background: var(--sf);
+  border: 1px solid var(--border);
+  color: var(--t1);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  padding: .7rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .14s;
+  user-select: none;
+}
+.index-pin-key:hover {
+  border-color: var(--v);
+  background: rgba(139, 92, 246, .1);
+  color: var(--vb);
+}
+.index-pin-key:active { transform: scale(.91); }
+.index-pin-error { color: #f87171; font-size: .78rem; min-height: 1.2em; margin-top: .3rem; }
+.index-pin-actions {
+  display: flex;
+  gap: .5rem;
+  justify-content: center;
+  margin-top: .9rem;
+  flex-wrap: wrap;
+}
+.index-pin-link {
+  font-size: .78rem;
+  color: var(--t3);
+  text-decoration: none;
+  border: 1px solid var(--border);
+  padding: .45rem .85rem;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+.index-pin-link:hover { border-color: var(--v); color: var(--vb); }
+#welcome-shell { display: none; flex: 1; flex-direction: column; min-height: 100vh; }
+#welcome-shell.is-open { display: flex; }
 </style>
 </head>
 <body class="gbg welcome-page">
 
+<div id="index-pin-gate" class="gbg" aria-hidden="false">
+  <div class="index-lock-card glass fade-in">
+    <span class="index-lock-icon">🔐</span>
+    <div class="index-lock-title">Accesso</div>
+    <p class="index-lock-sub">Seleziona la tua squadra e inserisci il PIN a 4 cifre. I PIN sono gli stessi dell’Area riservata (documento <code>fmto2_pin_riservati.pdf</code>).</p>
+
+    <select class="index-pin-select" id="index-pin-squad-select" onchange="indexResetPin()">
+      <option value="">— Scegli la tua squadra —</option>
+    </select>
+
+    <div class="index-pin-dots">
+      <div class="index-pin-dot" id="index-pd0"></div>
+      <div class="index-pin-dot" id="index-pd1"></div>
+      <div class="index-pin-dot" id="index-pd2"></div>
+      <div class="index-pin-dot" id="index-pd3"></div>
+    </div>
+
+    <div class="index-pin-numpad">
+      <button type="button" class="index-pin-key" onclick="indexPk('1')">1</button>
+      <button type="button" class="index-pin-key" onclick="indexPk('2')">2</button>
+      <button type="button" class="index-pin-key" onclick="indexPk('3')">3</button>
+      <button type="button" class="index-pin-key" onclick="indexPk('4')">4</button>
+      <button type="button" class="index-pin-key" onclick="indexPk('5')">5</button>
+      <button type="button" class="index-pin-key" onclick="indexPk('6')">6</button>
+      <button type="button" class="index-pin-key" onclick="indexPk('7')">7</button>
+      <button type="button" class="index-pin-key" onclick="indexPk('8')">8</button>
+      <button type="button" class="index-pin-key" onclick="indexPk('9')">9</button>
+      <button type="button" class="index-pin-key" onclick="indexPk('del')" style="font-size:.88rem;color:var(--t2)">⌫</button>
+      <button type="button" class="index-pin-key" onclick="indexPk('0')">0</button>
+      <button type="button" class="index-pin-key" style="visibility:hidden"></button>
+    </div>
+
+    <div class="index-pin-error" id="index-pin-error"></div>
+
+    <div class="index-pin-actions">
+      <a class="index-pin-link" href="pin.html">Apri pagina PIN dedicata</a>
+      <a class="index-pin-link" href="area.html">Area riservata</a>
+    </div>
+  </div>
+</div>
+
+<div id="welcome-shell">
 <div class="welcome-wrap">
   <div class="welcome-orb welcome-orb-1"></div>
   <div class="welcome-orb welcome-orb-2"></div>
@@ -180,7 +334,7 @@ body.welcome-page { padding: 0; min-height: 100vh; display: flex; flex-direction
   <h1 class="welcome-title">Football Manager<br><span>Tournament Online</span></h1>
   <p class="welcome-sub">La lega più avvincente · Stagione 26_1</p>
 
-  <a href="pin.html" class="welcome-cta" id="welcome-cta">Entra nel torneo →</a>
+  <a href="home.html" class="welcome-cta" id="welcome-cta">Entra nel torneo →</a>
 
   <div class="welcome-stats">
     <div class="welcome-stat">
@@ -209,8 +363,120 @@ body.welcome-page { padding: 0; min-height: 100vh; display: flex; flex-direction
     <a href="home.html">FMTO 2.0</a> — Football Manager Tournament Online — © 2026
   </footer>
 </div>
+</div>
 
+<script src="data.js"></script>
+<script src="config.js"></script>
+<script src="shared.js"></script>
 <script>
+(function indexPinGate() {
+  try {
+    if (location.search.indexOf('logout=1') !== -1) {
+      if (typeof endSession === 'function') endSession();
+      else {
+        try { localStorage.removeItem('fmto_session'); } catch (e) {}
+        try { sessionStorage.removeItem('fmto_session'); } catch (e) {}
+      }
+      try { history.replaceState(null, '', location.pathname || 'index.html'); } catch (e2) {}
+    }
+  } catch (e0) {}
+
+  var pinGate = document.getElementById('index-pin-gate');
+  var welcomeShell = document.getElementById('welcome-shell');
+  var pinEntry = '';
+
+  function showWelcome() {
+    if (pinGate) {
+      pinGate.classList.add('index-pin-dismissed');
+      pinGate.setAttribute('aria-hidden', 'true');
+    }
+    if (welcomeShell) {
+      welcomeShell.classList.add('is-open');
+    }
+    try {
+      var a = document.getElementById('welcome-cta');
+      if (a) a.href = 'home.html';
+    } catch (e) {}
+  }
+
+  function showPin() {
+    if (welcomeShell) welcomeShell.classList.remove('is-open');
+    if (pinGate) {
+      pinGate.classList.remove('index-pin-dismissed');
+      pinGate.setAttribute('aria-hidden', 'false');
+    }
+  }
+
+  window.indexPopulateSelect = function () {
+    var sel = document.getElementById('index-pin-squad-select');
+    if (!sel || typeof SQUADS === 'undefined') return;
+    sel.innerHTML = '<option value="">— Scegli la tua squadra —</option>' +
+      SQUADS.map(function (sq) {
+        return '<option value="' + String(sq.id).replace(/"/g, '&quot;') + '">' + String(sq.name).replace(/</g, '&lt;') + '</option>';
+      }).join('');
+  };
+
+  window.indexResetPin = function () {
+    pinEntry = '';
+    indexUpdateDots();
+    var err = document.getElementById('index-pin-error');
+    if (err) err.textContent = '';
+  };
+
+  function indexUpdateDots() {
+    for (var i = 0; i < 4; i++) {
+      var el = document.getElementById('index-pd' + i);
+      if (el) el.classList.toggle('filled', i < pinEntry.length);
+    }
+  }
+
+  window.indexPk = function (k) {
+    var sel = document.getElementById('index-pin-squad-select');
+    if (!sel) return;
+    if (!sel.value && k !== 'del') {
+      var er = document.getElementById('index-pin-error');
+      if (er) er.textContent = 'Seleziona prima la tua squadra';
+      return;
+    }
+    if (k === 'del') pinEntry = pinEntry.slice(0, -1);
+    else if (pinEntry.length < 4) pinEntry += k;
+    indexUpdateDots();
+    var err = document.getElementById('index-pin-error');
+    if (err) err.textContent = '';
+    if (pinEntry.length === 4 && typeof window.indexCheckPin === 'function') window.indexCheckPin();
+  };
+
+  window.indexCheckPin = function () {
+    var sel = document.getElementById('index-pin-squad-select');
+    if (!sel || typeof SQUADS === 'undefined') return;
+    var sq = SQUADS.find(function (s) { return s.id === sel.value; });
+    if (!sq) return;
+    if (pinEntry === sq.pin) {
+      if (typeof startSession === 'function') startSession(sq.id, sq.name);
+      showWelcome();
+    } else {
+      var er = document.getElementById('index-pin-error');
+      if (er) er.textContent = '❌ PIN errato. Riprova.';
+      setTimeout(function () {
+        pinEntry = '';
+        indexUpdateDots();
+      }, 600);
+    }
+  };
+
+  try {
+    if (typeof getSession === 'function' && getSession()) {
+      showWelcome();
+    } else {
+      showPin();
+      indexPopulateSelect();
+    }
+  } catch (e) {
+    showPin();
+    if (typeof indexPopulateSelect === 'function') indexPopulateSelect();
+  }
+})();
+
 (function () {
   try {
     var raw = localStorage.getItem('fmto_session');

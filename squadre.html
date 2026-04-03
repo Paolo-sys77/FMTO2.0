@@ -358,7 +358,8 @@ body.card-only-from-area #view-grid,body.card-only-from-area #view-squad{display
       </div>
       <div class="search-wrap squad-search-wrap" style="margin-bottom:0;flex:1;min-width:240px">
         <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" class="search-input" id="grid-player-search" placeholder="Cerca giocatore (nome o ID)..." oninput="filterSquads();updateGridPlayerResults();" autocomplete="off">
+        <input type="text" class="search-input search-input--clearable" id="grid-player-search" placeholder="Cerca giocatore (nome o ID)..." oninput="filterSquads();updateGridPlayerResults();syncGridPlayerSearchClear();" autocomplete="off">
+        <button type="button" class="search-clear-btn" id="grid-player-search-clear" onclick="clearGridPlayerSearch(event)" aria-label="Svuota ricerca giocatore" title="Svuota ricerca">×</button>
       </div>
       <a class="nav-cta" href="scouting.html" style="padding:.5rem 1.05rem">Scouting</a>
       <a class="nav-cta" href="mercato.html" style="padding:.5rem 1.05rem">Mercato</a>
@@ -386,8 +387,9 @@ body.card-only-from-area #view-grid,body.card-only-from-area #view-squad{display
     </div>
   </div>
   <div class="sec" style="padding-top:1.8rem">
-    <div class="squad-search-wrap" style="margin-bottom:1rem">
-      <input type="text" id="squad-player-search" class="squad-player-search" placeholder="Cerca giocatore per nome o ID..." oninput="applySquadSearch()" autocomplete="off">
+    <div class="squad-search-wrap squad-search-wrap--inner" style="margin-bottom:1rem">
+      <input type="text" id="squad-player-search" class="squad-player-search squad-player-search--clearable" placeholder="Cerca giocatore per nome o ID..." oninput="applySquadSearch()" autocomplete="off">
+      <button type="button" class="search-clear-btn" id="squad-player-search-clear" onclick="clearSquadPlayerSearch(event)" aria-label="Svuota ricerca giocatore" title="Svuota ricerca">×</button>
     </div>
     <div style="overflow-x:auto">
       <table class="player-tbl">
@@ -625,6 +627,33 @@ function filterSquads(){
     c.classList.toggle('hidden',!nameOk);
   });
 }
+function syncGridPlayerSearchClear(){
+  var inp=document.getElementById('grid-player-search');
+  var btn=document.getElementById('grid-player-search-clear');
+  if(!inp||!btn)return;
+  btn.classList.toggle('is-visible',(inp.value||'').trim().length>0);
+}
+function clearGridPlayerSearch(e){
+  if(e) e.preventDefault();
+  var inp=document.getElementById('grid-player-search');
+  if(inp) inp.value='';
+  filterSquads();
+  updateGridPlayerResults();
+  if(inp) inp.focus();
+}
+function syncSquadPlayerSearchClear(){
+  var inp=document.getElementById('squad-player-search');
+  var btn=document.getElementById('squad-player-search-clear');
+  if(!inp||!btn)return;
+  btn.classList.toggle('is-visible',(inp.value||'').trim().length>0);
+}
+function clearSquadPlayerSearch(e){
+  if(e) e.preventDefault();
+  var inp=document.getElementById('squad-player-search');
+  if(inp) inp.value='';
+  applySquadSearch();
+  if(inp) inp.focus();
+}
 function updateGridPlayerResults(){
   const inp=document.getElementById('grid-player-search');
   const box=document.getElementById('grid-player-results');
@@ -632,7 +661,7 @@ function updateGridPlayerResults(){
   const listEl=document.getElementById('grid-player-results-list');
   const rawQ=(inp&&inp.value||'').trim();
   const pq=rawQ.toLowerCase();
-  if(!rawQ){ box.style.display='none'; return; }
+  if(!rawQ){ box.style.display='none'; syncGridPlayerSearchClear(); return; }
   var seenIds=new Set();
   function addMatch(p,teamName){
     var key=String(p.id)+'|'+teamName;
@@ -652,7 +681,7 @@ function updateGridPlayerResults(){
     if(matchByName(p)||matchById(p)) addMatch(p,'SVINCOLATI');
   });
   box.style.display='block';
-  if(matches.length===0){ titleEl.textContent='Nessun giocatore trovato per "'+rawQ+'" (nome o ID)'; listEl.innerHTML=''; return; }
+  if(matches.length===0){ titleEl.textContent='Nessun giocatore trovato per "'+rawQ+'" (nome o ID)'; listEl.innerHTML=''; syncGridPlayerSearchClear(); return; }
   titleEl.textContent=matches.length===1 ? '1 giocatore trovato' : matches.length+' giocatori trovati';
   window._gridSearchMatches=matches;
   listEl.innerHTML=matches.slice(0,50).map(function(m,idx){
@@ -661,6 +690,7 @@ function updateGridPlayerResults(){
       '<span class="gph-name">'+p.nome+'</span> <span class="gph-meta">'+tnDisplay+' · ID '+p.id+' · CA '+p.ca+'</span></a>';
   }).join('');
   if(matches.length>50) listEl.innerHTML+='<p style="font-size:.8rem;color:var(--t3);margin-top:.5rem">Mostrati i primi 50. Affina la ricerca per nome o ID.</p>';
+  syncGridPlayerSearchClear();
 }
 
 function openPlayerFromGridByIndex(idx){
@@ -724,12 +754,14 @@ function openSquad(sqName){
   }
   var searchEl = document.getElementById('squad-player-search');
   if (searchEl) searchEl.value = '';
+  syncSquadPlayerSearchClear();
   renderSquadTable(players);
   renderSquadUnder(sq.name);
   showView('squad');
 }
 function applySquadSearch(){
   renderSquadTable(getCurrentSquadPlayers());
+  syncSquadPlayerSearchClear();
 }
 var SVINCOLATI_PAGE_SIZE = 1000;
 function renderSquadTable(players){

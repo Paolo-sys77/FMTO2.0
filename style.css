@@ -153,14 +153,53 @@ nav {
 }
 .search-input::placeholder { color:var(--t2); opacity:.9; }
 .search-input:focus { border-color:var(--v); box-shadow:0 0 0 3px rgba(139,92,246,.1); }
+.search-input.search-input--clearable { padding-right:2.5rem; }
+
+/* Pulsante X per svuotare ricerca (dashboard squadre / rosa) */
+.search-clear-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--t2);
+  cursor: pointer;
+  font-size: 1.15rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .15s, color .15s, background .15s;
+}
+.search-clear-btn.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+.search-clear-btn:hover {
+  color: var(--t1);
+  background: rgba(255,255,255,.07);
+}
+.search-clear-btn:focus-visible {
+  outline: 2px solid var(--v);
+  outline-offset: 1px;
+}
 
 .squad-search-wrap { max-width:320px; }
+.squad-search-wrap.squad-search-wrap--inner { position: relative; max-width: 420px; }
 .squad-player-search {
   width:100%; background:var(--card); border:1px solid var(--border);
   color:var(--t1); font-family:'Outfit',sans-serif; font-size:1rem; font-weight:400;
   padding:.7rem .9rem; border-radius:8px; outline:none;
   transition:border-color .18s,box-shadow .18s;
 }
+.squad-player-search.squad-player-search--clearable { padding-right: 2.5rem; }
 .squad-player-search::placeholder { color:var(--t2); opacity:.9; }
 .squad-player-search:focus { border-color:var(--v); box-shadow:0 0 0 3px rgba(139,92,246,.1); }
 

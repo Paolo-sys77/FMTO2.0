@@ -1072,7 +1072,7 @@ function buildFMColumns(p,isGK){
       r('Marcatura',p.marc)+r('Passaggi',p.pass)+r('Tecnica',p.tecn)+r('Tiri da lontano',p.tir_lont);
     document.getElementById('fm-psych').innerHTML=
       r('Aggressività',p.agr)+r('Carisma',p.car)+r('Concentrazione',p.conc)+r('Coraggio',p.cor)+r('Decisioni',p.dec)+r('Determinazione',p.det)+
-      r('Fantasia',p.fan)+r('Freddezza',p.fred)+r('Gioco di squadra',p.gioc_squa)+r('Impegno',p.imp)+r('Intuito',p.int_ment)+r('Posizione',p.pos_ment)+r('Visione di gioco',p.fan);
+      r('Fantasia',p.fan)+r('Freddezza',p.fred)+r('Gioco di squadra',p.gioc_squa)+r('Impegno',p.imp)+r('Intuito',p.int_ment)+r('Posizione',p.pos_ment)+r('Senza palla',p.senza_palla)+r('Visione di gioco',p.fan);
     document.getElementById('fm-phys').innerHTML=
       r('Accelerazione',p.acc)+r('Agilità',p.agi)+r('Equilibrio',p.equ)+r('Forza',p.forza)+r('Integrità fisica',p.int_fis)+r('Mass. elevazione',p.ele)+
       r('Resistenza',p.res)+r('Velocità',p.vel);
@@ -1327,7 +1327,7 @@ const VS_ATTRS_OUT_TECH=[
 const VS_ATTRS_OUT_PSYCH=[
   ['Aggressività','agr'],['Carisma','car'],['Concentrazione','conc'],['Coraggio','cor'],['Decisioni','dec'],['Determinazione','det'],
   ['Fantasia','fan'],['Freddezza','fred'],['Gioco di squadra','gioc_squa'],['Impegno','imp'],['Intuito','int_ment'],
-  ['Posizione','pos_ment'],['Visione di gioco','fan'],
+  ['Posizione','pos_ment'],['Senza palla','senza_palla'],['Visione di gioco','fan'],
 ];
 const VS_ATTRS_OUT_PHYS=[
   ['Accelerazione','acc'],['Agilità','agi'],['Equilibrio','equ'],['Forza','forza'],['Integrità fisica','int_fis'],

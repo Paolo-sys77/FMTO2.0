@@ -87,6 +87,7 @@ const headerToKey = {
   'finalizzazione': 'final',
   'tocco di prima': 'gioc_prima',
   'punizioni': 'pun',
+  'rigori': 'rigori',
   'colpo di testa': 'testa',
   'tiri da lontano': 'tir_lont',
   'rimesse lunghe': 'rim_lung',

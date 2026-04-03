@@ -131,9 +131,15 @@ body.card-only-from-area #view-grid,body.card-only-from-area #view-squad{display
 .fm-panel{display:none}
 .fm-panel.active{display:block}
 
-/* ── PANEL: PANORAMICA (3 colonne affiancate: Tecnica | Psicologia | Fisico) ── */
+/* ── PANEL: PANORAMICA (4 colonne: Tecnica | Psicologia | Fisico | Calci piazzati) ── */
 .card-body{
-  display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;background:#161b22;min-width:0;
+  display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;background:#161b22;min-width:0;
+}
+@media (max-width:900px){
+  .card-body{grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media (max-width:440px){
+  .card-body{grid-template-columns:1fr;}
 }
 .card-body .section{min-width:0;padding:8px 10px;border-right:1px solid var(--card-border,#2a3245);}
 .card-body .section:last-child{border-right:none;}
@@ -498,6 +504,7 @@ body.card-only-from-area #view-grid,body.card-only-from-area #view-squad{display
       <div class="section"><div class="section-title" id="fm-section-1-title">⚙ Tecnica</div><div id="fm-tech"></div></div>
       <div class="section"><div class="section-title">🧠 Psicologia</div><div id="fm-psych"></div></div>
       <div class="section"><div class="section-title">💪 Fisico</div><div id="fm-phys"></div></div>
+      <div class="section"><div class="section-title">⚽ Calci piazzati</div><div id="fm-setpieces"></div></div>
     </div>
   </div>
 
@@ -1052,7 +1059,7 @@ function _applyAfterCardCloseFromPopstate(){
   }
 }
 
-/* ═══ ATTR COLUMNS (3 sezioni con barre) ═══ */
+/* ═══ ATTR COLUMNS (Tecnica, Psicologia, Fisico, Calci piazzati) ═══ */
 function buildFMColumns(p,isGK){
   const r=attrRowBarHTML;
   if(isGK){
@@ -1065,7 +1072,9 @@ function buildFMColumns(p,isGK){
       r('Fantasia',p.fan)+r('Freddezza',p.fred)+r('Gioco di squadra',p.gioc_squa)+r('Impegno',p.imp)+r('Intuito',p.int_ment)+r('Posizione',p.pos_ment)+r('Senza palla',p.senza_palla)+r('Visione di gioco',p.fan);
     document.getElementById('fm-phys').innerHTML=
       r('Accelerazione',p.acc)+r('Agilità',p.agi)+r('Equilibrio',p.equ)+r('Forza',p.forza)+r('Integrità fisica',p.int_fis)+r('Mass. elevazione',p.ele)+
-      r('Resistenza',p.res)+r('Velocità',p.vel)+r('Calci piazzati',p.pun)+r('Tecnica',p.tecn);
+      r('Resistenza',p.res)+r('Velocità',p.vel)+r('Tecnica',p.tecn);
+    document.getElementById('fm-setpieces').innerHTML=
+      r('Calci piazzati',p.pun)+r("Calci d'angolo",p.angoli)+r('Rigori',p.rigori)+r('Rimesse lunghe',p.rim_lung);
   } else {
     document.getElementById('fm-tech').innerHTML=
       r('Colpi di testa',p.testa)+r('Contrasti',p.cont)+r('Controllo palla',p.gioc_prima)+r('Cross',p.cross)+r('Dribbling',p.drib)+r('Finalizzazione',p.final)+
@@ -1076,6 +1085,8 @@ function buildFMColumns(p,isGK){
     document.getElementById('fm-phys').innerHTML=
       r('Accelerazione',p.acc)+r('Agilità',p.agi)+r('Equilibrio',p.equ)+r('Forza',p.forza)+r('Integrità fisica',p.int_fis)+r('Mass. elevazione',p.ele)+
       r('Resistenza',p.res)+r('Velocità',p.vel);
+    document.getElementById('fm-setpieces').innerHTML=
+      r('Calci piazzati',p.pun)+r("Calci d'angolo",p.angoli)+r('Rigori',p.rigori)+r('Rimesse lunghe',p.rim_lung);
   }
 }
 
@@ -1318,7 +1329,10 @@ const VS_ATTRS_GK_PSYCH=[
 ];
 const VS_ATTRS_GK_PHYS=[
   ['Accelerazione','acc'],['Agilità','agi'],['Equilibrio','equ'],['Forza','forza'],['Integrità fisica','int_fis'],
-  ['Mass. elevazione','ele'],['Resistenza','res'],['Velocità','vel'],['Calci piazzati','pun'],['Tecnica','tecn'],
+  ['Mass. elevazione','ele'],['Resistenza','res'],['Velocità','vel'],['Tecnica','tecn'],
+];
+const VS_ATTRS_SETPIECES=[
+  ['Calci piazzati','pun'],["Calci d'angolo",'angoli'],['Rigori','rigori'],['Rimesse lunghe','rim_lung'],
 ];
 const VS_ATTRS_OUT_TECH=[
   ['Colpi di testa','testa'],['Contrasti','cont'],['Controllo palla','gioc_prima'],['Cross','cross'],['Dribbling','drib'],
@@ -1346,10 +1360,12 @@ function buildComparison(p1,p2){
     {title:'Portiere',attrs:VS_ATTRS_GK_TECH},
     {title:'Psicologia',attrs:VS_ATTRS_GK_PSYCH},
     {title:'Fisico',attrs:VS_ATTRS_GK_PHYS},
+    {title:'Calci piazzati',attrs:VS_ATTRS_SETPIECES},
   ] : [
     {title:'Tecnica',attrs:VS_ATTRS_OUT_TECH},
     {title:'Psicologia',attrs:VS_ATTRS_OUT_PSYCH},
     {title:'Fisico',attrs:VS_ATTRS_OUT_PHYS},
+    {title:'Calci piazzati',attrs:VS_ATTRS_SETPIECES},
   ];
 
   const c1='#22d3a0', c2='#a78bfa';

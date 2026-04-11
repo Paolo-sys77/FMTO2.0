@@ -73,6 +73,13 @@
   }
   .tact-lab-btn:hover{border-color:#c4b5fd;color:#c4b5fd}
   .tact-lab-btn.active{background:rgba(34,211,160,.12);border-color:#22d3a0;color:#22d3a0}
+  .tact-clear-squad-btn{
+    font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    padding:.28rem .45rem;border-radius:4px;border:1px solid rgba(239,68,68,.35);background:rgba(239,68,68,.08);
+    color:#f87171;cursor:pointer;white-space:nowrap;line-height:1.2;flex-shrink:0;
+    transition:border-color .15s,background .15s,color .15s;
+  }
+  .tact-clear-squad-btn:hover{border-color:#f87171;background:rgba(239,68,68,.14);color:#fca5a5}
 .tact-left{flex-shrink:0;width:min(100%,420px)}
 .tact-pitch-outer{position:relative;width:100%;min-height:min(72vh,560px)}
 .tact-pitch-svg{width:100%;display:block;border-radius:6px;border:1px solid rgba(46,107,46,.4)}
@@ -196,7 +203,8 @@
         <div class="tact-phase-bar">
           <button class="tact-phase-btn active" onclick="setTactPhase('poss',this)">In possesso</button>
           <button class="tact-phase-btn" onclick="setTactPhase('noposs',this)">Non in possesso</button>
-          <div id="tact-formation-bar" style="display:flex;align-items:center;gap:.5rem;margin-left:auto"></div>
+          <div id="tact-formation-bar" style="display:flex;align-items:center;gap:.5rem;margin-left:auto;flex-wrap:wrap"></div>
+          <button type="button" class="tact-clear-squad-btn" onclick="clearTactSquad()" title="Rimuovi tutti i giocatori da campo e panchina (fase corrente)" aria-label="Svuota formazione tattica">Svuota squadra</button>
         </div>
         <div class="tact-pitch-outer">
           <svg viewBox="0 0 340 500" class="tact-pitch-svg">
@@ -630,6 +638,14 @@ function setFormation(val){
   tactState[curTactPhase+'_formation']=val;
   tactState[curTactPhase]={};
   saveTactState(); renderTactics();
+}
+
+/** Laboratorio tattico: svuota campo e panchina per la fase corrente (In possesso / Non in possesso). */
+function clearTactSquad(){
+  if(!tactSqName) return;
+  tactState[curTactPhase]={};
+  saveTactState();
+  try{ renderTactics(); }catch(e){ console.error('renderTactics', e); }
 }
 
 function renderTactics(){

@@ -9,6 +9,34 @@ const { parseMercatoRows } = require('./mercato-parse-sheet');
 
 const PLAYERS_JS = path.join(__dirname, 'players.js');
 
+/**
+ * Opzionale: applica solo un intervallo di righe Excel (numero riga come in Excel, 1-based).
+ * Esempi: node apply-mercato.js --rows=111-137
+ *         set MERCATO_ROW_MIN=111 & set MERCATO_ROW_MAX=137 & node apply-mercato.js
+ * mercato-movimenti.js viene sempre generato da tutte le righe del foglio.
+ */
+function parseApplyRowRange() {
+  const arg = process.argv.find((a) => String(a).startsWith('--rows='));
+  if (arg) {
+    const m = String(arg).slice('--rows='.length).trim().match(/^(\d+)\s*-\s*(\d+)$/);
+    if (m) {
+      const a = parseInt(m[1], 10);
+      const b = parseInt(m[2], 10);
+      return { min: Math.min(a, b), max: Math.max(a, b) };
+    }
+    console.error('Argomento --rows= non valido. Usa es. --rows=111-137');
+    process.exit(1);
+  }
+  const envMin = process.env.MERCATO_ROW_MIN;
+  const envMax = process.env.MERCATO_ROW_MAX;
+  if (envMin != null && envMax != null && String(envMin).trim() !== '' && String(envMax).trim() !== '') {
+    const a = parseInt(envMin, 10);
+    const b = parseInt(envMax, 10);
+    if (!Number.isNaN(a) && !Number.isNaN(b)) return { min: Math.min(a, b), max: Math.max(a, b) };
+  }
+  return null;
+}
+
 /** Cerca il file in quest’ordine (stessa cartella di apply-mercato.js). */
 function resolveMercatoXlsxPath() {
   const candidates = [
@@ -146,6 +174,16 @@ function main() {
   const { rows, intestazioni } = parseMercatoRows(wb);
   writeMercatoMovimentiJs(XLSX_PATH, rows, intestazioni);
 
+  const rowRange = parseApplyRowRange();
+  const rowsApply = rowRange
+    ? rows.filter((r) => r._row >= rowRange.min && r._row <= rowRange.max)
+    : rows;
+  if (rowRange) {
+    console.error(
+      `Solo righe Excel ${rowRange.min}–${rowRange.max}: ${rowsApply.length} righe da applicare su ${rows.length} totali nel foglio.`
+    );
+  }
+
   let { PLAYERS_BY_TEAM, ALL_PLAYERS } = loadPlayers();
 
   const validTeams = new Set(Object.keys(PLAYERS_BY_TEAM));
@@ -160,7 +198,7 @@ function main() {
   }
 
   const lastRowByPlayer = new Map();
-  rows.forEach((row) => {
+  rowsApply.forEach((row) => {
     const nome = row.GIOCATORE;
     const to = normTeam(row.CESSIONARIA);
     const from = normTeam(row.CEDENTE);
@@ -178,7 +216,7 @@ function main() {
   });
 
   const seenPairs = new Map();
-  rows.forEach((row) => {
+  rowsApply.forEach((row) => {
     const excelRow = row._row;
     const key = normName(resolveDbName(row.GIOCATORE));
     const to = normTeam(row.CESSIONARIA);
@@ -245,6 +283,7 @@ function main() {
     JSON.stringify(
       {
         file: XLSX_PATH,
+        soloRighe: rowRange || null,
         applicati: applied.length,
         anomalie: anomalies,
       },

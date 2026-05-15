@@ -303,20 +303,22 @@ function main() {
   }
 
   const { UNDER_PLAYERS_BY_TEAM: existing } = loadUnder();
-  const underById = new Map();
-
+  const existingById = new Map();
   for (const team of Object.keys(existing || {})) {
     for (const p of existing[team] || []) {
-      if (p && p.id) underById.set(String(p.id), { ...p });
+      if (p && p.id) existingById.set(String(p.id), p);
     }
   }
+
+  /** Solo giocatori presenti nel CSV (assenti dal CSV vengono eliminati da under.js). */
+  const underById = new Map();
 
   const report = {
     csvPath,
     righeCsv: 0,
     aggiornati: 0,
     aggiunti: 0,
-    nonTrovatiInCsv: [],
+    rimossi: [],
     saltati: 0,
   };
 
@@ -333,9 +335,10 @@ function main() {
     }
 
     const team = normalizeFmtoTeam(club);
-    let p = underById.get(id);
+    let p = existingById.get(id);
     if (p) {
       report.aggiornati++;
+      p = { ...p };
     } else {
       p = defaultUnderPlayer(id, team);
       report.aggiunti++;
@@ -346,6 +349,12 @@ function main() {
     underById.set(id, p);
   }
 
+  for (const [id, p] of existingById) {
+    if (!underById.has(id)) {
+      report.rimossi.push({ id, nome: p.nome, squadra: p.squadra });
+    }
+  }
+
   const UNDER_PLAYERS_BY_TEAM = {};
   for (const p of underById.values()) {
     if (!p.squadra) continue;
@@ -353,17 +362,6 @@ function main() {
     UNDER_PLAYERS_BY_TEAM[p.squadra].push(p);
   }
   const UNDER_BY_TEAM = rebuildUnderStructures(UNDER_PLAYERS_BY_TEAM);
-
-  const keptNotInCsv = [];
-  for (const [id, p] of underById.entries()) {
-    const inCsv = lines.slice(1).some((line) => {
-      const row = parseCsvLine(line, DELIM);
-      return getCell(row, idx, 'id') === id;
-    });
-    if (!inCsv) keptNotInCsv.push({ id, nome: p.nome, squadra: p.squadra });
-  }
-  report.mantenutiSenzaRigaCsv = keptNotInCsv.length;
-  report.esempiMantenuti = keptNotInCsv.slice(0, 5);
 
   const underOut =
     '// Under FMTO — generato da build-under-from-fm26-csv.js\n' +
